@@ -2,2014 +2,1257 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Control de Bovinos</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pecuario GB - v38</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
-    :root {
-      --rojo: #b30000;
-      --rojo-oscuro: #800000;
-      --gris-claro: #f4f4f4;
-      --gris-medio: #dddddd;
-      --gris-oscuro: #444444;
-      --verde: #1b8c1b;
-    }
-    * {
-      box-sizing: border-box;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-        sans-serif;
-    }
+    * { box-sizing: border-box; }
     body {
       margin: 0;
-      padding: 0;
-      background: #ffffff;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f5f5f5;
       color: #222;
     }
     header {
-      background: var(--rojo);
+      background: #4b3b2d;
       color: #fff;
-      padding: 0.7rem 1rem;
-      text-align: center;
+      padding: 10px 16px;
     }
     header h1 {
       margin: 0;
-      font-size: 1.3rem;
+      font-size: 18px;
     }
     header small {
       display: block;
-      margin-top: 0.2rem;
-      font-size: 0.8rem;
+      font-size: 11px;
       opacity: 0.9;
+    }
+    .subleyenda {
+      font-size: 11px;
+      margin-top: 4px;
+      color: #f0e0c0;
+      font-style: italic;
     }
     nav {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.3rem;
-      padding: 0.4rem;
-      background: var(--gris-claro);
-      border-bottom: 1px solid var(--gris-medio);
-      justify-content: center;
+      gap: 4px;
+      padding: 6px;
+      background: #eae7e2;
+      border-bottom: 1px solid #d0c8c0;
     }
     nav button {
-      border: 1px solid var(--rojo-oscuro);
-      background: white;
-      color: var(--rojo-oscuro);
-      padding: 0.3rem 0.6rem;
-      border-radius: 0.4rem;
-      font-size: 0.75rem;
+      flex: 1 1 calc(25% - 4px);
+      min-width: 110px;
+      padding: 6px 4px;
+      font-size: 11px;
+      border-radius: 4px;
+      border: 1px solid #b9b1a7;
+      background: #ffffff;
       cursor: pointer;
-      min-width: 90px;
     }
     nav button.activo {
-      background: var(--rojo-oscuro);
+      background: #8b4513;
       color: #fff;
+      border-color: #5a2f0c;
+      font-weight: 600;
     }
     main {
-      padding: 0.8rem;
-      max-width: 900px;
-      margin: 0 auto;
+      padding: 10px;
+      max-width: 1100px;
+      margin: 0 auto 24px auto;
     }
-    section {
+    section.modulo {
       display: none;
+      background: #ffffff;
+      padding: 12px;
+      border-radius: 6px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.10);
+      margin-bottom: 16px;
     }
-    section.activo {
-      display: block;
-    }
-    h2 {
-      font-size: 1.1rem;
-      margin-top: 0;
-      color: var(--rojo-oscuro);
-    }
-    h3 {
-      font-size: 0.95rem;
-      margin-bottom: 0.3rem;
-      margin-top: 0.8rem;
-      color: var(--gris-oscuro);
-    }
-    form {
-      background: #fff;
-      border: 1px solid var(--gris-medio);
-      border-radius: 0.5rem;
-      padding: 0.7rem;
-      margin-bottom: 0.7rem;
-    }
-    .fila {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-bottom: 0.5rem;
-    }
-    .campo {
-      flex: 1 1 140px;
-      min-width: 120px;
-      display: flex;
-      flex-direction: column;
-      font-size: 0.8rem;
-    }
+    section.modulo.activo { display: block; }
+
+    h2 { font-size: 17px; margin-top: 0; margin-bottom: 6px; color: #4b3b2d; }
+    h3 { font-size: 14px; margin-bottom: 4px; color: #5a4636; }
+    p  { font-size: 12px; margin: 4px 0; }
+
+    form { margin-top: 6px; margin-bottom: 10px; }
     label {
-      font-weight: 600;
-      margin-bottom: 0.1rem;
+      display: block;
+      font-size: 12px;
+      margin-top: 6px;
+      margin-bottom: 2px;
     }
     input, select, textarea {
-      padding: 0.25rem;
-      border-radius: 0.3rem;
-      border: 1px solid var(--gris-medio);
-      font-size: 0.85rem;
+      width: 100%;
+      padding: 6px 8px;
+      font-size: 12px;
+      border-radius: 4px;
+      border: 1px solid #c7c0b8;
     }
     textarea {
       min-height: 60px;
       resize: vertical;
     }
-    button.primario {
-      background: var(--rojo-oscuro);
-      color: #fff;
-      border: none;
-      padding: 0.4rem 0.8rem;
-      border-radius: 0.4rem;
-      cursor: pointer;
-      font-size: 0.85rem;
-      margin-right: 0.3rem;
-    }
-    button.secundario {
-      background: #fff7f7;
-      color: var(--rojo-oscuro);
-      border: 1px solid var(--rojo-oscuro);
-      padding: 0.35rem 0.7rem;
-      border-radius: 0.4rem;
-      cursor: pointer;
-      font-size: 0.8rem;
-      margin-right: 0.3rem;
-    }
-    .tabla-simple {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.8rem;
-    }
-    .tabla-simple th,
-    .tabla-simple td {
-      border: 1px solid var(--gris-medio);
-      padding: 0.25rem 0.35rem;
-      text-align: left;
-    }
-    .tabla-simple th {
-      background: var(--gris-claro);
-    }
-    .badge {
-      display: inline-block;
-      padding: 0.1rem 0.25rem;
-      border-radius: 0.3rem;
-      font-size: 0.7rem;
-      background: var(--gris-claro);
-    }
-    .badge.ok {
-      background: #d4f8d4;
-      color: #116611;
-    }
-    .badge.alerta {
-      background: #fff3cd;
-      color: #856404;
-    }
-    .badge.peligro {
-      background: #f8d7da;
-      color: #721c24;
-    }
-    .panel-grid {
+    .fila-dos {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-      gap: 0.5rem;
+      grid-template-columns: repeat(2,minmax(0,1fr));
+      gap: 6px;
+    }
+    .fila-tres {
+      display: grid;
+      grid-template-columns: repeat(3,minmax(0,1fr));
+      gap: 6px;
+    }
+    .acciones {
+      margin-top: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .acciones button {
+      padding: 6px 10px;
+      font-size: 12px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-primario   { background: #27ae60; color: #fff; }
+    .btn-secundario { background: #95a5a6; color: #fff; }
+    .btn-alerta     { background: #c0392b; color: #fff; }
+
+    .nota {
+      font-size: 11px;
+      color: #7f8c8d;
+      margin-top: 4px;
+    }
+
+    .tarjetas-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(180px,1fr));
+      gap: 8px;
+      margin-top: 8px;
     }
     .tarjeta {
-      border-radius: 0.5rem;
-      border: 1px solid var(--gris-medio);
-      padding: 0.5rem;
-      background: #fff;
-      font-size: 0.82rem;
+      background: #faf7f3;
+      border-radius: 4px;
+      padding: 8px;
+      border: 1px solid #e1d7cd;
+      font-size: 12px;
     }
-    .tarjeta h3 {
-      margin: 0 0 0.3rem;
-      font-size: 0.9rem;
-      color: var(--rojo-oscuro);
+    .tarjeta strong { display: block; margin-bottom: 4px; }
+
+    .lista {
+      margin-top: 8px;
+      font-size: 12px;
+      background: #f9f9f9;
+      border-radius: 4px;
+      padding: 6px 8px;
+      max-height: 260px;
+      overflow-y: auto;
+      border: 1px solid #eee;
     }
-    .ayuda {
-      font-size: 0.75rem;
-      color: #666;
-      margin-top: 0.2rem;
+    .lista div {
+      padding: 4px 0;
+      border-bottom: 1px dashed #ddd;
     }
-    .boton-pequeno {
-      font-size: 0.75rem;
-      padding: 0.2rem 0.4rem;
-      border-radius: 0.3rem;
+    .lista div:last-child { border-bottom: none; }
+
+    details {
+      margin-top: 6px;
+      border-radius: 4px;
+      background: #f7f5f2;
+      border: 1px solid #e2dbd4;
+      padding: 4px 6px;
+      font-size: 12px;
     }
-    @media (max-width: 600px) {
-      nav button {
-        flex: 1 1 30%;
-      }
+    details summary {
+      cursor: pointer;
+      font-weight: 600;
+      color: #4b3b2d;
+    }
+
+    @media (max-width: 700px) {
+      nav button { flex: 1 1 calc(50% - 4px); }
+      .fila-dos, .fila-tres { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Control de Bovinos</h1>
-    <small>Registro operativo de animales, potreros, corrales, clima y contabilidad</small>
-  </header>
+<header>
+  <h1>Pecuario GB</h1>
+  <small>Control operativo integral de ganado bovino</small>
+  <div class="subleyenda">Información para la permanencia y desarrollo de tu rancho</div>
+</header>
 
-  <nav>
-    <button data-section="panel" class="activo">Panel</button>
-    <button data-section="animales">Animales</button>
-    <button data-section="pesos">Pesos</button>
-    <button data-section="repro">Repro/Partos</button>
-    <button data-section="sanidad">Sanidad</button>
-    <button data-section="potreros">Potreros</button>
-    <button data-section="corrales">Corrales</button>
-    <button data-section="clima">Clima</button>
-    <button data-section="conta">Contabilidad</button>
-    <button data-section="seguridad">Seguridad</button>
-    <button data-section="reportes">Reportes</button>
-    <button data-section="actividades">Actividades</button>
-    <button data-section="config">Config.</button>
-  </nav>
+<nav>
+  <button data-modulo="panel" class="activo">Panel</button>
+  <button data-modulo="animales">Animales</button>
+  <button data-modulo="pesos">Pesos</button>
+  <button data-modulo="potreros">Potreros</button>
+  <button data-modulo="corrales">Corrales móviles</button>
+  <button data-modulo="repro">Reproducción y partos</button>
+  <button data-modulo="sanidad">Sanidad</button>
+  <button data-modulo="clima">Clima</button>
+  <button data-modulo="conta">Contabilidad</button>
+  <button data-modulo="seguridad">Seguridad y visitas</button>
+  <button data-modulo="maquinaria">Maquinaria y equipo</button>
+  <button data-modulo="actividades">Actividades</button>
+  <button data-modulo="reportes">Reportes</button>
+  <button data-modulo="config">Configuración</button>
+</nav>
 
-  <main>
-    <!-- PANEL -->
-    <section id="section-panel" class="activo">
-      <h2>Panel general</h2>
-      <div class="panel-grid">
-        <div class="tarjeta">
-          <h3>Animales registrados</h3>
-          <div id="panel-total-animales">0</div>
-        </div>
-        <div class="tarjeta">
-          <h3>Potreros</h3>
-          <div id="panel-total-potreros">0</div>
-        </div>
-        <div class="tarjeta">
-          <h3>Corrales móviles</h3>
-          <div id="panel-total-corrales">0</div>
-        </div>
-        <div class="tarjeta">
-          <h3>Eventos de sanidad</h3>
-          <div id="panel-total-sanidad">0</div>
-        </div>
-        <div class="tarjeta">
-          <h3>Pesos registrados</h3>
-          <div id="panel-total-pesos">0</div>
-        </div>
-        <div class="tarjeta">
-          <h3>Clima (último registro)</h3>
-          <div id="panel-clima-resumen">
-            <span class="ayuda">Sin datos de clima.</span>
-          </div>
-        </div>
-      </div>
-      <p class="ayuda">
-        Capture la información en cada módulo. Aquí verá los totales y un resumen rápido.
-      </p>
-    </section>
-
-    <!-- ANIMALES -->
-    <section id="section-animales">
-      <h2>Animales</h2>
-      <form id="form-animal">
-        <div class="fila">
-          <div class="campo">
-            <label for="animal-arete-oficial">Arete oficial *</label>
-            <input id="animal-arete-oficial" required />
-          </div>
-          <div class="campo">
-            <label for="animal-arete-rancho">Arete rancho</label>
-            <input id="animal-arete-rancho" />
-          </div>
-          <div class="campo">
-            <label for="animal-sexo">Sexo *</label>
-            <select id="animal-sexo" required>
-              <option value="">Seleccione</option>
-              <option value="Hembra">Hembra</option>
-              <option value="Macho">Macho</option>
-            </select>
-          </div>
-          <div class="campo">
-            <label for="animal-clasificacion">Clasificación *</label>
-            <select id="animal-clasificacion" required>
-              <option value="">Seleccione</option>
-              <option value="Vientre en desarrollo">Vientre en desarrollo</option>
-              <option value="Vientre en empadre">Vientre en empadre</option>
-              <option value="Vientre en gestación">Vientre en gestación</option>
-              <option value="Vientre en parición">Vientre en parición</option>
-              <option value="Vientre amamantando">Vientre amamantando</option>
-              <option value="Vientre vacío">Vientre vacío</option>
-              <option value="Cría en desarrollo">Cría en desarrollo</option>
-              <option value="Ganado estabulado">Ganado estabulado</option>
-              <option value="Toro">Toro</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="fila">
-          <div class="campo">
-            <label for="animal-raza-prep">Raza preponderante *</label>
-            <select id="animal-raza-prep" required></select>
-          </div>
-          <div class="campo">
-            <label for="animal-mezcla1">Mezcla 1</label>
-            <select id="animal-mezcla1"></select>
-          </div>
-          <div class="campo">
-            <label for="animal-mezcla2">Mezcla 2</label>
-            <select id="animal-mezcla2"></select>
-          </div>
-          <div class="campo">
-            <label for="animal-fecha-nac">Fecha nacimiento</label>
-            <input id="animal-fecha-nac" type="date" />
-          </div>
-        </div>
-
-        <div class="fila">
-          <div class="campo">
-            <label for="animal-padre">Padre (arete)</label>
-            <input id="animal-padre" />
-          </div>
-          <div class="campo">
-            <label for="animal-madre">Madre (arete)</label>
-            <input id="animal-madre" />
-          </div>
-        </div>
-
-        <div class="fila">
-          <div class="campo" style="flex: 1 1 100%">
-            <label for="animal-observaciones">Observaciones</label>
-            <textarea id="animal-observaciones"></textarea>
-          </div>
-        </div>
-
-        <button type="submit" class="primario">Guardar animal</button>
-        <button type="button" class="secundario" id="btn-ver-animales">
-          Ver lista
-        </button>
-        <p class="ayuda">
-          * El arete oficial no debe repetirse. Si se repite, se actualiza la información del animal.
-        </p>
-      </form>
-
-      <div id="lista-animales"></div>
-    </section>
-
-    <!-- PESOS -->
-    <section id="section-pesos">
-      <h2>Pesos</h2>
-      <form id="form-peso">
-        <div class="fila">
-          <div class="campo">
-            <label for="peso-arete">Arete oficial *</label>
-            <input id="peso-arete" required />
-          </div>
-          <div class="campo">
-            <label for="peso-fecha">Fecha *</label>
-            <input id="peso-fecha" type="date" required />
-          </div>
-          <div class="campo">
-            <label for="peso-kg">Peso (kg) *</label>
-            <input id="peso-kg" type="number" step="0.1" required />
-          </div>
-          <div class="campo">
-            <label for="peso-potrero">Potrero</label>
-            <select id="peso-potrero"></select>
-          </div>
-        </div>
-        <div class="fila">
-          <div class="campo" style="flex: 1 1 100%">
-            <label for="peso-observaciones">Observaciones</label>
-            <textarea id="peso-observaciones"></textarea>
-          </div>
-        </div>
-        <button type="submit" class="primario">Guardar peso</button>
-        <button type="button" class="secundario" id="btn-ver-pesos">
-          Ver pesos recientes
-        </button>
-      </form>
-
-      <div id="lista-pesos"></div>
-    </section>
-
-    <!-- REPRO / PARTOS -->
-    <section id="section-repro">
-      <h2>Reproducción y Partos</h2>
-      <form id="form-repro">
-        <div class="fila">
-          <div class="campo">
-            <label for="repro-tipo">Tipo de evento *</label>
-            <select id="repro-tipo" required>
-              <option value="">Seleccione</option>
-              <option value="Servicio/Empadre">Servicio / Empadre</option>
-              <option value="Parto">Parto</option>
-            </select>
-          </div>
-          <div class="campo">
-            <label for="repro-arete-madre">Arete vaca *</label>
-            <input id="repro-arete-madre" required />
-          </div>
-          <div class="campo">
-            <label for="repro-arete-toro">Arete toro</label>
-            <input id="repro-arete-toro" />
-          </div>
-          <div class="campo">
-            <label for="repro-fecha">Fecha *</label>
-            <input id="repro-fecha" type="date" required />
-          </div>
-        </div>
-
-        <div class="fila">
-          <div class="campo">
-            <label for="repro-sexo-cria">Sexo cría</label>
-            <select id="repro-sexo-cria">
-              <option value="">No aplica / No registrado</option>
-              <option value="Hembra">Hembra</option>
-              <option value="Macho">Macho</option>
-            </select>
-          </div>
-          <div class="campo">
-            <label for="repro-peso-cria">Peso cría (kg)</label>
-            <input id="repro-peso-cria" type="number" step="0.1" />
-          </div>
-        </div>
-
-        <div class="fila">
-          <div class="campo" style="flex: 1 1 100%">
-            <label for="repro-observaciones">Observaciones / problemas de parto</label>
-            <textarea id="repro-observaciones"></textarea>
-          </div>
-        </div>
-
-        <button type="submit" class="primario">Guardar evento</button>
-        <button type="button" class="secundario" id="btn-ver-repro">
-          Ver últimos eventos
-        </button>
-      </form>
-
-      <div id="lista-repro"></div>
-    </section>
-
-    <!-- SANIDAD -->
-    <section id="section-sanidad">
-      <h2>Sanidad</h2>
-
-      <h3>Vacunación preventiva</h3>
-      <form id="form-vacuna">
-        <div class="fila">
-          <div class="campo">
-            <label for="vacuna-grupo">Grupo / categoría</label>
-            <select id="vacuna-grupo">
-              <option value="">Seleccione</option>
-              <option>Vientre en desarrollo</option>
-              <option>Vientre en empadre</option>
-              <option>Vientre en gestación</option>
-              <option>Vientre en parición</option>
-              <option>Vientre amamantando</option>
-              <option>Vientre vacío</option>
-              <option>Cría en desarrollo</option>
-              <option>Ganado estabulado</option>
-              <option>Toro</option>
-            </select>
-          </div>
-          <div class="campo">
-            <label for="vacuna-arete">Arete oficial (opcional)</label>
-            <input id="vacuna-arete" />
-          </div>
-          <div class="campo">
-            <label for="vacuna-fecha">Fecha *</label>
-            <input id="vacuna-fecha" type="date" required />
-          </div>
-        </div>
-        <div class="fila">
-          <div class="campo">
-            <label for="vacuna-nombre">Nombre de la vacuna *</label>
-            <input id="vacuna-nombre" required />
-          </div>
-          <div class="campo">
-            <label for="vacuna-esquema">Esquema</label>
-            <select id="vacuna-esquema">
-              <option value="">Seleccione</option>
-              <option>Única</option>
-              <option>1ª dosis</option>
-              <option>2ª dosis</option>
-              <option>Refuerzo anual</option>
-              <option>Refuerzo semestral</option>
-            </select>
-          </div>
-        </div>
-        <div class="fila">
-          <div class="campo">
-            <label for="vacuna-enfermedades">Enfermedades que previene</label>
-            <textarea id="vacuna-enfermedades" placeholder="Ej. clostridiales, brucelosis, IBR-BVD"></textarea>
-          </div>
-          <div class="campo">
-            <label for="vacuna-dosis">Dosis / vía</label>
-            <textarea id="vacuna-dosis" placeholder="Ej. 5 ml IM, 2 ml SC"></textarea>
-          </div>
-        </div>
-        <div class="fila">
-          <div class="campo" style="flex:1 1 100%">
-            <label for="vacuna-observaciones">Observaciones</label>
-            <textarea id="vacuna-observaciones"></textarea>
-          </div>
-        </div>
-        <button type="submit" class="primario">Guardar vacunación</button>
-        <button type="button" class="secundario" id="btn-ver-vacunas">
-          Ver vacunaciones
-        </button>
-      </form>
-      <div id="lista-vacunas"></div>
-
-      <h3>Enfermedades y tratamientos (correctivo)</h3>
-      <form id="form-sanidad">
-        <div class="fila">
-          <div class="campo">
-            <label for="sanidad-arete">Arete oficial *</label>
-            <input id="sanidad-arete" required />
-          </div>
-          <div class="campo">
-            <label for="sanidad-fecha">Fecha *</label>
-            <input id="sanidad-fecha" type="date" required />
-          </div>
-          <div class="campo">
-            <label for="sanidad-temp">Temperatura (°C)</label>
-            <input id="sanidad-temp" type="number" step="0.1" />
-          </div>
-          <div class="campo">
-            <label for="sanidad-dx">Diagnóstico *</label>
-            <select id="sanidad-dx" required>
-              <option value="">Seleccione</option>
-              <option>Anaplasmosis</option>
-              <option>Brucelosis</option>
-              <option>Tuberculosis</option>
-              <option>Fiebre aftosa</option>
-              <option>Gusano barrenador</option>
-              <option>Diarrea viral bovina</option>
-              <option>Timpanismo</option>
-              <option>Acidez</option>
-              <option>Neumonía bovina</option>
-              <option>Mastitis</option>
-              <option>Rinotraqueitis infecciosa viral</option>
-              <option>Piroplasmosis</option>
-              <option>Botulismo / Clostridios</option>
-              <option>Dermatofitosis</option>
-              <option>Movilidad / cojeras</option>
-              <option>Otros</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="fila">
-          <div class="campo" style="flex: 1 1 100%">
-            <label for="sanidad-tratamiento">Tratamiento</label>
-            <textarea id="sanidad-tratamiento"></textarea>
-          </div>
-        </div>
-
-        <button type="submit" class="primario">Guardar evento</button>
-        <button type="button" class="secundario" id="btn-ver-sanidad">
-          Ver últimos eventos
-        </button>
-      </form>
-
-      <div id="lista-sanidad"></div>
-    </section>
-
-    <!-- POTREROS (CON GPS) -->
-    <section id="section-potreros">
-      <h2>Potreros (con GPS)</h2>
-      <form id="form-potrero">
-        <div class="fila">
-          <div class="campo">
-            <label for="potrero-nombre">Nombre del potrero *</label>
-            <input id="potrero-nombre" required />
-          </div>
-          <div class="campo" style="flex: 1 1 100%">
-            <label for="potrero-desc">Descripción / tipo de pasto</label>
-            <textarea id="potrero-desc"></textarea>
-          </div>
-        </div>
-        <div class="fila">
-          <div class="campo">
-            <label for="potrero-lat">Latitud (GPS)</label>
-            <input id="potrero-lat" readonly />
-          </div>
-          <div class="campo">
-            <label for="potrero-lng">Longitud (GPS)</label>
-            <input id="potrero-lng" readonly />
-          </div>
-        </div>
-        <div class="fila">
-          <button type="button" class="secundario" id="btn-potrero-gps">
-            Tomar ubicación (GPS)
-          </button>
-          <button type="submit" class="primario">
-            Guardar potrero
-          </button>
-        </div>
-        <p class="ayuda">
-          Párese dentro del potrero (o en un punto representativo), toque
-          <strong>Tomar ubicación (GPS)</strong> y luego guarde.
-        </p>
-      </form>
-
-      <div id="lista-potreros"></div>
-    </section>
-
-    <!-- CORRALES (CON GPS) -->
-    <section id="section-corrales">
-      <h2>Corrales móviles (con GPS)</h2>
-      <form id="form-corral">
-        <div class="fila">
-          <div class="campo">
-            <label for="corral-potrero">Potrero *</label>
-            <select id="corral-potrero" required></select>
-          </div>
-          <div class="campo">
-            <label for="corral-nombre">Nombre del corral *</label>
-            <input id="corral-nombre" required />
-          </div>
-        </div>
-        <div class="fila">
-          <div class="campo">
-            <label for="corral-animales">Número de animales *</label>
-            <input id="corral-animales" type="number" min="1" required />
-          </div>
-          <div class="campo">
-            <label for="corral-densidad">Densidad (animales/ha) *</label>
-            <select id="corral-densidad" required>
-              <option value="">Seleccione</option>
-              <option value="500">500</option>
-              <option value="1000">1000</option>
-              <option value="1500">1500</option>
-              <option value="2000">2000</option>
-              <option value="3000">3000</option>
-              <option value="5000">5000</option>
-            </select>
-          </div>
-          <div class="campo">
-            <label for="corral-area">Área aproximada (m²)</label>
-            <input id="corral-area" readonly />
-          </div>
-        </div>
-        <div class="fila">
-          <div class="campo">
-            <label for="corral-lat">Latitud (GPS)</label>
-            <input id="corral-lat" readonly />
-          </div>
-          <div class="campo">
-            <label for="corral-lng">Longitud (GPS)</label>
-            <input id="corral-lng" readonly />
-          </div>
-        </div>
-        <div class="fila">
-          <button type="button" class="secundario" id="btn-corral-gps">
-            Tomar ubicación (GPS)
-          </button>
-          <button type="submit" class="primario">Guardar corral</button>
-        </div>
-        <p class="ayuda">
-          Párese dentro del corral móvil ya armado, toque
-          <strong>Tomar ubicación (GPS)</strong> y luego guarde.
-        </p>
-      </form>
-
-      <div id="lista-corrales"></div>
-    </section>
-
-    <!-- CLIMA -->
-    <section id="section-clima">
-      <h2>Clima del rancho</h2>
-      <form id="form-clima">
-        <div class="fila">
-          <div class="campo">
-            <label for="clima-fecha">Fecha *</label>
-            <input id="clima-fecha" type="date" required />
-          </div>
-          <div class="campo">
-            <label for="clima-tmax">Temperatura máxima (°C)</label>
-            <input id="clima-tmax" type="number" step="0.1" />
-          </div>
-          <div class="campo">
-            <label for="clima-tmin">Temperatura mínima (°C)</label>
-            <input id="clima-tmin" type="number" step="0.1" />
-          </div>
-        </div>
-        <div class="fila">
-          <div class="campo">
-            <label for="clima-lluvia">Lluvia (mm)</label>
-            <input id="clima-lluvia" type="number" step="0.1" />
-          </div>
-          <div class="campo">
-            <label for="clima-condicion">Condición del día</label>
-            <select id="clima-condicion">
-              <option value="">Seleccione</option>
-              <option>Soleado</option>
-              <option>Medio nublado</option>
-              <option>Nublado</option>
-              <option>Lluvioso</option>
-            </select>
-          </div>
-        </div>
-        <button type="submit" class="primario">Guardar clima</button>
-        <button type="button" class="secundario" id="btn-ver-clima">
-          Ver últimos registros
-        </button>
-      </form>
-      <div id="lista-clima"></div>
-    </section>
-
-    <!-- CONTABILIDAD (SIMPLE, FLUJOS) -->
-    <section id="section-conta">
-      <h2>Contabilidad (flujos básicos)</h2>
-      <form id="form-conta">
-        <div class="fila">
-          <div class="campo">
-            <label for="conta-fecha">Fecha *</label>
-            <input id="conta-fecha" type="date" required />
-          </div>
-          <div class="campo">
-            <label for="conta-tipo">Tipo *</label>
-            <select id="conta-tipo" required>
-              <option value="">Seleccione</option>
-              <option value="Ingreso">Ingreso</option>
-              <option value="Gasto">Gasto</option>
-            </select>
-          </div>
-          <div class="campo">
-            <label for="conta-cuenta">Cuenta / código</label>
-            <input id="conta-cuenta" placeholder="Ej. I-01-001, G-01-001" />
-          </div>
-        </div>
-        <div class="fila">
-          <div class="campo">
-            <label for="conta-monto">Monto *</label>
-            <input id="conta-monto" type="number" step="0.01" required />
-          </div>
-          <div class="campo" style="flex: 1 1 100%">
-            <label for="conta-concepto">Concepto</label>
-            <textarea id="conta-concepto"></textarea>
-          </div>
-        </div>
-        <button type="submit" class="primario">Guardar movimiento</button>
-        <button type="button" class="secundario" id="btn-ver-conta">
-          Ver últimos movimientos
-        </button>
-      </form>
-      <div id="lista-conta"></div>
-    </section>
-
-    <!-- SEGURIDAD -->
-    <section id="section-seguridad">
-      <h2>Seguridad y visitas al rancho</h2>
-
-      <h3>Registro de visitas</h3>
-      <form id="form-visita">
-        <div class="fila">
-          <div class="campo">
-            <label for="visita-fecha">Fecha *</label>
-            <input id="visita-fecha" type="date" required />
-          </div>
-          <div class="campo">
-            <label for="visita-hora-llegada">Hora llegada *</label>
-            <input id="visita-hora-llegada" type="time" required />
-          </div>
-          <div class="campo">
-            <label for="visita-hora-salida">Hora salida</label>
-            <input id="visita-hora-salida" type="time" />
-          </div>
-        </div>
-        <div class="fila">
-          <div class="campo">
-            <label for="visita-nombre">Nombre visitante *</label>
-            <input id="visita-nombre" required />
-          </div>
-          <div class="campo">
-            <label for="visita-empresa">Empresa / institución</label>
-            <input id="visita-empresa" />
-          </div>
-          <div class="campo">
-            <label for="visita-personas">Nº de personas</label>
-            <input id="visita-personas" type="number" min="1" />
-          </div>
-        </div>
-        <div class="fila">
-          <div class="campo">
-            <label for="visita-motivo">Motivo de la visita</label>
-            <select id="visita-motivo">
-              <option value="">Seleccione</option>
-              <option>Proveedor</option>
-              <option>Cliente / comprador</option>
-              <option>Autoridad / gobierno</option>
-              <option>Servicio / mantenimiento</option>
-              <option>Familia / amigos</option>
-              <option>Otros</option>
-            </select>
-          </div>
-          <div class="campo">
-            <label for="visita-a-quien">A quién buscan</label>
-            <input id="visita-a-quien" placeholder="Dueño, administrador, vaquero, etc." />
-          </div>
-        </div>
-        <div class="fila">
-          <div class="campo">
-            <label for="visita-vehiculo">Vehículo (tipo/marca/color)</label>
-            <input id="visita-vehiculo" />
-          </div>
-          <div class="campo">
-            <label for="visita-placas">Placas</label>
-            <input id="visita-placas" />
-          </div>
-        </div>
-        <div class="fila">
-          <div class="campo" style="flex:1 1 100%">
-            <label for="visita-observaciones">Observaciones</label>
-            <textarea id="visita-observaciones"></textarea>
-          </div>
-        </div>
-        <button type="submit" class="primario">Guardar visita</button>
-        <button type="button" class="secundario" id="btn-ver-visitas">
-          Ver visitas
-        </button>
-      </form>
-      <div id="lista-visitas"></div>
-
-      <h3>Bitácora diaria del velador</h3>
-      <form id="form-bitacora">
-        <div class="fila">
-          <div class="campo">
-            <label for="bitacora-fecha">Fecha *</label>
-            <input id="bitacora-fecha" type="date" required />
-          </div>
-          <div class="campo">
-            <label for="bitacora-hora">Hora *</label>
-            <input id="bitacora-hora" type="time" required />
-          </div>
-        </div>
-        <div class="fila">
-          <div class="campo" style="flex:1 1 100%">
-            <label for="bitacora-descripcion">Descripción de hechos *</label>
-            <textarea id="bitacora-descripcion" required></textarea>
-          </div>
-        </div>
-        <div class="fila">
-          <div class="campo" style="flex:1 1 100%">
-            <label for="bitacora-observaciones">Observaciones / comentarios</label>
-            <textarea id="bitacora-observaciones"></textarea>
-          </div>
-        </div>
-        <button type="submit" class="primario">Guardar registro</button>
-        <button type="button" class="secundario" id="btn-ver-bitacora">
-          Ver registros
-        </button>
-      </form>
-      <div id="lista-bitacora"></div>
-    </section>
-
-    <!-- REPORTES (RESUMEN SENCILLO) -->
-    <section id="section-reportes">
-      <h2>Reportes (resumen rápido)</h2>
+<main>
+  <!-- PANEL -->
+  <section id="mod-panel" class="modulo activo">
+    <h2>Panel general</h2>
+    <p>Resumen rápido del rancho con base en los registros capturados.</p>
+    <div class="tarjetas-grid">
       <div class="tarjeta">
-        <h3>Animales por clasificación</h3>
-        <div id="reporte-animales-clasificacion"></div>
+        <strong>Animales registrados</strong>
+        <span id="pnl-animales">0</span>
       </div>
       <div class="tarjeta">
-        <h3>Ingresos vs Gastos (flujo simple)</h3>
-        <div id="reporte-conta-resumen"></div>
+        <strong>Pesajes registrados</strong>
+        <span id="pnl-pesos">0</span>
       </div>
       <div class="tarjeta">
-        <h3>Visitas registradas (últimos 30 días)</h3>
-        <div id="reporte-visitas"></div>
+        <strong>Crías nacidas</strong>
+        <span id="pnl-partos">0</span>
       </div>
-      <p class="ayuda">
-        Para reportes más detallados se puede exportar la información a Excel (en una versión futura).
-      </p>
-    </section>
+      <div class="tarjeta">
+        <strong>Eventos de sanidad</strong>
+        <span id="pnl-sanidad">0</span>
+      </div>
+      <div class="tarjeta">
+        <strong>Visitas registradas</strong>
+        <span id="pnl-visitas">0</span>
+      </div>
+      <div class="tarjeta">
+        <strong>Registros de velador</strong>
+        <span id="pnl-bitacora">0</span>
+      </div>
+      <div class="tarjeta">
+        <strong>Último clima</strong>
+        <span id="pnl-clima">Sin datos</span>
+      </div>
+      <div class="tarjeta">
+        <strong>Ingresos - Gastos (simple)</strong>
+        <span id="pnl-conta">0 / 0</span>
+      </div>
+    </div>
+    <p class="nota">Esto es un resumen simple con base en la información capturada en los módulos.</p>
+  </section>
 
-    <!-- ACTIVIDADES -->
-    <section id="section-actividades">
-      <h2>Actividades por capítulo</h2>
-      <p class="ayuda">
-        Módulo informativo de actividades típicas. En futuras versiones se podrán personalizar por vaquero y periodicidad.
-      </p>
+  <!-- ANIMALES -->
+  <section id="mod-animales" class="modulo">
+    <h2>Animales</h2>
+    <p>Altas, bajas y movimientos de animales.</p>
+    <form id="form-animales">
+      <div class="fila-dos">
+        <div>
+          <label>Arete oficial</label>
+          <input name="areteOficial" required />
+        </div>
+        <div>
+          <label>Arete rancho</label>
+          <input name="areteRancho" />
+        </div>
+      </div>
+
+      <div class="fila-tres">
+        <div>
+          <label>Sexo</label>
+          <select name="sexo">
+            <option value="">Selecciona…</option>
+            <option value="Hembra">Hembra</option>
+            <option value="Macho">Macho</option>
+          </select>
+        </div>
+        <div>
+          <label>Raza preponderante</label>
+          <select name="raza">
+            <option value="">Selecciona…</option>
+            <option>Charolais</option>
+            <option>Angus</option>
+            <option>Pardo Suizo</option>
+            <option>Brahman</option>
+            <option>Holstein</option>
+            <option>Santa Gertrudis</option>
+            <option>Limousin</option>
+            <option>Wagyu</option>
+            <option>Akaushi</option>
+            <option>Nelore</option>
+            <option>Brafor</option>
+            <option>Tropicarne</option>
+            <option>Hereford</option>
+            <option>Beefmaster</option>
+            <option>Brangus</option>
+            <option>Otro</option>
+          </select>
+        </div>
+        <div>
+          <label>Mezcla 1 / Mezcla 2 (opcional)</label>
+          <input name="mezclas" placeholder="Ej. Pardo Suizo / Brahman" />
+        </div>
+      </div>
+
+      <div class="fila-dos">
+        <div>
+          <label>Fecha de nacimiento</label>
+          <input type="date" name="fechaNac" />
+        </div>
+        <div>
+          <label>Grupo</label>
+          <select name="grupo">
+            <option value="">Selecciona…</option>
+            <option>Vientre en desarrollo</option>
+            <option>Vientre en empadre</option>
+            <option>Vientre en gestación</option>
+            <option>Vientre en parición</option>
+            <option>Vientre amamantando</option>
+            <option>Vientre vacío</option>
+            <option>Cría en desarrollo</option>
+            <option>Ganado estabulado</option>
+            <option>Toro</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="fila-dos">
+        <div>
+          <label>Propiedad</label>
+          <select name="propiedad">
+            <option value="">Selecciona…</option>
+            <option>Propio</option>
+            <option>Renta</option>
+          </select>
+        </div>
+        <div>
+          <label>Observaciones</label>
+          <input name="obs" />
+        </div>
+      </div>
+
+      <div class="acciones">
+        <button type="submit" class="btn-primario">Guardar animal</button>
+        <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-animales')">Limpiar</button>
+      </div>
+    </form>
+
+    <details>
+      <summary>Actividades sugeridas (Animales)</summary>
       <ul>
-        <li>Animales: registrar altas, bajas y cambios de grupo.</li>
-        <li>Pesos: pesar animales según calendario y revisar ganancias/pérdidas.</li>
-        <li>Potreros/Corrales: diseñar corrales, registrar GPS y densidades de pastoreo.</li>
-        <li>Reproducción/Partos: vigilar gestaciones, partos y estado de crías.</li>
-        <li>Sanidad: aplicar vacunaciones preventivas y registrar enfermedades/tratamientos.</li>
-        <li>Clima: registrar temperaturas, lluvia y condición del día.</li>
-        <li>Contabilidad: registrar ingresos y gastos del rancho.</li>
-        <li>Seguridad: registrar visitas y bitácora diaria del velador.</li>
-        <li>Reportes: revisar indicadores y tomar acciones correctivas.</li>
+        <li>Registro de altas, bajas y movimientos.</li>
+        <li>Asignación de grupo según condición física.</li>
+        <li>Asignación de responsable por registro.</li>
       </ul>
-    </section>
+    </details>
 
-    <!-- CONFIG -->
-    <section id="section-config">
-      <h2>Configuración del rancho</h2>
-      <form id="form-config">
-        <div class="fila">
-          <div class="campo">
-            <label for="config-rancho">Nombre del rancho</label>
-            <input id="config-rancho" />
-          </div>
-          <div class="campo">
-            <label for="config-propietario">Propietario</label>
-            <input id="config-propietario" />
-          </div>
-        </div>
-        <div class="fila">
-          <div class="campo">
-            <label for="config-hectareas">Extensión total (ha)</label>
-            <input id="config-hectareas" type="number" step="0.1" />
-          </div>
-          <div class="campo">
-            <label for="config-agostadero">Ha agostadero</label>
-            <input id="config-agostadero" type="number" step="0.1" />
-          </div>
-          <div class="campo">
-            <label for="config-pastos">Ha de pastos</label>
-            <input id="config-pastos" type="number" step="0.1" />
-          </div>
-        </div>
-        <div class="fila">
-          <div class="campo">
-            <label for="config-capacidad">Capacidad vientres+crías/año</label>
-            <input id="config-capacidad" type="number" />
-          </div>
-          <div class="campo">
-            <label for="config-animales-actuales">Animales actuales</label>
-            <input id="config-animales-actuales" type="number" />
-          </div>
-        </div>
-        <button type="submit" class="primario">Guardar configuración</button>
-      </form>
-      <p class="ayuda">
-        Estos datos se usan como referencia en panel y reportes; no bloquean el funcionamiento de los módulos.
-      </p>
-    </section>
-  </main>
+    <div class="lista" id="lista-animales"></div>
+  </section>
 
-  <script>
-    // ---------------------
-    // Datos en localStorage
-    // ---------------------
-    function cargarDatos() {
-      const crudo = localStorage.getItem("bovinosData");
-      if (!crudo) {
-        return {
-          animales: [],
-          pesos: [],
-          repro: [],
-          sanidadVacunas: [],
-          sanidadEventos: [],
-          potreros: [],
-          corrales: [],
-          clima: [],
-          contabilidad: [],
-          seguridadVisitas: [],
-          seguridadBitacora: [],
-          actividades: [],
-          config: {}
-        };
-      }
-      try {
-        const obj = JSON.parse(crudo);
-        return Object.assign(
-          {
-            animales: [],
-            pesos: [],
-            repro: [],
-            sanidadVacunas: [],
-            sanidadEventos: [],
-            potreros: [],
-            corrales: [],
-            clima: [],
-            contabilidad: [],
-            seguridadVisitas: [],
-            seguridadBitacora: [],
-            actividades: [],
-            config: {}
-          },
-          obj
-        );
-      } catch (e) {
-        console.error("Error al leer localStorage:", e);
-        return {
-          animales: [],
-          pesos: [],
-          repro: [],
-          sanidadVacunas: [],
-          sanidadEventos: [],
-          potreros: [],
-          corrales: [],
-          clima: [],
-          contabilidad: [],
-          seguridadVisitas: [],
-          seguridadBitacora: [],
-          actividades: [],
-          config: {}
-        };
-      }
+  <!-- PESOS -->
+  <section id="mod-pesos" class="modulo">
+    <h2>Pesos</h2>
+    <p>Registro de pesajes y revisión de ganancias / pérdidas.</p>
+    <form id="form-pesos">
+      <div class="fila-dos">
+        <div>
+          <label>Arete oficial</label>
+          <input name="areteOficial" required />
+        </div>
+        <div>
+          <label>Fecha de pesaje</label>
+          <input type="date" name="fecha" required />
+        </div>
+      </div>
+      <div class="fila-dos">
+        <div>
+          <label>Peso (kg)</label>
+          <input type="number" step="0.1" name="peso" required />
+        </div>
+        <div>
+          <label>Potrero / Corral</label>
+          <input name="lote" />
+        </div>
+      </div>
+      <label>Observaciones</label>
+      <textarea name="obs"></textarea>
+
+      <div class="acciones">
+        <button type="submit" class="btn-primario">Guardar pesaje</button>
+        <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-pesos')">Limpiar</button>
+      </div>
+    </form>
+
+    <details>
+      <summary>Actividades sugeridas (Pesos)</summary>
+      <ul>
+        <li>Pesaje según periodicidad establecida.</li>
+        <li>Revisión de ganancias y pérdidas de peso.</li>
+        <li>Reasignación de grupos según condición corporal.</li>
+      </ul>
+    </details>
+
+    <div class="lista" id="lista-pesos"></div>
+  </section>
+
+  <!-- POTREROS -->
+  <section id="mod-potreros" class="modulo">
+    <h2>Potreros</h2>
+    <p>Registro de potreros y parámetros de pastoreo.</p>
+    <form id="form-potreros">
+      <label>Nombre del potrero</label>
+      <input name="nombre" required />
+
+      <div class="fila-dos">
+        <div>
+          <label>Área (hectáreas)</label>
+          <input type="number" step="0.01" name="area" />
+        </div>
+        <div>
+          <label>Densidad objetivo (animales/ha)</label>
+          <select name="densidad">
+            <option value="">Selecciona…</option>
+            <option>500</option>
+            <option>1000</option>
+            <option>1500</option>
+            <option>2000</option>
+            <option>3000</option>
+            <option>5000</option>
+          </select>
+        </div>
+      </div>
+
+      <label>Descripción / notas</label>
+      <textarea name="desc"></textarea>
+
+      <div class="acciones">
+        <button type="submit" class="btn-primario">Guardar potrero</button>
+        <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-potreros')">Limpiar</button>
+      </div>
+    </form>
+
+    <details>
+      <summary>Actividades sugeridas (Potreros y corrales)</summary>
+      <ul>
+        <li>Identificar potreros disponibles para pastoreo.</li>
+        <li>Definir diseños y áreas de corrales móviles.</li>
+        <li>Registrar uso y recuperación de cada potrero.</li>
+      </ul>
+    </details>
+
+    <div class="lista" id="lista-potreros"></div>
+  </section>
+
+  <!-- CORRALES MÓVILES -->
+  <section id="mod-corrales" class="modulo">
+    <h2>Corrales móviles</h2>
+    <p>Uso de corrales móviles por potrero, grupo y fechas.</p>
+    <form id="form-corrales">
+      <div class="fila-dos">
+        <div>
+          <label>Nombre del corral</label>
+          <input name="nombre" required />
+        </div>
+        <div>
+          <label>Potrero asociado</label>
+          <input name="potrero" />
+        </div>
+      </div>
+
+      <div class="fila-tres">
+        <div>
+          <label>Área aproximada (m²)</label>
+          <input type="number" step="1" name="area" />
+        </div>
+        <div>
+          <label>Fecha / hora entrada</label>
+          <input type="datetime-local" name="entrada" />
+        </div>
+        <div>
+          <label>Fecha / hora salida</label>
+          <input type="datetime-local" name="salida" />
+        </div>
+      </div>
+
+      <label>Grupo de animales (ej. Vientres en empadre)</label>
+      <input name="grupo" />
+
+      <label>Observaciones</label>
+      <textarea name="obs"></textarea>
+
+      <div class="acciones">
+        <button type="submit" class="btn-primario">Guardar corral</button>
+        <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-corrales')">Limpiar</button>
+      </div>
+    </form>
+
+    <div class="lista" id="lista-corrales"></div>
+  </section>
+
+  <!-- REPRODUCCIÓN Y PARTOS -->
+  <section id="mod-repro" class="modulo">
+    <h2>Reproducción y partos</h2>
+    <p>Seguimiento de empadres, gestaciones y partos.</p>
+    <form id="form-repro">
+      <div class="fila-dos">
+        <div>
+          <label>Arete vientre</label>
+          <input name="vientre" required />
+        </div>
+        <div>
+          <label>Arete / nombre del toro</label>
+          <input name="toro" />
+        </div>
+      </div>
+
+      <div class="fila-tres">
+        <div>
+          <label>Fecha de empadre</label>
+          <input type="date" name="fechaEmp" />
+        </div>
+        <div>
+          <label>Fecha probable de parto</label>
+          <input type="date" name="fechaProb" />
+        </div>
+        <div>
+          <label>Fecha de parto</label>
+          <input type="date" name="fechaParto" />
+        </div>
+      </div>
+
+      <div class="fila-tres">
+        <div>
+          <label>Sexo de la cría</label>
+          <select name="sexoCria">
+            <option value="">Selecciona…</option>
+            <option>Hembra</option>
+            <option>Macho</option>
+          </select>
+        </div>
+        <div>
+          <label>Peso al nacer (kg)</label>
+          <input type="number" step="0.1" name="pesoCria" />
+        </div>
+        <div>
+          <label>Problemas en parto</label>
+          <select name="problemas">
+            <option value="">No especificado</option>
+            <option>No</option>
+            <option>Sí</option>
+          </select>
+        </div>
+      </div>
+
+      <label>Descripción de problemas / observaciones</label>
+      <textarea name="obs"></textarea>
+
+      <div class="acciones">
+        <button type="submit" class="btn-primario">Guardar evento</button>
+        <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-repro')">Limpiar</button>
+      </div>
+    </form>
+
+    <details>
+      <summary>Actividades sugeridas (Reproducción y partos)</summary>
+      <ul>
+        <li>Vigilancia de vientres en gestación.</li>
+        <li>Atención al parto y a la cría (calostros, primeras horas).</li>
+        <li>Registro de problemas y seguimiento.</li>
+      </ul>
+    </details>
+
+    <div class="lista" id="lista-repro"></div>
+  </section>
+
+  <!-- SANIDAD -->
+  <section id="mod-sanidad" class="modulo">
+    <h2>Sanidad</h2>
+    <p>Eventos sanitarios: enfermedades, tratamientos y vacunación.</p>
+    <form id="form-sanidad">
+      <div class="fila-dos">
+        <div>
+          <label>Arete oficial</label>
+          <input name="arete" />
+        </div>
+        <div>
+          <label>Fecha</label>
+          <input type="date" name="fecha" />
+        </div>
+      </div>
+
+      <div class="fila-tres">
+        <div>
+          <label>Tipo de evento</label>
+          <select name="tipo">
+            <option value="">Selecciona…</option>
+            <option>Preventivo (vacuna)</option>
+            <option>Correctivo (enfermedad)</option>
+          </select>
+        </div>
+        <div>
+          <label>Enfermedad / motivo</label>
+          <input name="enfermedad" placeholder="Ej. Anaplasmosis, Brucelosis…" />
+        </div>
+        <div>
+          <label>Temperatura (°C)</label>
+          <input type="number" step="0.1" name="temp" />
+        </div>
+      </div>
+
+      <label>Tratamiento / vacuna aplicada</label>
+      <input name="tratamiento" />
+
+      <label>Observaciones</label>
+      <textarea name="obs"></textarea>
+
+      <div class="acciones">
+        <button type="submit" class="btn-primario">Guardar sanidad</button>
+        <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-sanidad')">Limpiar</button>
+      </div>
+    </form>
+
+    <details>
+      <summary>Programa de vacunación (plantilla simple)</summary>
+      <p class="nota">Aquí se puede registrar el programa anual de vacunación y fechas clave.</p>
+    </details>
+
+    <div class="lista" id="lista-sanidad"></div>
+  </section>
+
+  <!-- CLIMA -->
+  <section id="mod-clima" class="modulo">
+    <h2>Clima</h2>
+    <p>Registro diario de clima del rancho.</p>
+    <form id="form-clima">
+      <div class="fila-tres">
+        <div>
+          <label>Fecha</label>
+          <input type="date" name="fecha" />
+        </div>
+        <div>
+          <label>Temperatura mínima (°C)</label>
+          <input type="number" step="0.1" name="tmin" />
+        </div>
+        <div>
+          <label>Temperatura máxima (°C)</label>
+          <input type="number" step="0.1" name="tmax" />
+        </div>
+      </div>
+
+      <div class="fila-dos">
+        <div>
+          <label>Condición del día</label>
+          <select name="cond">
+            <option value="">Selecciona…</option>
+            <option>Soleado</option>
+            <option>Medio nublado</option>
+            <option>Nublado</option>
+            <option>Lluvia ligera</option>
+            <option>Lluvia fuerte</option>
+          </select>
+        </div>
+        <div>
+          <label>Precipitación (mm)</label>
+          <input type="number" step="0.1" name="lluvia" />
+        </div>
+      </div>
+
+      <label>Observaciones</label>
+      <textarea name="obs"></textarea>
+
+      <div class="acciones">
+        <button type="submit" class="btn-primario">Guardar clima</button>
+        <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-clima')">Limpiar</button>
+      </div>
+    </form>
+
+    <div class="lista" id="lista-clima"></div>
+  </section>
+
+  <!-- CONTABILIDAD -->
+  <section id="mod-conta" class="modulo">
+    <h2>Contabilidad (flujos simples)</h2>
+    <p>Registro básico de ingresos y gastos del rancho.</p>
+    <form id="form-conta">
+      <div class="fila-tres">
+        <div>
+          <label>Fecha</label>
+          <input type="date" name="fecha" />
+        </div>
+        <div>
+          <label>Tipo</label>
+          <select name="tipo">
+            <option value="">Selecciona…</option>
+            <option>Ingreso</option>
+            <option>Gasto</option>
+          </select>
+        </div>
+        <div>
+          <label>Monto</label>
+          <input type="number" step="0.01" name="monto" />
+        </div>
+      </div>
+
+      <label>Cuenta / concepto</label>
+      <input name="cuenta" placeholder="Ej. Ventas vientres, Suplementos, Mano de obra…" />
+
+      <label>Descripción</label>
+      <textarea name="desc"></textarea>
+
+      <div class="acciones">
+        <button type="submit" class="btn-primario">Guardar movimiento</button>
+        <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-conta')">Limpiar</button>
+      </div>
+    </form>
+
+    <div class="lista" id="lista-conta"></div>
+  </section>
+
+  <!-- SEGURIDAD Y VISITAS -->
+  <section id="mod-seguridad" class="modulo">
+    <h2>Seguridad y visitas</h2>
+    <p>Registro de visitas, vehículos y bitácora de veladores.</p>
+
+    <h3>Registro de visitantes</h3>
+    <form id="form-visitas">
+      <div class="fila-tres">
+        <div>
+          <label>Fecha</label>
+          <input type="date" name="fecha" />
+        </div>
+        <div>
+          <label>Hora llegada</label>
+          <input type="time" name="horaLlegada" />
+        </div>
+        <div>
+          <label>Hora salida</label>
+          <input type="time" name="horaSalida" />
+        </div>
+      </div>
+
+      <div class="fila-dos">
+        <div>
+          <label>Nombre del visitante / grupo</label>
+          <input name="nombre" />
+        </div>
+        <div>
+          <label>Asunto / a quién busca</label>
+          <input name="asunto" />
+        </div>
+      </div>
+
+      <div class="fila-dos">
+        <div>
+          <label>Vehículo</label>
+          <input name="vehiculo" placeholder="Tipo de vehículo" />
+        </div>
+        <div>
+          <label>Placas</label>
+          <input name="placas" />
+        </div>
+      </div>
+
+      <label>Observaciones</label>
+      <textarea name="obs"></textarea>
+
+      <div class="acciones">
+        <button type="submit" class="btn-primario">Guardar visita</button>
+        <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-visitas')">Limpiar</button>
+      </div>
+    </form>
+
+    <h3>Bitácora diaria del velador</h3>
+    <form id="form-bitacora">
+      <div class="fila-dos">
+        <div>
+          <label>Fecha</label>
+          <input type="date" name="fecha" />
+        </div>
+        <div>
+          <label>Hora</label>
+          <input type="time" name="hora" />
+        </div>
+      </div>
+
+      <label>Descripción de hechos / observaciones</label>
+      <textarea name="evento" placeholder="Eventos relevantes del día/noche"></textarea>
+
+      <label>Involucrados (personas, animales, clima, otros)</label>
+      <textarea name="involucrados"></textarea>
+
+      <div class="acciones">
+        <button type="submit" class="btn-primario">Guardar registro</button>
+        <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-bitacora')">Limpiar</button>
+      </div>
+    </form>
+
+    <div class="lista" id="lista-seguridad"></div>
+  </section>
+
+  <!-- MAQUINARIA Y EQUIPO -->
+  <section id="mod-maquinaria" class="modulo">
+    <h2>Maquinaria, equipo y herramientas</h2>
+    <p>Inventario y mantenimiento básico de maquinaria, equipo, instalaciones y herramientas.</p>
+
+    <form id="form-maquinaria">
+      <div class="fila-tres">
+        <div>
+          <label>Tipo de activo</label>
+          <select name="tipo">
+            <option value="">Selecciona…</option>
+            <option>Maquinaria</option>
+            <option>Equipo</option>
+            <option>Herramienta</option>
+            <option>Instalación</option>
+          </select>
+        </div>
+        <div>
+          <label>Cantidad</label>
+          <input type="number" step="1" name="cantidad" />
+        </div>
+        <div>
+          <label>Vida útil (años estimados)</label>
+          <input type="number" step="1" name="vida" />
+        </div>
+      </div>
+
+      <label>Descripción del activo</label>
+      <input name="desc" placeholder="Ej. Tractor mediano 80 HP, Bomba de agua, etc." />
+
+      <div class="fila-dos">
+        <div>
+          <label>Marca / Modelo</label>
+          <input name="marcaModelo" />
+        </div>
+        <div>
+          <label>Número de serie (opcional)</label>
+          <input name="serie" />
+        </div>
+      </div>
+
+      <div class="fila-tres">
+        <div>
+          <label>Fecha de adquisición</label>
+          <input type="date" name="fechaAdq" />
+        </div>
+        <div>
+          <label>Último mantenimiento</label>
+          <input type="date" name="fechaMant" />
+        </div>
+        <div>
+          <label>Costo del último mantenimiento</label>
+          <input type="number" step="0.01" name="costoMant" />
+        </div>
+      </div>
+
+      <label>Descripción del mantenimiento / taller / mecánico</label>
+      <textarea name="detMant"></textarea>
+
+      <div class="acciones">
+        <button type="submit" class="btn-primario">Guardar activo</button>
+        <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-maquinaria')">Limpiar</button>
+      </div>
+    </form>
+
+    <div class="lista" id="lista-maquinaria"></div>
+  </section>
+
+  <!-- ACTIVIDADES -->
+  <section id="mod-actividades" class="modulo">
+    <h2>Actividades por módulo</h2>
+    <p>Guía de trabajo para vaqueros y supervisores, con responsable y periodicidad.</p>
+
+    <form id="form-actividades">
+      <div class="fila-dos">
+        <div>
+          <label>Módulo</label>
+          <select name="modulo">
+            <option value="">Selecciona…</option>
+            <option>Animales</option>
+            <option>Pesos</option>
+            <option>Potreros</option>
+            <option>Corrales móviles</option>
+            <option>Reproducción y partos</option>
+            <option>Sanidad</option>
+            <option>Clima</option>
+            <option>Contabilidad</option>
+            <option>Seguridad y visitas</option>
+            <option>Maquinaria y equipo</option>
+            <option>Reportes</option>
+          </select>
+        </div>
+        <div>
+          <label>Responsable</label>
+          <input name="responsable" placeholder="Nombre del vaquero / supervisor" />
+        </div>
+      </div>
+
+      <label>Descripción de la actividad</label>
+      <textarea name="actividad" placeholder="Ej. Revisar animales enfermos, pesar grupo 1, revisar corrales, etc."></textarea>
+
+      <div class="fila-tres">
+        <div>
+          <label>Periodicidad</label>
+          <select name="periodicidad">
+            <option value="">Selecciona…</option>
+            <option>Diaria</option>
+            <option>Terciada</option>
+            <option>Semanal</option>
+            <option>Quincenal</option>
+            <option>Mensual</option>
+            <option>Trimestral</option>
+            <option>Semestral</option>
+            <option>Anual</option>
+            <option>Esporádica</option>
+            <option>Otra</option>
+          </select>
+        </div>
+        <div>
+          <label>Semáforo objetivo</label>
+          <select name="semaforo">
+            <option value="">Sin color</option>
+            <option>Verde</option>
+            <option>Amarillo</option>
+            <option>Rojo</option>
+          </select>
+        </div>
+        <div>
+          <label>Notas</label>
+          <input name="notas" />
+        </div>
+      </div>
+
+      <div class="acciones">
+        <button type="submit" class="btn-primario">Guardar actividad</button>
+        <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-actividades')">Limpiar</button>
+      </div>
+    </form>
+
+    <div class="lista" id="lista-actividades"></div>
+  </section>
+
+  <!-- REPORTES -->
+  <section id="mod-reportes" class="modulo">
+    <h2>Reportes</h2>
+    <p>Resumen simple de registros por módulo (solo conteos, por ahora).</p>
+
+    <table class="tabla-simple">
+      <thead>
+        <tr>
+          <th>Módulo</th>
+          <th>Registros</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Animales</td><td id="rep-animales">0</td></tr>
+        <tr><td>Pesos</td><td id="rep-pesos">0</td></tr>
+        <tr><td>Reproducción y partos</td><td id="rep-repro">0</td></tr>
+        <tr><td>Sanidad</td><td id="rep-sanidad">0</td></tr>
+        <tr><td>Clima</td><td id="rep-clima">0</td></tr>
+        <tr><td>Contabilidad</td><td id="rep-conta">0</td></tr>
+        <tr><td>Visitas y seguridad</td><td id="rep-seguridad">0</td></tr>
+        <tr><td>Maquinaria y equipo</td><td id="rep-maquinaria">0</td></tr>
+        <tr><td>Actividades</td><td id="rep-actividades">0</td></tr>
+      </tbody>
+    </table>
+
+    <p class="nota">En futuras versiones se pueden agregar más reportes y KPI detallados.</p>
+  </section>
+
+  <!-- CONFIGURACIÓN -->
+  <section id="mod-config" class="modulo">
+    <h2>Configuración del rancho</h2>
+    <p>Datos generales del rancho y capacidad estimada.</p>
+
+    <form id="form-config">
+      <label>Nombre del rancho</label>
+      <input name="nombreRancho" />
+
+      <label>Propietario</label>
+      <input name="propietario" />
+
+      <div class="fila-tres">
+        <div>
+          <label>Extensión total (ha)</label>
+          <input type="number" step="0.01" name="haTotales" />
+        </div>
+        <div>
+          <label>Ha de agostadero</label>
+          <input type="number" step="0.01" name="haAgostadero" />
+        </div>
+        <div>
+          <label>Ha de pastos</label>
+          <input type="number" step="0.01" name="haPastos" />
+        </div>
+      </div>
+
+      <div class="fila-dos">
+        <div>
+          <label>Capacidad estimada de vientres y crías al año</label>
+          <input type="number" step="1" name="capacidad" />
+        </div>
+        <div>
+          <label>Animales actuales</label>
+          <input type="number" step="1" name="animalesActuales" />
+        </div>
+      </div>
+
+      <div class="acciones">
+        <button type="submit" class="btn-primario">Guardar configuración</button>
+        <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-config')">Limpiar</button>
+      </div>
+    </form>
+
+    <p class="nota">Estos datos se usan solo como referencia general y pueden ajustarse en cualquier momento.</p>
+  </section>
+</main>
+
+<script>
+  function getData(key) {
+    try {
+      return JSON.parse(localStorage.getItem(key)) || [];
+    } catch (e) {
+      return [];
     }
+  }
+  function setData(key, value) {
+    localStorage.setItem(key, JSON.stringify(value));
+  }
 
-    function guardarDatos() {
-      localStorage.setItem("bovinosData", JSON.stringify(datos));
+  const navBtns = document.querySelectorAll('nav button');
+  const modulos = document.querySelectorAll('section.modulo');
+
+  navBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = btn.getAttribute('data-modulo');
+      navBtns.forEach(b => b.classList.remove('activo'));
+      btn.classList.add('activo');
+      modulos.forEach(sec => sec.classList.remove('activo'));
+      const destino = document.getElementById('mod-' + target);
+      if (destino) destino.classList.add('activo');
       actualizarPanel();
-      actualizarSelectsPotreros();
-      actualizarSelectPesoPotrero();
-      actualizarReporteAnimales();
-      actualizarReporteConta();
-      actualizarReporteVisitas();
-    }
-
-    let datos = cargarDatos();
-
-    // ---------------------
-    // Navegación de secciones
-    // ---------------------
-    const navButtons = document.querySelectorAll("nav button[data-section]");
-    navButtons.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const target = btn.getAttribute("data-section");
-        navButtons.forEach((b) => b.classList.remove("activo"));
-        btn.classList.add("activo");
-        document
-          .querySelectorAll("main section")
-          .forEach((sec) => sec.classList.remove("activo"));
-        document
-          .getElementById("section-" + target)
-          .classList.add("activo");
-      });
+      actualizarReportes();
     });
+  });
 
-    // ---------------------
-    // Razas (para animales)
-    // ---------------------
-    const listaRazas = [
-      "Charolais",
-      "Pardo Suizo",
-      "Brahman",
-      "Angus",
-      "Holstein",
-      "Cebú",
-      "Nelore",
-      "Tropicarne",
-      "Santa Gertrudis",
-      "Hereford",
-      "Limousin",
-      "Wagyu",
-      "Simmental",
-      "Akaushi",
-      "Beefmaster",
-      "Brafor",
-      "Brangus",
-      "Otro"
-    ];
+  function limpiarFormulario(idForm) {
+    const form = document.getElementById(idForm);
+    if (form) form.reset();
+  }
 
-    function llenarSelectRazas() {
-      const prep = document.getElementById("animal-raza-prep");
-      const mezcla1 = document.getElementById("animal-mezcla1");
-      const mezcla2 = document.getElementById("animal-mezcla2");
-      [prep, mezcla1, mezcla2].forEach((sel) => {
-        sel.innerHTML = "";
-        const optV = document.createElement("option");
-        optV.value = "";
-        optV.textContent = sel === prep ? "Seleccione raza" : "Sin mezcla";
-        sel.appendChild(optV);
-        listaRazas.forEach((r) => {
-          const opt = document.createElement("option");
-          opt.value = r;
-          opt.textContent = r;
-          sel.appendChild(opt);
-        });
-      });
-    }
-
-    llenarSelectRazas();
-
-    // ---------------------
-    // Panel
-    // ---------------------
-    function actualizarPanel() {
-      document.getElementById("panel-total-animales").textContent =
-        datos.animales.length;
-      document.getElementById("panel-total-potreros").textContent =
-        datos.potreros.length;
-      document.getElementById("panel-total-corrales").textContent =
-        datos.corrales.length;
-      document.getElementById("panel-total-sanidad").textContent =
-        datos.sanidadEventos.length;
-      document.getElementById("panel-total-pesos").textContent =
-        datos.pesos.length;
-
-      const climaRes = document.getElementById("panel-clima-resumen");
-      if (datos.clima.length === 0) {
-        climaRes.innerHTML =
-          '<span class="ayuda">Sin datos de clima.</span>';
-      } else {
-        const ult = datos.clima[datos.clima.length - 1];
-        climaRes.innerHTML =
-          (ult.fecha || "Fecha N/D") +
-          " – Tmax: " +
-          (ult.tmax ?? "N/D") +
-          "°C, Tmin: " +
-          (ult.tmin ?? "N/D") +
-          "°C, Lluvia: " +
-          (ult.lluvia ?? "0") +
-          " mm, " +
-          (ult.condicion || "");
-      }
-    }
-
-    // ---------------------
-    // ANIMALES
-    // ---------------------
-    const formAnimal = document.getElementById("form-animal");
-    const listaAnimalesDiv = document.getElementById("lista-animales");
-
-    formAnimal.addEventListener("submit", (e) => {
+  function manejarFormulario(idForm, storageKey, idLista, formatearLinea, extraCallback) {
+    const form = document.getElementById(idForm);
+    if (!form) return;
+    form.addEventListener('submit', (e) => {
       e.preventDefault();
-      const arete = document
-        .getElementById("animal-arete-oficial")
-        .value.trim();
-      if (!arete) {
-        alert("El arete oficial es obligatorio.");
-        return;
-      }
-
-      const animal = {
-        areteOficial: arete,
-        areteRancho: document
-          .getElementById("animal-arete-rancho")
-          .value.trim(),
-        sexo: document.getElementById("animal-sexo").value,
-        clasificacion: document.getElementById("animal-clasificacion").value,
-        razaPreponderante:
-          document.getElementById("animal-raza-prep").value,
-        mezcla1: document.getElementById("animal-mezcla1").value,
-        mezcla2: document.getElementById("animal-mezcla2").value,
-        fechaNac: document.getElementById("animal-fecha-nac").value,
-        padre: document.getElementById("animal-padre").value.trim(),
-        madre: document.getElementById("animal-madre").value.trim(),
-        observaciones: document
-          .getElementById("animal-observaciones")
-          .value.trim()
-      };
-
-      const idx = datos.animales.findIndex(
-        (a) => a.areteOficial === arete
-      );
-      if (idx >= 0) {
-        datos.animales[idx] = animal;
-      } else {
-        datos.animales.push(animal);
-      }
-      guardarDatos();
-      alert("Animal guardado correctamente.");
-      formAnimal.reset();
-    });
-
-    document
-      .getElementById("btn-ver-animales")
-      .addEventListener("click", () => {
-        if (datos.animales.length === 0) {
-          listaAnimalesDiv.innerHTML =
-            '<p class="ayuda">No hay animales registrados.</p>';
-          return;
-        }
-        let html =
-          '<table class="tabla-simple"><thead><tr><th>Arete</th><th>Sexo</th><th>Clasificación</th><th>Raza</th><th>Padres</th></tr></thead><tbody>';
-        datos.animales.forEach((a) => {
-          html += `<tr>
-            <td>${a.areteOficial}</td>
-            <td>${a.sexo || ""}</td>
-            <td>${a.clasificacion || ""}</td>
-            <td>${a.razaPreponderante || ""}</td>
-            <td>${(a.padre || "")} / ${(a.madre || "")}</td>
-          </tr>`;
-        });
-        html += "</tbody></table>";
-        listaAnimalesDiv.innerHTML = html;
-      });
-
-    // ---------------------
-    // PESOS
-    // ---------------------
-    const formPeso = document.getElementById("form-peso");
-    const listaPesosDiv = document.getElementById("lista-pesos");
-
-    function actualizarSelectPesoPotrero() {
-      const sel = document.getElementById("peso-potrero");
-      if (!sel) return;
-      sel.innerHTML = "";
-      const optV = document.createElement("option");
-      optV.value = "";
-      optV.textContent = "Sin asignar";
-      sel.appendChild(optV);
-      datos.potreros.forEach((p) => {
-        const opt = document.createElement("option");
-        opt.value = p.nombre;
-        opt.textContent = p.nombre;
-        sel.appendChild(opt);
-      });
-    }
-
-    formPeso.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const arete = document.getElementById("peso-arete").value.trim();
-      const fecha = document.getElementById("peso-fecha").value;
-      const pesoKg = parseFloat(
-        document.getElementById("peso-kg").value
-      );
-      if (!arete || !fecha || isNaN(pesoKg)) {
-        alert("Arete, fecha y peso son obligatorios.");
-        return;
-      }
-      const registro = {
-        arete,
-        fecha,
-        pesoKg,
-        potrero: document.getElementById("peso-potrero").value,
-        observaciones: document
-          .getElementById("peso-observaciones")
-          .value.trim()
-      };
-      datos.pesos.push(registro);
-      guardarDatos();
-      alert("Peso guardado correctamente.");
-      formPeso.reset();
-    });
-
-    document
-      .getElementById("btn-ver-pesos")
-      .addEventListener("click", () => {
-        if (datos.pesos.length === 0) {
-          listaPesosDiv.innerHTML =
-            '<p class="ayuda">No hay pesos registrados.</p>';
-          return;
-        }
-        const ultimos = datos.pesos.slice(-20).reverse();
-        let html =
-          '<table class="tabla-simple"><thead><tr><th>Fecha</th><th>Arete</th><th>Peso (kg)</th><th>Potrero</th></tr></thead><tbody>';
-        ultimos.forEach((p) => {
-          html += `<tr>
-            <td>${p.fecha}</td>
-            <td>${p.arete}</td>
-            <td>${p.pesoKg}</td>
-            <td>${p.potrero || ""}</td>
-          </tr>`;
-        });
-        html += "</tbody></table>";
-        listaPesosDiv.innerHTML = html;
-      });
-
-    // ---------------------
-    // REPRO / PARTOS
-    // ---------------------
-    const formRepro = document.getElementById("form-repro");
-    const listaReproDiv = document.getElementById("lista-repro");
-
-    formRepro.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const evento = {
-        tipo: document.getElementById("repro-tipo").value,
-        areteMadre: document
-          .getElementById("repro-arete-madre")
-          .value.trim(),
-        areteToro: document
-          .getElementById("repro-arete-toro")
-          .value.trim(),
-        fecha: document.getElementById("repro-fecha").value,
-        sexoCria: document.getElementById("repro-sexo-cria").value,
-        pesoCria: document.getElementById("repro-peso-cria").value,
-        observaciones: document
-          .getElementById("repro-observaciones")
-          .value.trim()
-      };
-      if (!evento.tipo || !evento.areteMadre || !evento.fecha) {
-        alert("Tipo, arete de la vaca y fecha son obligatorios.");
-        return;
-      }
-      datos.repro.push(evento);
-      guardarDatos();
-      alert("Evento guardado correctamente.");
-      formRepro.reset();
-    });
-
-    document
-      .getElementById("btn-ver-repro")
-      .addEventListener("click", () => {
-        if (datos.repro.length === 0) {
-          listaReproDiv.innerHTML =
-            '<p class="ayuda">No hay eventos de reproducción registrados.</p>';
-          return;
-        }
-        const ult = datos.repro.slice(-20).reverse();
-        let html =
-          '<table class="tabla-simple"><thead><tr><th>Fecha</th><th>Tipo</th><th>Vaca</th><th>Toro</th><th>Cría</th></tr></thead><tbody>';
-        ult.forEach((r) => {
-          html += `<tr>
-            <td>${r.fecha}</td>
-            <td>${r.tipo}</td>
-            <td>${r.areteMadre}</td>
-            <td>${r.areteToro || ""}</td>
-            <td>${r.sexoCria || ""} ${r.pesoCria ? r.pesoCria + " kg" : ""}</td>
-          </tr>`;
-        });
-        html += "</tbody></table>";
-        listaReproDiv.innerHTML = html;
-      });
-
-    // ---------------------
-    // SANIDAD - VACUNAS
-    // ---------------------
-    const formVacuna = document.getElementById("form-vacuna");
-    const listaVacunasDiv = document.getElementById("lista-vacunas");
-
-    formVacuna.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const vac = {
-        grupo: document.getElementById("vacuna-grupo").value,
-        arete: document.getElementById("vacuna-arete").value.trim(),
-        fecha: document.getElementById("vacuna-fecha").value,
-        nombreVacuna: document
-          .getElementById("vacuna-nombre")
-          .value.trim(),
-        esquema: document.getElementById("vacuna-esquema").value,
-        enfermedadesPreviene: document
-          .getElementById("vacuna-enfermedades")
-          .value.trim(),
-        dosisVia: document.getElementById("vacuna-dosis").value.trim(),
-        observaciones: document
-          .getElementById("vacuna-observaciones")
-          .value.trim()
-      };
-      if (!vac.fecha || !vac.nombreVacuna) {
-        alert("Fecha y nombre de vacuna son obligatorios.");
-        return;
-      }
-      datos.sanidadVacunas.push(vac);
-      guardarDatos();
-      alert("Vacunación guardada.");
-      formVacuna.reset();
-    });
-
-    document
-      .getElementById("btn-ver-vacunas")
-      .addEventListener("click", () => {
-        if (datos.sanidadVacunas.length === 0) {
-          listaVacunasDiv.innerHTML =
-            '<p class="ayuda">No hay vacunaciones registradas.</p>';
-          return;
-        }
-        const ult = datos.sanidadVacunas.slice(-50).reverse();
-        let html =
-          '<table class="tabla-simple"><thead><tr><th>Fecha</th><th>Grupo</th><th>Arete</th><th>Vacuna</th><th>Enfermedades</th></tr></thead><tbody>';
-        ult.forEach((v) => {
-          html += `<tr>
-            <td>${v.fecha || ""}</td>
-            <td>${v.grupo || ""}</td>
-            <td>${v.arete || ""}</td>
-            <td>${v.nombreVacuna || ""}</td>
-            <td>${v.enfermedadesPreviene || ""}</td>
-          </tr>`;
-        });
-        html += "</tbody></table>";
-        listaVacunasDiv.innerHTML = html;
-      });
-
-    // ---------------------
-    // SANIDAD - EVENTOS (CORRECTIVO)
-    // ---------------------
-    const formSanidad = document.getElementById("form-sanidad");
-    const listaSanidadDiv = document.getElementById("lista-sanidad");
-
-    formSanidad.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const evt = {
-        arete: document.getElementById("sanidad-arete").value.trim(),
-        fecha: document.getElementById("sanidad-fecha").value,
-        temp: document.getElementById("sanidad-temp").value,
-        dx: document.getElementById("sanidad-dx").value,
-        tratamiento: document
-          .getElementById("sanidad-tratamiento")
-          .value.trim()
-      };
-      if (!evt.arete || !evt.fecha || !evt.dx) {
-        alert("Arete, fecha y diagnóstico son obligatorios.");
-        return;
-      }
-
-      // Aviso si hay alguna vacuna registrada para este arete
-      const vacunasAnimal = datos.sanidadVacunas.filter(
-        (v) => v.arete && v.arete === evt.arete
-      );
-      if (vacunasAnimal.length > 0) {
-        const ult = vacunasAnimal[vacunasAnimal.length - 1];
-        alert(
-          "Aviso: este animal tiene vacunaciones registradas.\n" +
-            "Última vacuna: " +
-            (ult.nombreVacuna || "") +
-            " (" +
-            (ult.enfermedadesPreviene || "") +
-            ") el " +
-            (ult.fecha || "")
-        );
-      }
-
-      datos.sanidadEventos.push(evt);
-      guardarDatos();
-      alert("Evento de sanidad guardado.");
-      formSanidad.reset();
-    });
-
-    document
-      .getElementById("btn-ver-sanidad")
-      .addEventListener("click", () => {
-        if (datos.sanidadEventos.length === 0) {
-          listaSanidadDiv.innerHTML =
-            '<p class="ayuda">No hay eventos de sanidad registrados.</p>';
-          return;
-        }
-        const ult = datos.sanidadEventos.slice(-20).reverse();
-        let html =
-          '<table class="tabla-simple"><thead><tr><th>Fecha</th><th>Arete</th><th>Dx</th><th>Temp</th></tr></thead><tbody>';
-        ult.forEach((s) => {
-          html += `<tr>
-            <td>${s.fecha}</td>
-            <td>${s.arete}</td>
-            <td>${s.dx}</td>
-            <td>${s.temp || ""}</td>
-          </tr>`;
-        });
-        html += "</tbody></table>";
-        listaSanidadDiv.innerHTML = html;
-      });
-
-    // ---------------------
-    // GPS utilidades
-    // ---------------------
-    function tomarUbicacion(callback) {
-      if (!navigator.geolocation) {
-        alert("El navegador no soporta GPS / ubicación.");
-        return;
-      }
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const lat = pos.coords.latitude;
-          const lng = pos.coords.longitude;
-          callback(lat, lng);
-        },
-        (err) => {
-          alert("No se pudo obtener la ubicación: " + err.message);
-        },
-        { enableHighAccuracy: true }
-      );
-    }
-
-    function abrirEnMapa(lat, lng) {
-      if (!lat || !lng) {
-        alert("No hay coordenadas guardadas para este registro.");
-        return;
-      }
-      const url = "https://www.google.com/maps?q=" + lat + "," + lng;
-      window.open(url, "_blank");
-    }
-
-    // ---------------------
-    // POTREROS
-    // ---------------------
-    const formPotrero = document.getElementById("form-potrero");
-    const listaPotrerosDiv = document.getElementById("lista-potreros");
-    const btnPotreroGps = document.getElementById("btn-potrero-gps");
-
-    btnPotreroGps.addEventListener("click", () => {
-      tomarUbicacion((lat, lng) => {
-        document.getElementById("potrero-lat").value = lat.toFixed(6);
-        document.getElementById("potrero-lng").value = lng.toFixed(6);
-      });
-    });
-
-    formPotrero.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const nombre = document
-        .getElementById("potrero-nombre")
-        .value.trim();
-      if (!nombre) {
-        alert("El nombre del potrero es obligatorio.");
-        return;
-      }
-      const potrero = {
-        nombre,
-        descripcion: document
-          .getElementById("potrero-desc")
-          .value.trim(),
-        lat: document.getElementById("potrero-lat").value,
-        lng: document.getElementById("potrero-lng").value
-      };
-      const idx = datos.potreros.findIndex((p) => p.nombre === nombre);
-      if (idx >= 0) {
-        datos.potreros[idx] = potrero;
-      } else {
-        datos.potreros.push(potrero);
-      }
-      guardarDatos();
-      alert("Potrero guardado correctamente.");
-      formPotrero.reset();
-      renderPotreros();
-    });
-
-    function renderPotreros() {
-      if (datos.potreros.length === 0) {
-        listaPotrerosDiv.innerHTML =
-          '<p class="ayuda">No hay potreros registrados.</p>';
-        return;
-      }
-      let html =
-        '<table class="tabla-simple"><thead><tr><th>Potrero</th><th>Descripción</th><th>Lat</th><th>Lng</th><th>Mapa</th></tr></thead><tbody>';
-      datos.potreros.forEach((p) => {
-        html += `<tr>
-          <td>${p.nombre}</td>
-          <td>${p.descripcion || ""}</td>
-          <td>${p.lat || ""}</td>
-          <td>${p.lng || ""}</td>
-          <td><button class="boton-pequeno secundario" onclick="abrirEnMapa('${p.lat}','${p.lng}')">Ver en mapa</button></td>
-        </tr>`;
-      });
-      html += "</tbody></table>";
-      listaPotrerosDiv.innerHTML = html;
-      actualizarSelectsPotreros();
-      actualizarSelectPesoPotrero();
-    }
-
-    function actualizarSelectsPotreros() {
-      const selCorral = document.getElementById("corral-potrero");
-      if (!selCorral) return;
-      selCorral.innerHTML = "";
-      const optV = document.createElement("option");
-      optV.value = "";
-      optV.textContent = "Seleccione potrero";
-      selCorral.appendChild(optV);
-      datos.potreros.forEach((p) => {
-        const opt = document.createElement("option");
-        opt.value = p.nombre;
-        opt.textContent = p.nombre;
-        selCorral.appendChild(opt);
-      });
-    }
-
-    // ---------------------
-    // CORRALES
-    // ---------------------
-    const formCorral = document.getElementById("form-corral");
-    const listaCorralesDiv = document.getElementById("lista-corrales");
-    const btnCorralGps = document.getElementById("btn-corral-gps");
-
-    function recalcularAreaCorral() {
-      const n = parseFloat(
-        document.getElementById("corral-animales").value
-      );
-      const d = parseFloat(
-        document.getElementById("corral-densidad").value
-      );
-      if (!isNaN(n) && !isNaN(d) && d > 0) {
-        const ha = n / d;
-        const m2 = ha * 10000;
-        document.getElementById("corral-area").value = m2.toFixed(0);
-      } else {
-        document.getElementById("corral-area").value = "";
-      }
-    }
-
-    document
-      .getElementById("corral-animales")
-      .addEventListener("input", recalcularAreaCorral);
-    document
-      .getElementById("corral-densidad")
-      .addEventListener("change", recalcularAreaCorral);
-
-    btnCorralGps.addEventListener("click", () => {
-      tomarUbicacion((lat, lng) => {
-        document.getElementById("corral-lat").value = lat.toFixed(6);
-        document.getElementById("corral-lng").value = lng.toFixed(6);
-      });
-    });
-
-    formCorral.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const potrero = document.getElementById("corral-potrero").value;
-      const nombre = document
-        .getElementById("corral-nombre")
-        .value.trim();
-      const animales = parseInt(
-        document.getElementById("corral-animales").value,
-        10
-      );
-      const densidad = parseFloat(
-        document.getElementById("corral-densidad").value
-      );
-      const area = document.getElementById("corral-area").value;
-      const lat = document.getElementById("corral-lat").value;
-      const lng = document.getElementById("corral-lng").value;
-
-      if (!potrero || !nombre || !animales || !densidad) {
-        alert(
-          "Potrero, nombre, número de animales y densidad son obligatorios."
-        );
-        return;
-      }
-
-      const corral = {
-        potrero,
-        nombre,
-        animales,
-        densidad,
-        area,
-        lat,
-        lng
-      };
-      datos.corrales.push(corral);
-      guardarDatos();
-      alert("Corral guardado correctamente.");
-      formCorral.reset();
-      document.getElementById("corral-area").value = "";
-      renderCorrales();
-    });
-
-    function renderCorrales() {
-      if (datos.corrales.length === 0) {
-        listaCorralesDiv.innerHTML =
-          '<p class="ayuda">No hay corrales registrados.</p>';
-        return;
-      }
-      let html =
-        '<table class="tabla-simple"><thead><tr><th>Potrero</th><th>Corral</th><th>Animales</th><th>Densidad</th><th>Área m²</th><th>Mapa</th></tr></thead><tbody>';
-      datos.corrales.forEach((c) => {
-        html += `<tr>
-          <td>${c.potrero}</td>
-          <td>${c.nombre}</td>
-          <td>${c.animales}</td>
-          <td>${c.densidad}</td>
-          <td>${c.area || ""}</td>
-          <td><button class="boton-pequeno secundario" onclick="abrirEnMapa('${c.lat}','${c.lng}')">Ver en mapa</button></td>
-        </tr>`;
-      });
-      html += "</tbody></table>";
-      listaCorralesDiv.innerHTML = html;
-    }
-
-    // ---------------------
-    // CLIMA
-    // ---------------------
-    const formClima = document.getElementById("form-clima");
-    const listaClimaDiv = document.getElementById("lista-clima");
-
-    formClima.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const reg = {
-        fecha: document.getElementById("clima-fecha").value,
-        tmax: document.getElementById("clima-tmax").value,
-        tmin: document.getElementById("clima-tmin").value,
-        lluvia: document.getElementById("clima-lluvia").value,
-        condicion: document.getElementById("clima-condicion").value
-      };
-      if (!reg.fecha) {
-        alert("La fecha es obligatoria.");
-        return;
-      }
-      datos.clima.push(reg);
-      guardarDatos();
-      alert("Clima guardado correctamente.");
-      formClima.reset();
-    });
-
-    document
-      .getElementById("btn-ver-clima")
-      .addEventListener("click", () => {
-        if (datos.clima.length === 0) {
-          listaClimaDiv.innerHTML =
-            '<p class="ayuda">No hay registros de clima.</p>';
-          return;
-        }
-        const ult = datos.clima.slice(-20).reverse();
-        let html =
-          '<table class="tabla-simple"><thead><tr><th>Fecha</th><th>Tmax</th><th>Tmin</th><th>Lluvia</th><th>Condición</th></tr></thead><tbody>';
-        ult.forEach((c) => {
-          html += `<tr>
-            <td>${c.fecha}</td>
-            <td>${c.tmax || ""}</td>
-            <td>${c.tmin || ""}</td>
-            <td>${c.lluvia || ""}</td>
-            <td>${c.condicion || ""}</td>
-          </tr>`;
-        });
-        html += "</tbody></table>";
-        listaClimaDiv.innerHTML = html;
-      });
-
-    // ---------------------
-    // CONTABILIDAD (simple)
-    // ---------------------
-    const formConta = document.getElementById("form-conta");
-    const listaContaDiv = document.getElementById("lista-conta");
-
-    formConta.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const mov = {
-        fecha: document.getElementById("conta-fecha").value,
-        tipo: document.getElementById("conta-tipo").value,
-        cuenta: document.getElementById("conta-cuenta").value.trim(),
-        monto: parseFloat(
-          document.getElementById("conta-monto").value
-        ),
-        concepto: document
-          .getElementById("conta-concepto")
-          .value.trim()
-      };
-      if (!mov.fecha || !mov.tipo || isNaN(mov.monto)) {
-        alert("Fecha, tipo y monto son obligatorios.");
-        return;
-      }
-      datos.contabilidad.push(mov);
-      guardarDatos();
-      alert("Movimiento guardado.");
-      formConta.reset();
-    });
-
-    document
-      .getElementById("btn-ver-conta")
-      .addEventListener("click", () => {
-        if (datos.contabilidad.length === 0) {
-          listaContaDiv.innerHTML =
-            '<p class="ayuda">No hay movimientos registrados.</p>';
-          return;
-        }
-        const ult = datos.contabilidad.slice(-20).reverse();
-        let html =
-          '<table class="tabla-simple"><thead><tr><th>Fecha</th><th>Tipo</th><th>Cuenta</th><th>Monto</th><th>Concepto</th></tr></thead><tbody>';
-        ult.forEach((m) => {
-          html += `<tr>
-            <td>${m.fecha}</td>
-            <td>${m.tipo}</td>
-            <td>${m.cuenta || ""}</td>
-            <td>${m.monto.toFixed(2)}</td>
-            <td>${m.concepto || ""}</td>
-          </tr>`;
-        });
-        html += "</tbody></table>";
-        listaContaDiv.innerHTML = html;
-      });
-
-    // ---------------------
-    // SEGURIDAD: VISITAS
-    // ---------------------
-    const formVisita = document.getElementById("form-visita");
-    const listaVisitasDiv = document.getElementById("lista-visitas");
-
-    formVisita.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const visita = {
-        fecha: document.getElementById("visita-fecha").value,
-        horaLlegada: document.getElementById("visita-hora-llegada").value,
-        horaSalida: document.getElementById("visita-hora-salida").value,
-        nombre: document.getElementById("visita-nombre").value.trim(),
-        empresa: document.getElementById("visita-empresa").value.trim(),
-        personas: document.getElementById("visita-personas").value,
-        motivo: document.getElementById("visita-motivo").value,
-        aQuien: document.getElementById("visita-a-quien").value.trim(),
-        vehiculo: document.getElementById("visita-vehiculo").value.trim(),
-        placas: document.getElementById("visita-placas").value.trim(),
-        observaciones: document
-          .getElementById("visita-observaciones")
-          .value.trim()
-      };
-      if (!visita.fecha || !visita.horaLlegada || !visita.nombre) {
-        alert("Fecha, hora de llegada y nombre son obligatorios.");
-        return;
-      }
-      datos.seguridadVisitas.push(visita);
-      guardarDatos();
-      alert("Visita registrada.");
-      formVisita.reset();
-    });
-
-    document
-      .getElementById("btn-ver-visitas")
-      .addEventListener("click", () => {
-        if (datos.seguridadVisitas.length === 0) {
-          listaVisitasDiv.innerHTML =
-            '<p class="ayuda">No hay visitas registradas.</p>';
-          return;
-        }
-        const ult = datos.seguridadVisitas.slice(-50).reverse();
-        let html =
-          '<table class="tabla-simple"><thead><tr><th>Fecha</th><th>Hora</th><th>Nombre</th><th>Motivo</th><th>Personas</th></tr></thead><tbody>';
-        ult.forEach((v) => {
-          html += `<tr>
-            <td>${v.fecha}</td>
-            <td>${v.horaLlegada}</td>
-            <td>${v.nombre}</td>
-            <td>${v.motivo || ""}</td>
-            <td>${v.personas || ""}</td>
-          </tr>`;
-        });
-        html += "</tbody></table>";
-        listaVisitasDiv.innerHTML = html;
-      });
-
-    // ---------------------
-    // SEGURIDAD: BITÁCORA DEL VELADOR
-    // ---------------------
-    const formBitacora = document.getElementById("form-bitacora");
-    const listaBitacoraDiv = document.getElementById("lista-bitacora");
-
-    formBitacora.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const reg = {
-        fecha: document.getElementById("bitacora-fecha").value,
-        hora: document.getElementById("bitacora-hora").value,
-        descripcion: document
-          .getElementById("bitacora-descripcion")
-          .value.trim(),
-        observaciones: document
-          .getElementById("bitacora-observaciones")
-          .value.trim()
-      };
-      if (!reg.fecha || !reg.hora || !reg.descripcion) {
-        alert("Fecha, hora y descripción son obligatorios.");
-        return;
-      }
-      datos.seguridadBitacora.push(reg);
-      guardarDatos();
-      alert("Registro de bitácora guardado.");
-      formBitacora.reset();
-    });
-
-    document
-      .getElementById("btn-ver-bitacora")
-      .addEventListener("click", () => {
-        if (datos.seguridadBitacora.length === 0) {
-          listaBitacoraDiv.innerHTML =
-            '<p class="ayuda">No hay registros de bitácora.</p>';
-          return;
-        }
-        const ult = datos.seguridadBitacora.slice(-50).reverse();
-        let html =
-          '<table class="tabla-simple"><thead><tr><th>Fecha</th><th>Hora</th><th>Descripción</th></tr></thead><tbody>';
-        ult.forEach((r) => {
-          html += `<tr>
-            <td>${r.fecha}</td>
-            <td>${r.hora}</td>
-            <td>${r.descripcion}</td>
-          </tr>`;
-        });
-        html += "</tbody></table>";
-        listaBitacoraDiv.innerHTML = html;
-      });
-
-    // ---------------------
-    // REPORTES sencillos
-    // ---------------------
-    function actualizarReporteAnimales() {
-      const contenedor = document.getElementById(
-        "reporte-animales-clasificacion"
-      );
-      if (!contenedor) return;
-      if (datos.animales.length === 0) {
-        contenedor.innerHTML =
-          '<p class="ayuda">No hay animales registrados.</p>';
-        return;
-      }
-      const conteo = {};
-      datos.animales.forEach((a) => {
-        const c = a.clasificacion || "Sin clasificar";
-        conteo[c] = (conteo[c] || 0) + 1;
-      });
-      let html =
-        '<table class="tabla-simple"><thead><tr><th>Clasificación</th><th>Cantidad</th></tr></thead><tbody>';
-      Object.keys(conteo).forEach((c) => {
-        html += `<tr><td>${c}</td><td>${conteo[c]}</td></tr>`;
-      });
-      html += "</tbody></table>";
-      contenedor.innerHTML = html;
-    }
-
-    function actualizarReporteConta() {
-      const contenedor = document.getElementById(
-        "reporte-conta-resumen"
-      );
-      if (!contenedor) return;
-      if (datos.contabilidad.length === 0) {
-        contenedor.innerHTML =
-          '<p class="ayuda">No hay movimientos registrados.</p>';
-        return;
-      }
-      let ingresos = 0;
-      let gastos = 0;
-      datos.contabilidad.forEach((m) => {
-        if (m.tipo === "Ingreso") ingresos += m.monto;
-        if (m.tipo === "Gasto") gastos += m.monto;
-      });
-      const utilidad = ingresos - gastos;
-      let badgeClass = "ok";
-      if (utilidad < 0) badgeClass = "peligro";
-      else if (utilidad === 0) badgeClass = "alerta";
-      contenedor.innerHTML =
-        "<p>Ingresos: <strong>$" +
-        ingresos.toFixed(2) +
-        "</strong></p>" +
-        "<p>Gastos: <strong>$" +
-        gastos.toFixed(2) +
-        "</strong></p>" +
-        '<p>Resultado: <span class="badge ' +
-        badgeClass +
-        '">$' +
-        utilidad.toFixed(2) +
-        "</span></p>";
-    }
-
-    function actualizarReporteVisitas() {
-      const contenedor = document.getElementById("reporte-visitas");
-      if (!contenedor) return;
-      if (datos.seguridadVisitas.length === 0) {
-        contenedor.innerHTML =
-          '<p class="ayuda">No hay visitas registradas.</p>';
-        return;
-      }
-      const ahora = new Date();
-      const ms30dias = 30 * 24 * 60 * 60 * 1000;
-      const visitas30 = datos.seguridadVisitas.filter((v) => {
-        if (!v.fecha) return false;
-        const d = new Date(v.fecha + "T00:00:00");
-        return ahora - d <= ms30dias;
-      });
-      if (visitas30.length === 0) {
-        contenedor.innerHTML =
-          '<p class="ayuda">No hay visitas en los últimos 30 días.</p>';
-        return;
-      }
-      let html =
-        "<p>Visitas en los últimos 30 días: <strong>" +
-        visitas30.length +
-        "</strong></p>";
-      contenedor.innerHTML = html;
-    }
-
-    // ---------------------
-    // CONFIGURACIÓN
-    // ---------------------
-    const formConfig = document.getElementById("form-config");
-    function cargarConfigEnFormulario() {
-      const c = datos.config || {};
-      document.getElementById("config-rancho").value = c.rancho || "";
-      document.getElementById("config-propietario").value =
-        c.propietario || "";
-      document.getElementById("config-hectareas").value =
-        c.hectareas || "";
-      document.getElementById("config-agostadero").value =
-        c.agostadero || "";
-      document.getElementById("config-pastos").value =
-        c.pastos || "";
-      document.getElementById("config-capacidad").value =
-        c.capacidad || "";
-      document.getElementById("config-animales-actuales").value =
-        c.animalesActuales || "";
-    }
-
-    formConfig.addEventListener("submit", (e) => {
-      e.preventDefault();
-      datos.config = {
-        rancho: document.getElementById("config-rancho").value.trim(),
-        propietario: document
-          .getElementById("config-propietario")
-          .value.trim(),
-        hectareas: document.getElementById("config-hectareas").value,
-        agostadero: document.getElementById("config-agostadero").value,
-        pastos: document.getElementById("config-pastos").value,
-        capacidad: document.getElementById("config-capacidad").value,
-        animalesActuales: document.getElementById(
-          "config-animales-actuales"
-        ).value
-      };
-      guardarDatos();
-      alert("Configuración guardada.");
-    });
-
-    // ---------------------
-    // INICIALIZACIÓN
-    // ---------------------
-    function init() {
-      renderPotreros();
-      renderCorrales();
-      actualizarSelectPesoPotrero();
+      const datos = new FormData(form);
+      const obj = {};
+      datos.forEach((val, key) => { obj[key] = val; });
+      const lista = getData(storageKey);
+      obj._fechaRegistro = new Date().toISOString();
+      lista.push(obj);
+      setData(storageKey, lista);
+      if (idLista) pintarLista(storageKey, idLista, formatearLinea);
+      form.reset();
       actualizarPanel();
-      cargarConfigEnFormulario();
-      actualizarReporteAnimales();
-      actualizarReporteConta();
-      actualizarReporteVisitas();
+      actualizarReportes();
+      if (extraCallback) extraCallback(obj, lista);
+      alert('Registro guardado.');
+    });
+    if (idLista) pintarLista(storageKey, idLista, formatearLinea);
+  }
+
+  function pintarLista(storageKey, idLista, formatearLinea) {
+    const cont = document.getElementById(idLista);
+    if (!cont) return;
+    const lista = getData(storageKey);
+    cont.innerHTML = '';
+    if (!lista.length) {
+      cont.innerHTML = '<div>Sin registros.</div>';
+      return;
+    }
+    lista.forEach(item => {
+      const div = document.createElement('div');
+      div.textContent = formatearLinea(item);
+      cont.appendChild(div);
+    });
+  }
+
+  manejarFormulario(
+    'form-animales',
+    'pecuario_animales',
+    'lista-animales',
+    (a) => `Arete ${a.areteOficial || '-'} | Sexo: ${a.sexo || '-'} | Raza: ${a.raza || '-'} | Grupo: ${a.grupo || '-'}`,
+    null
+  );
+
+  manejarFormulario(
+    'form-pesos',
+    'pecuario_pesos',
+    'lista-pesos',
+    (p) => `Arete ${p.areteOficial || '-'} | Fecha: ${p.fecha || '-'} | Peso: ${p.peso || ''} kg | Lote: ${p.lote || '-'}`,
+    null
+  );
+
+  manejarFormulario(
+    'form-potreros',
+    'pecuario_potreros',
+    'lista-potreros',
+    (p) => `Potrero ${p.nombre || '-'} | Área: ${p.area || ''} ha | Densidad: ${p.densidad || '-'}`,
+    null
+  );
+
+  manejarFormulario(
+    'form-corrales',
+    'pecuario_corrales',
+    'lista-corrales',
+    (c) => `Corral ${c.nombre || '-'} en potrero ${c.potrero || '-'} | Área: ${c.area || ''} m² | Grupo: ${c.grupo || '-'}`,
+    null
+  );
+
+  manejarFormulario(
+    'form-repro',
+    'pecuario_repro',
+    'lista-repro',
+    (r) => `Vientre ${r.vientre || '-'} | Toro: ${r.toro || '-'} | Parto: ${r.fechaParto || '-'} | Cría: ${r.sexoCria || '-'} ${r.pesoCria || ''} kg`,
+    null
+  );
+
+  manejarFormulario(
+    'form-sanidad',
+    'pecuario_sanidad',
+    'lista-sanidad',
+    (s) => `Arete ${s.arete || '-'} | ${s.tipo || ''} | Enf: ${s.enfermedad || '-'} | Tratamiento: ${s.tratamiento || '-'}`,
+    null
+  );
+
+  manejarFormulario(
+    'form-clima',
+    'pecuario_clima',
+    'lista-clima',
+    (c) => `Fecha ${c.fecha || '-'} | Tmin: ${c.tmin || ''}°C / Tmax: ${c.tmax || ''}°C | Condición: ${c.cond || '-'} | Lluvia: ${c.lluvia || ''} mm`,
+    null
+  );
+
+  manejarFormulario(
+    'form-conta',
+    'pecuario_conta',
+    'lista-conta',
+    (c) => `${c.tipo || ''} | ${c.fecha || ''} | ${c.cuenta || '-'} | $${c.monto || ''}`,
+    null
+  );
+
+  manejarFormulario(
+    'form-visitas',
+    'pecuario_visitas',
+    null,
+    null,
+    null
+  );
+  manejarFormulario(
+    'form-bitacora',
+    'pecuario_bitacora',
+    'lista-seguridad',
+    (b) => `Fecha ${b.fecha || '-'} ${b.hora || ''} | Evento: ${b.evento || '-'}`,
+    null
+  );
+
+  manejarFormulario(
+    'form-maquinaria',
+    'pecuario_maquinaria',
+    'lista-maquinaria',
+    (m) => `${m.tipo || '-'} | ${m.desc || '-'} | Cant: ${m.cantidad || ''} | Últ. mantto: ${m.fechaMant || '-'}`,
+    null
+  );
+
+  manejarFormulario(
+    'form-actividades',
+    'pecuario_actividades',
+    'lista-actividades',
+    (a) => `${a.modulo || '-'} | ${a.actividad || '-'} | Resp: ${a.responsable || '-'} | ${a.periodicidad || ''} (${a.semaforo || ''})`,
+    null
+  );
+
+  (function () {
+    const form = document.getElementById('form-config');
+    if (!form) return;
+    const saved = getData('pecuario_config');
+    if (saved && saved.length) {
+      const cfg = saved[saved.length - 1];
+      Object.keys(cfg).forEach(k => {
+        if (form.elements[k]) form.elements[k].value = cfg[k];
+      });
+    }
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const datos = new FormData(form);
+      const obj = {};
+      datos.forEach((val, key) => { obj[key] = val; });
+      const lista = getData('pecuario_config');
+      lista.push(obj);
+      setData('pecuario_config', lista);
+      alert('Configuración guardada.');
+      actualizarPanel();
+    });
+  })();
+
+  function actualizarPanel() {
+    const animales  = getData('pecuario_animales');
+    const pesos     = getData('pecuario_pesos');
+    const repro     = getData('pecuario_repro');
+    const sanidad   = getData('pecuario_sanidad');
+    const visitas   = getData('pecuario_visitas');
+    const bitacora  = getData('pecuario_bitacora');
+    const climas    = getData('pecuario_clima');
+    const conta     = getData('pecuario_conta');
+
+    document.getElementById('pnl-animales').textContent = animales.length;
+    document.getElementById('pnl-pesos').textContent    = pesos.length;
+    document.getElementById('pnl-partos').textContent   = repro.length;
+    document.getElementById('pnl-sanidad').textContent  = sanidad.length;
+    document.getElementById('pnl-visitas').textContent  = visitas.length;
+    document.getElementById('pnl-bitacora').textContent = bitacora.length;
+
+    if (climas.length) {
+      const ultimo = climas[climas.length - 1];
+      document.getElementById('pnl-clima').textContent =
+        `${ultimo.fecha || ''} | ${ultimo.cond || ''} | Tmin ${ultimo.tmin || ''} / Tmax ${ultimo.tmax || ''}`;
+    } else {
+      document.getElementById('pnl-clima').textContent = 'Sin datos';
     }
 
-    init();
-  </script>
+    let totalIng = 0;
+    let totalGas = 0;
+    conta.forEach(c => {
+      const monto = parseFloat(c.monto || '0') || 0;
+      if (c.tipo === 'Ingreso') totalIng += monto;
+      if (c.tipo === 'Gasto')   totalGas += monto;
+    });
+    document.getElementById('pnl-conta').textContent =
+      `$${totalIng.toFixed(2)} / $${totalGas.toFixed(2)}`;
+  }
+
+  function actualizarReportes() {
+    const setCount = (id, arr) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = arr.length;
+    };
+
+    setCount('rep-animales',    getData('pecuario_animales'));
+    setCount('rep-pesos',       getData('pecuario_pesos'));
+    setCount('rep-repro',       getData('pecuario_repro'));
+    setCount('rep-sanidad',     getData('pecuario_sanidad'));
+    setCount('rep-clima',       getData('pecuario_clima'));
+    setCount('rep-conta',       getData('pecuario_conta'));
+    setCount('rep-seguridad',   getData('pecuario_visitas').concat(getData('pecuario_bitacora')));
+    setCount('rep-maquinaria',  getData('pecuario_maquinaria'));
+    setCount('rep-actividades', getData('pecuario_actividades'));
+  }
+
+  actualizarPanel();
+  actualizarReportes();
+</script>
 </body>
 </html>
