@@ -2,1501 +2,2170 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Pecuario GB — v39 (maqueta)</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pecuario GB - v39</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
-    :root{
-      --bg:#f4f4f5;
-      --card:#ffffff;
-      --text:#111827;
-      --muted:#6b7280;
-      --accent:#8b4513;
-      --accent-soft:#fce7d7;
-      --border:#e5e7eb;
-      --danger:#b91c1c;
-      --ok:#166534;
-      --radius:12px;
-      --shadow:0 12px 30px rgba(15,23,42,.10);
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f5f5f5;
+      color: #222;
+    }
+    header {
+      background: #4b3b2d;
+      color: #fff;
+      padding: 10px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 18px;
+    }
+    header small {
+      display: block;
+      font-size: 11px;
+      opacity: 0.9;
+    }
+    .subleyenda {
+      font-size: 11px;
+      margin-top: 4px;
+      color: #f0e0c0;
+      font-style: italic;
+    }
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      padding: 6px;
+      background: #eae7e2;
+      border-bottom: 1px solid #d0c8c0;
+      position: sticky;
+      top: 52px;
+      z-index: 4;
+    }
+    nav button {
+      flex: 1 1 calc(25% - 4px);
+      min-width: 120px;
+      padding: 6px 4px;
+      font-size: 11px;
+      border-radius: 4px;
+      border: 1px solid #b9b1a7;
+      background: #ffffff;
+      cursor: pointer;
+    }
+    nav button.activo {
+      background: #8b4513;
+      color: #fff;
+      border-color: #5a2f0c;
+      font-weight: 600;
+    }
+    main {
+      padding: 10px;
+      max-width: 1100px;
+      margin: 0 auto 24px auto;
+    }
+    section.modulo {
+      display: none;
+      background: #ffffff;
+      padding: 12px;
+      border-radius: 6px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.10);
+      margin-bottom: 16px;
+    }
+    section.modulo.activo { display: block; }
+
+    h2 { font-size: 17px; margin-top: 0; margin-bottom: 6px; color: #4b3b2d; }
+    h3 { font-size: 14px; margin-bottom: 4px; color: #5a4636; }
+    p  { font-size: 12px; margin: 4px 0; }
+
+    form { margin-top: 6px; margin-bottom: 10px; }
+    label {
+      display: block;
+      font-size: 12px;
+      margin-top: 6px;
+      margin-bottom: 2px;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 6px 8px;
+      font-size: 12px;
+      border-radius: 4px;
+      border: 1px solid #c7c0b8;
+    }
+    textarea {
+      min-height: 60px;
+      resize: vertical;
+    }
+    .fila-dos {
+      display: grid;
+      grid-template-columns: repeat(2,minmax(0,1fr));
+      gap: 6px;
+    }
+    .fila-tres {
+      display: grid;
+      grid-template-columns: repeat(3,minmax(0,1fr));
+      gap: 6px;
+    }
+    .acciones {
+      margin-top: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .acciones button {
+      padding: 6px 10px;
+      font-size: 12px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-primario   { background: #27ae60; color: #fff; }
+    .btn-secundario { background: #95a5a6; color: #fff; }
+    .btn-alerta     { background: #c0392b; color: #fff; }
+    .btn-terciario  { background: #8b4513; color: #fff; }
+
+    .nota {
+      font-size: 11px;
+      color: #7f8c8d;
+      margin-top: 4px;
     }
 
-    *{box-sizing:border-box;}
-    body{
-      margin:0;
-      font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-      background:var(--bg);
-      color:var(--text);
+    .tarjetas-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(180px,1fr));
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .tarjeta {
+      background: #faf7f3;
+      border-radius: 4px;
+      padding: 8px;
+      border: 1px solid #e1d7cd;
+      font-size: 12px;
+    }
+    .tarjeta strong { display: block; margin-bottom: 4px; }
+
+    .lista {
+      margin-top: 8px;
+      font-size: 12px;
+      background: #f9f9f9;
+      border-radius: 4px;
+      padding: 6px 8px;
+      max-height: 260px;
+      overflow-y: auto;
+      border: 1px solid #eee;
+    }
+    .lista div {
+      padding: 4px 0;
+      border-bottom: 1px dashed #ddd;
+    }
+    .lista div:last-child { border-bottom: none; }
+
+    details {
+      margin-top: 6px;
+      border-radius: 4px;
+      background: #f7f5f2;
+      border: 1px solid #e2dbd4;
+      padding: 4px 6px;
+      font-size: 12px;
+    }
+    details summary {
+      cursor: pointer;
+      font-weight: 600;
+      color: #4b3b2d;
     }
 
-    .hidden{display:none;}
+    /* Subtabs internos */
+    .subtabs {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin: 6px 0 10px 0;
+    }
+    .subtabs button {
+      border: 1px solid #b9b1a7;
+      background: #fff;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .subtabs button.activo {
+      background: #8b4513;
+      border-color: #5a2f0c;
+      color: #fff;
+      font-weight: 600;
+    }
+    .submodulo { display: none; }
+    .submodulo.activo { display: block; }
 
-    /* Portada */
-    #portada{
-      min-height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:24px;
-      background: radial-gradient(circle at top, #fef3e7 0, #f4ede7 40%, #e7dfd7 100%);
+    /* Portada (overlay) */
+    #portada {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      background-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%201200%20800%27%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%270%27%20y2%3D%271%27%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%270%27%20stop-color%3D%27%232b211a%27/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%271%27%20stop-color%3D%27%234b3b2d%27/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%27m%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%270%27%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%270%27%20stop-color%3D%27%235a4636%27%20stop-opacity%3D%270.95%27/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%271%27%20stop-color%3D%27%238b4513%27%20stop-opacity%3D%270.95%27/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%271200%27%20height%3D%27800%27%20fill%3D%27url%28%23g%29%27/%3E%0A%20%20%3C%21--%20Bull%20head%20silhouette%20--%3E%0A%20%20%3Cpath%20d%3D%27M340%20280%0A%20%20%20%20%20%20%20%20%20%20%20C290%20210%2C240%20190%2C180%20190%0A%20%20%20%20%20%20%20%20%20%20%20C210%20240%2C230%20300%2C230%20360%0A%20%20%20%20%20%20%20%20%20%20%20C230%20470%2C300%20555%2C400%20590%0A%20%20%20%20%20%20%20%20%20%20%20C460%20610%2C520%20610%2C600%20590%0A%20%20%20%20%20%20%20%20%20%20%20C700%20555%2C770%20470%2C770%20360%0A%20%20%20%20%20%20%20%20%20%20%20C770%20300%2C790%20240%2C820%20190%0A%20%20%20%20%20%20%20%20%20%20%20C760%20190%2C710%20210%2C660%20280%0A%20%20%20%20%20%20%20%20%20%20%20C635%20255%2C615%20240%2C600%20232%0A%20%20%20%20%20%20%20%20%20%20%20C585%20240%2C565%20255%2C540%20280%0A%20%20%20%20%20%20%20%20%20%20%20C505%20250%2C470%20235%2C400%20235%0A%20%20%20%20%20%20%20%20%20%20%20C330%20235%2C375%20250%2C340%20280Z%27%0A%20%20%20%20%20%20%20%20fill%3D%27%230f0b08%27%20fill-opacity%3D%270.55%27/%3E%0A%20%20%3Cpath%20d%3D%27M505%20330%0A%20%20%20%20%20%20%20%20%20%20%20C520%20300%2C560%20282%2C600%20282%0A%20%20%20%20%20%20%20%20%20%20%20C640%20282%2C680%20300%2C695%20330%0A%20%20%20%20%20%20%20%20%20%20%20C670%20315%2C640%20310%2C600%20310%0A%20%20%20%20%20%20%20%20%20%20%20C560%20310%2C530%20315%2C505%20330Z%27%0A%20%20%20%20%20%20%20%20fill%3D%27%230f0b08%27%20fill-opacity%3D%270.65%27/%3E%0A%20%20%3C%21--%20Mountain%20%28Cerro%20de%20la%20Silla-inspired%20outline%29%20--%3E%0A%20%20%3Cpath%20d%3D%27M0%20660%0A%20%20%20%20%20%20%20%20%20%20%20L170%20640%0A%20%20%20%20%20%20%20%20%20%20%20L260%20610%0A%20%20%20%20%20%20%20%20%20%20%20L330%20585%0A%20%20%20%20%20%20%20%20%20%20%20L420%20560%0A%20%20%20%20%20%20%20%20%20%20%20L520%20520%0A%20%20%20%20%20%20%20%20%20%20%20L600%20540%0A%20%20%20%20%20%20%20%20%20%20%20L690%20500%0A%20%20%20%20%20%20%20%20%20%20%20L780%20535%0A%20%20%20%20%20%20%20%20%20%20%20L870%20505%0A%20%20%20%20%20%20%20%20%20%20%20L960%20545%0A%20%20%20%20%20%20%20%20%20%20%20L1040%20520%0A%20%20%20%20%20%20%20%20%20%20%20L1200%20560%0A%20%20%20%20%20%20%20%20%20%20%20L1200%20800%0A%20%20%20%20%20%20%20%20%20%20%20L0%20800%20Z%27%0A%20%20%20%20%20%20%20%20fill%3D%27url%28%23m%29%27/%3E%0A%20%20%3Cpath%20d%3D%27M170%20640%20L260%20610%20L330%20585%20L420%20560%20L520%20520%20L600%20540%20L690%20500%20L780%20535%20L870%20505%20L960%20545%20L1040%20520%27%0A%20%20%20%20%20%20%20%20fill%3D%27none%27%20stroke%3D%27%23f0e0c0%27%20stroke-opacity%3D%270.20%27%20stroke-width%3D%276%27/%3E%0A%3C/svg%3E");
+      background-size: cover;
+      background-position: center;
     }
-    .portada-card{
-      max-width:640px;
-      width:100%;
-      background:#fff;
-      border-radius:24px;
-      box-shadow:var(--shadow);
-      padding:28px 24px 24px;
-      position:relative;
-      overflow:hidden;
-      border:1px solid var(--border);
+    #portada .marco {
+      width: min(820px, 100%);
+      border: 2px solid rgba(240,224,192,0.70);
+      background: rgba(15, 11, 8, 0.45);
+      border-radius: 14px;
+      padding: 18px 18px 14px 18px;
+      box-shadow: 0 18px 60px rgba(0,0,0,0.35);
+      position: relative;
+      overflow: hidden;
     }
-    .portada-marco{
-      position:absolute;
-      inset:10px;
-      border:2px solid rgba(139,69,19,.2);
-      border-radius:20px;
-      pointer-events:none;
+    #portada h1 {
+      margin: 0;
+      color: #fff;
+      font-size: clamp(34px, 6vw, 56px);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      text-align: center;
     }
-    .portada-contenido{
-      position:relative;
-      display:flex;
-      flex-direction:column;
-      gap:18px;
-      z-index:1;
+    #portada h2 {
+      margin: 10px 0 0 0;
+      color: #f0e0c0;
+      font-weight: 600;
+      font-size: clamp(16px, 3vw, 22px);
+      text-align: center;
+      letter-spacing: 0.5px;
     }
-    .portada-logo{
-      display:flex;
-      align-items:flex-end;
-      gap:18px;
+    #portada .accionesPortada {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 14px;
     }
-    .portada-icono{
-      width:80px;
-      height:80px;
-      border-radius:24px;
-      background:linear-gradient(135deg,#c08c4a,#8b4513);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      position:relative;
-      overflow:hidden;
+    #portada .notaLegal {
+      position: absolute;
+      right: 12px;
+      bottom: 10px;
+      color: rgba(240,224,192,0.85);
+      font-size: 10px;
+      text-align: right;
+      max-width: 320px;
     }
-    .portada-icono .toro{
-      width:56px;
-      height:40px;
-      border-radius:40px 40px 30px 30px;
-      background:#f9f5f0;
-      position:relative;
+    #portada .watermark {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      pointer-events: none;
+      transform: rotate(-18deg);
+      opacity: 0.22;
     }
-    .toro::before{
-      content:"";
-      position:absolute;
-      width:15px;
-      height:18px;
-      border-radius:50%;
-      background:#f9f5f0;
-      right:-6px;
-      top:10px;
-    }
-    .toro::after{
-      content:"";
-      position:absolute;
-      width:8px;
-      height:8px;
-      background:#8b4513;
-      border-radius:50%;
-      left:16px;
-      top:15px;
-    }
-    .cerro{
-      position:absolute;
-      bottom:-6px;
-      left:-6px;
-      width:80px;
-      height:40px;
-      background:transparent;
-      border-bottom:5px solid rgba(0,0,0,.25);
-      border-radius:50% 50% 0 0;
-      transform:scaleX(1.2);
-      opacity:.8;
-    }
-    .portada-titulos h1{
-      margin:0;
-      font-size:1.9rem;
-      letter-spacing:.08em;
-      text-transform:uppercase;
-    }
-    .portada-titulos h1 span{
-      color:var(--accent);
-      font-weight:700;
-    }
-    .portada-titulos p{
-      margin:4px 0 0;
-      font-size:.98rem;
-      color:var(--muted);
-    }
-    .portada-sello{
-      position:absolute;
-      top:12px;
-      right:-60px;
-      background:rgba(185,28,28,.12);
-      border:1px dashed rgba(185,28,28,.45);
-      color:#7f1d1d;
-      padding:4px 80px;
-      transform:rotate(-18deg);
-      font-size:.75rem;
-      text-transform:uppercase;
-      font-weight:600;
-      letter-spacing:.12em;
-    }
-    .portada-pie{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:12px;
-      margin-top:10px;
-      font-size:.72rem;
-      color:var(--muted);
-    }
-    .portada-boton{
-      margin-top:6px;
-      display:flex;
-      justify-content:flex-end;
-    }
-    .btn-primary{
-      background:var(--accent);
-      color:#fff;
-      border:none;
-      border-radius:999px;
-      padding:10px 22px;
-      font-size:.9rem;
-      font-weight:600;
-      cursor:pointer;
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      box-shadow:0 8px 18px rgba(148,92,40,.35);
-    }
-    .btn-primary:hover{
-      filter:brightness(1.05);
-    }
-    .btn-primary span.icon{
-      font-size:1rem;
+    #portada .watermark span {
+      color: #fff;
+      font-weight: 800;
+      font-size: clamp(34px, 7vw, 84px);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      text-align: center;
     }
 
-    /* App layout */
-    #app{
-      min-height:100vh;
-      display:flex;
+    /* Potreros: canvas */
+    .mapa-wrap {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      margin-top: 8px;
     }
-    .sidebar{
-      width:250px;
-      background:#111827;
-      color:#e5e7eb;
-      padding:16px 10px 16px 14px;
-      display:flex;
-      flex-direction:column;
-      gap:12px;
+    canvas#canvasPotrero {
+      width: 100%;
+      height: 220px;
+      background: #fff;
+      border: 1px solid #e1d7cd;
+      border-radius: 8px;
     }
-    .brand{
-      padding:8px 10px 10px;
-      border-radius:12px;
-      background:rgba(15,23,42,.9);
-      display:flex;
-      flex-direction:column;
-      gap:4px;
+    .puntos {
+      font-size: 11px;
+      color: #4b3b2d;
+      background: #faf7f3;
+      border: 1px solid #e1d7cd;
+      border-radius: 8px;
+      padding: 8px;
+      max-height: 180px;
+      overflow: auto;
     }
-    .brand-title{
-      font-size:.9rem;
-      font-weight:600;
-      letter-spacing:.08em;
-      text-transform:uppercase;
-    }
-    .brand-sub{
-      font-size:.72rem;
-      color:#9ca3af;
-    }
-    .nav{
-      margin-top:6px;
-      flex:1;
-      overflow:auto;
-      padding-right:4px;
-    }
-    .nav-section-title{
-      font-size:.7rem;
-      text-transform:uppercase;
-      letter-spacing:.12em;
-      color:#6b7280;
-      margin:10px 6px 4px;
-    }
-    .nav button{
-      width:100%;
-      border-radius:10px;
-      padding:6px 9px;
-      font-size:.78rem;
-      border:none;
-      background:transparent;
-      color:#e5e7eb;
-      text-align:left;
-      display:flex;
-      align-items:center;
-      gap:8px;
-      cursor:pointer;
-    }
-    .nav button span.icon{
-      font-size:.9rem;
-      opacity:.85;
-    }
-    .nav button:hover{
-      background:rgba(55,65,81,.9);
-    }
-    .nav button.active{
-      background:#f97316;
-      color:#111827;
-    }
-    .main{
-      flex:1;
-      padding:16px 18px;
-      overflow:auto;
-    }
-    .main-header{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:12px;
-      margin-bottom:12px;
-    }
-    .main-header h2{
-      margin:0;
-      font-size:1.25rem;
-    }
-    .tag-version{
-      font-size:.75rem;
-      padding:3px 8px;
-      border-radius:999px;
-      background:var(--accent-soft);
-      color:var(--accent);
-      border:1px solid rgba(139,69,19,.25);
-    }
-    .module{
-      display:none;
-    }
-    .module.active{
-      display:block;
+    .chip {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #f0e0c0;
+      color: #4b3b2d;
+      font-weight: 700;
+      font-size: 11px;
+      margin-left: 6px;
     }
 
-    /* Panel cards */
-    .grid{
-      display:grid;
-      gap:12px;
+    /* Modal suplementos */
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      z-index: 9998;
     }
-    @media (min-width:840px){
-      .grid-3{grid-template-columns:repeat(3,minmax(0,1fr));}
-      .grid-2{grid-template-columns:repeat(2,minmax(0,1fr));}
+    .modal.activo { display: flex; }
+    .modal .panel {
+      width: min(860px, 100%);
+      background: #fff;
+      border-radius: 12px;
+      padding: 12px;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.35);
     }
-    .card{
-      background:var(--card);
-      border-radius:var(--radius);
-      padding:12px 12px 10px;
-      box-shadow:0 5px 15px rgba(15,23,42,.06);
-      border:1px solid var(--border);
-    }
-    .card h3{
-      margin:0 0 4px;
-      font-size:.9rem;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:8px;
-    }
-    .card h3 span.badge{
-      font-size:.65rem;
-      text-transform:uppercase;
-      letter-spacing:.12em;
-      background:#f3f4f6;
-      padding:2px 6px;
-      border-radius:999px;
-      color:var(--muted);
-    }
-    .metric{
-      font-size:1.35rem;
-      font-weight:600;
-      margin-bottom:2px;
-    }
-    .metric-label{
-      font-size:.76rem;
-      color:var(--muted);
+    .modal .panel header {
+      position: relative;
+      top: auto;
+      z-index: auto;
+      background: transparent;
+      color: #4b3b2d;
+      padding: 0;
+      margin-bottom: 6px;
     }
 
-    /* Forms */
-    form{
-      display:grid;
-      gap:8px;
-      margin-top:8px;
-    }
-    .field{
-      display:flex;
-      flex-direction:column;
-      gap:3px;
-      font-size:.8rem;
-    }
-    .field label{
-      font-weight:500;
-    }
-    .field small{
-      font-size:.7rem;
-      color:var(--muted);
-    }
-    input[type="text"],
-    input[type="number"],
-    input[type="date"],
-    input[type="time"],
-    select,
-    textarea{
-      padding:6px 8px;
-      border-radius:8px;
-      border:1px solid var(--border);
-      font:inherit;
-      font-size:.8rem;
-      background:#f9fafb;
-    }
-    textarea{min-height:60px;resize:vertical;}
-    .row{
-      display:grid;
-      gap:8px;
-    }
-    @media (min-width:640px){
-      .row-2{grid-template-columns:repeat(2,minmax(0,1fr));}
-      .row-3{grid-template-columns:repeat(3,minmax(0,1fr));}
-    }
-    .btn-secondary{
-      border-radius:999px;
-      border:1px solid var(--border);
-      padding:6px 12px;
-      font-size:.8rem;
-      background:#f9fafb;
-      cursor:pointer;
-    }
-    .btn-secondary:hover{
-      background:#f3f4f6;
-    }
-    .actions{
-      display:flex;
-      justify-content:flex-end;
-      gap:8px;
-      margin-top:4px;
-    }
-    .note{
-      font-size:.73rem;
-      color:var(--muted);
-      margin-top:4px;
+    @media (max-width: 700px) {
+      nav button { flex: 1 1 calc(50% - 4px); min-width: 140px; }
+      .fila-dos, .fila-tres { grid-template-columns: 1fr; }
+      nav { top: 62px; }
     }
   </style>
 </head>
 <body>
 
-<!-- PORTADA -->
-<section id="portada">
-  <div class="portada-card">
-    <div class="portada-marco"></div>
-    <div class="portada-sello">App en etapa de prueba</div>
-    <div class="portada-contenido">
-      <div class="portada-logo">
-        <div class="portada-icono">
-          <div class="toro"></div>
-          <div class="cerro"></div>
-        </div>
-        <div class="portada-titulos">
-          <h1><span>PECUARIO</span> GB</h1>
-          <p>Permanencia y crecimiento de tu rancho</p>
-        </div>
-      </div>
-      <p class="note">
-        Esta app está en proceso de mejora continua. Compartirás información
-        operativa para tomar mejores decisiones sobre tu hato, potreros, clima
-        y contabilidad.
-      </p>
-      <div class="portada-boton">
-        <button id="btnEntrar" class="btn-primary">
-          <span class="icon">⬤</span>
-          Entrar a la app
-        </button>
-      </div>
-      <div class="portada-pie">
-        <span>App en proceso de registro ante autoridad de propiedad intelectual. Derechos reservados.</span>
-        <span>Versión v39 (maqueta visual)</span>
-      </div>
+<!-- PORTADA (se cierra con "Entrar") -->
+<div id="portada" role="dialog" aria-modal="true">
+  <div class="marco">
+    <div class="watermark"><span>APP EN ETAPA DE PRUEBA</span></div>
+
+    <h1>PECUARIO GB</h1>
+    <h2>PERMANENCIA y CRECIMIENTO</h2>
+
+    <div class="accionesPortada">
+      <button class="btn-primario" id="btnEntrar">Entrar a la app</button>
+      <button class="btn-secundario" id="btnCerrarMarca">Ocultar “etapa de prueba”</button>
+    </div>
+
+    <div class="notaLegal">
+      App en proceso de registro en Propiedad Intelectual. Derechos protegidos.
     </div>
   </div>
-</section>
+</div>
 
-<!-- APP -->
-<section id="app" class="hidden">
-  <aside class="sidebar">
-    <div class="brand">
-      <div class="brand-title">Pecuario GB</div>
-      <div class="brand-sub">Panel y 13 módulos operativos</div>
-      <span class="tag-version">v39 (maqueta)</span>
+<header>
+  <h1>Pecuario GB <span class="chip">v39</span></h1>
+  <small>Control operativo integral de ganado bovino</small>
+  <div class="subleyenda">Información para la permanencia y crecimiento de tu rancho</div>
+</header>
+
+<nav>
+  <button data-modulo="panel" class="activo">Panel</button>
+  <button data-modulo="animales">Animales</button>
+  <button data-modulo="potreros">Potreros y Corrales</button>
+  <button data-modulo="repro">Reproducción y partos</button>
+  <button data-modulo="sanidad">Sanidad</button>
+  <button data-modulo="clima">Clima</button>
+  <button data-modulo="conta">Contabilidad</button>
+  <button data-modulo="seguridad">Registros del Velador</button>
+  <button data-modulo="maquinaria">Maquinaria y equipo</button>
+  <button data-modulo="actividades">Actividades</button>
+  <button data-modulo="reportes">Reportes</button>
+  <button data-modulo="config">Perfil del rancho</button>
+</nav>
+
+<main>
+  <!-- PANEL -->
+  <section id="mod-panel" class="modulo activo">
+    <h2>Panel general</h2>
+    <p>Resumen rápido del rancho con base en los registros capturados.</p>
+    <div class="tarjetas-grid">
+      <div class="tarjeta">
+        <strong>Animales registrados</strong>
+        <span id="pnl-animales">0</span>
+      </div>
+      <div class="tarjeta">
+        <strong>Pesajes registrados</strong>
+        <span id="pnl-pesajes">0</span>
+      </div>
+      <div class="tarjeta">
+        <strong>Nacimientos</strong>
+        <span id="pnl-nacimientos">0</span>
+      </div>
+      <div class="tarjeta">
+        <strong>Eventos de sanidad</strong>
+        <span id="pnl-sanidad">0</span>
+      </div>
+      <div class="tarjeta">
+        <strong>Registros del Velador (incluye visitas)</strong>
+        <span id="pnl-seguridad">0</span>
+      </div>
+      <div class="tarjeta">
+        <strong>Clima</strong>
+        <span id="pnl-clima">Sin datos</span>
+      </div>
+      <div class="tarjeta">
+        <strong>Ingresos - Gastos (simple)</strong>
+        <span id="pnl-conta">0 / 0</span>
+      </div>
+    </div>
+    <p class="nota">Resumen simple con base en la información capturada en los módulos.</p>
+  </section>
+
+  <!-- ANIMALES (incluye PESAJES) -->
+  <section id="mod-animales" class="modulo">
+    <h2>Animales</h2>
+    <p>Altas, bajas y movimientos de animales. Incluye el sub-módulo de <b>Pesajes</b>.</p>
+
+    <div class="subtabs" aria-label="Submódulos Animales">
+      <button type="button" class="activo" data-sub="anim-reg">Registro</button>
+      <button type="button" data-sub="anim-pes">Pesajes</button>
     </div>
 
-    <div class="nav">
-      <div class="nav-section-title">Inicio</div>
-      <button data-module="panel" class="active"><span class="icon">📊</span> Panel</button>
+    <!-- Registro -->
+    <div id="sub-anim-reg" class="submodulo activo">
+      <form id="form-animales">
+        <div class="fila-dos">
+          <div>
+            <label>Arete oficial</label>
+            <input name="areteOficial" required />
+          </div>
+          <div>
+            <label>Arete rancho</label>
+            <input name="areteRancho" />
+          </div>
+        </div>
 
-      <div class="nav-section-title">Operación</div>
-      <button data-module="animales"><span class="icon">🐂</span> Animales</button>
-      <button data-module="pesajes"><span class="icon">⚖️</span> Pesajes</button>
-      <button data-module="potreros"><span class="icon">🌾</span> Potreros y corrales</button>
-      <button data-module="reproduccion"><span class="icon">🐄</span> Reproducción y partos</button>
-      <button data-module="sanidad"><span class="icon">💉</span> Sanidad</button>
-      <button data-module="clima"><span class="icon">⛅</span> Clima</button>
+        <div class="fila-tres">
+          <div>
+            <label>Sexo</label>
+            <select name="sexo">
+              <option value="">Selecciona…</option>
+              <option value="Hembra">Hembra</option>
+              <option value="Macho">Macho</option>
+            </select>
+          </div>
+          <div>
+            <label>Raza preponderante</label>
+            <select name="razaPre" id="selRazaPre"></select>
+          </div>
+          <div>
+            <label>Cruza 1 / Cruza 2 (opcional)</label>
+            <div class="fila-dos">
+              <select name="cruza1" id="selCruza1"></select>
+              <select name="cruza2" id="selCruza2"></select>
+            </div>
+          </div>
+        </div>
 
-      <div class="nav-section-title">Administración</div>
-      <button data-module="contabilidad"><span class="icon">📒</span> Contabilidad</button>
-      <button data-module="seguridad"><span class="icon">🚨</span> Seguridad y visitas</button>
-      <button data-module="maquinaria"><span class="icon">🛠️</span> Maquinaria y equipo</button>
-      <button data-module="actividades"><span class="icon">📅</span> Actividades / eventos</button>
-      <button data-module="reportes"><span class="icon">📑</span> Reportes</button>
-      <button data-module="perfil"><span class="icon">📋</span> Perfil del rancho</button>
+        <div class="fila-dos">
+          <div>
+            <label>Fecha de nacimiento</label>
+            <input type="date" name="fechaNac" />
+          </div>
+          <div>
+            <label>Grupo</label>
+            <select name="grupo" id="selGrupoAnimales"></select>
+          </div>
+        </div>
+
+        <div class="fila-dos">
+          <div>
+            <label>Observaciones</label>
+            <input name="obs" />
+          </div>
+          <div>
+            <label>Agregar otra raza (se suma a las listas)</label>
+            <div class="fila-dos">
+              <input id="txtNuevaRaza" placeholder="Ej. Simmental" />
+              <button type="button" class="btn-terciario" id="btnAgregarRaza">Añadir</button>
+            </div>
+            <div class="nota">Permite agregar razas adicionales a los desplegables de raza y cruzas.</div>
+          </div>
+        </div>
+
+        <div class="acciones">
+          <button type="submit" class="btn-primario">Guardar animal</button>
+          <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-animales')">Limpiar</button>
+        </div>
+      </form>
+
+      <details>
+        <summary>Actividades sugeridas (Animales)</summary>
+        <ul>
+          <li>Registro de altas, bajas y movimientos.</li>
+          <li>Asignación de grupo según condición física.</li>
+          <li>Asignación de responsable por registro.</li>
+        </ul>
+      </details>
+
+      <div class="lista" id="lista-animales"></div>
     </div>
-  </aside>
 
-  <main class="main">
-    <header class="main-header">
-      <h2 id="tituloModulo">Panel</h2>
+    <!-- Pesajes -->
+    <div id="sub-anim-pes" class="submodulo">
+      <h3>Pesajes</h3>
+      <p class="nota">Se divide en <b>Individual</b> y <b>Por grupo</b>, con cálculo de ganancia/pérdida respecto al último pesaje.</p>
+
+      <details open>
+        <summary>Pesaje individual</summary>
+        <form id="form-pesaje-ind">
+          <div class="fila-tres">
+            <div>
+              <label>Arete oficial</label>
+              <input name="areteOficial" required />
+            </div>
+            <div>
+              <label>Arete rancho</label>
+              <input name="areteRancho" />
+            </div>
+            <div>
+              <label>Sexo</label>
+              <select name="sexo">
+                <option value="">Selecciona…</option>
+                <option>Hembra</option>
+                <option>Macho</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="fila-tres">
+            <div>
+              <label>Fecha de pesaje</label>
+              <input type="date" name="fecha" required />
+            </div>
+            <div>
+              <label>Peso (kg)</label>
+              <input type="number" step="0.1" name="peso" required />
+            </div>
+            <div>
+              <label>Ubicación (Potrero / Corral)</label>
+              <input name="ubicacion" placeholder="Ej. Potrero A / Corral 01" />
+            </div>
+          </div>
+
+          <label>Observaciones</label>
+          <textarea name="obs"></textarea>
+
+          <div class="acciones">
+            <button type="submit" class="btn-primario">Guardar pesaje individual</button>
+            <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-pesaje-ind')">Limpiar</button>
+          </div>
+          <div class="nota" id="notaDeltaInd"></div>
+        </form>
+
+        <div class="lista" id="lista-pesaje-ind"></div>
+      </details>
+
+      <details>
+        <summary>Pesaje por grupo</summary>
+        <form id="form-pesaje-grupo">
+          <div class="fila-tres">
+            <div>
+              <label>Grupo</label>
+              <select name="grupo" id="selGrupoPesajes"></select>
+            </div>
+            <div>
+              <label>Potrero</label>
+              <select name="potrero" id="selPotreroPesajes"></select>
+            </div>
+            <div>
+              <label>Corral (2 dígitos)</label>
+              <input name="corral" placeholder="Ej. 01" maxlength="2" />
+            </div>
+          </div>
+
+          <div class="fila-tres">
+            <div>
+              <label>Fecha</label>
+              <input type="date" name="fecha" required />
+            </div>
+            <div>
+              <label>No. de cabezas</label>
+              <input type="number" step="1" name="cabezas" required />
+            </div>
+            <div>
+              <label>Peso total (kg)</label>
+              <input type="number" step="0.1" name="pesoTotal" required />
+            </div>
+          </div>
+
+          <div class="fila-dos">
+            <div>
+              <label>Peso promedio (kg/cabeza)</label>
+              <input type="number" step="0.1" name="pesoProm" readonly />
+            </div>
+            <div>
+              <label>Ganancia / pérdida promedio vs último (kg/cabeza)</label>
+              <input type="number" step="0.1" name="deltaProm" readonly />
+            </div>
+          </div>
+
+          <label>Observaciones</label>
+          <textarea name="obs"></textarea>
+
+          <div class="acciones">
+            <button type="submit" class="btn-primario">Guardar pesaje por grupo</button>
+            <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-pesaje-grupo')">Limpiar</button>
+          </div>
+          <div class="nota" id="notaDeltaGrupo"></div>
+        </form>
+
+        <div class="lista" id="lista-pesaje-grupo"></div>
+      </details>
+    </div>
+  </section>
+
+  <!-- POTREROS Y CORRALES -->
+  <section id="mod-potreros" class="modulo">
+    <h2>Potreros y Corrales</h2>
+    <p>Identificación de potreros por <b>letras</b> y corrales por <b>números (2 dígitos)</b>.</p>
+
+    <div class="subtabs" aria-label="Submódulos Potreros">
+      <button type="button" class="activo" data-sub="pot-potreros">Potreros</button>
+      <button type="button" data-sub="pot-corrales">Corrales</button>
+      <button type="button" data-sub="pot-supl">Suplementos</button>
+    </div>
+
+    <!-- Potreros -->
+    <div id="sub-pot-potreros" class="submodulo activo">
+      <form id="form-potreros">
+        <div class="fila-tres">
+          <div>
+            <label>Potrero (letra)</label>
+            <select name="letra" id="selPotreroLetra"></select>
+          </div>
+          <div>
+            <label>Nombre opcional</label>
+            <input name="nombre" placeholder="Ej. La Loma" />
+          </div>
+          <div>
+            <label>Área estimada (m²) — calculada por puntos</label>
+            <input name="areaM2" id="areaM2" readonly />
+          </div>
+        </div>
+
+        <label>Descripción / notas</label>
+        <textarea name="desc" placeholder="Sugerencia: tipo(s) de zacate, disponibilidad de agua (natural/bebederos), comederos portátiles, maleza, etc."></textarea>
+
+        <details>
+          <summary>Ubicación por GPS (para potreros no cercados)</summary>
+          <p class="nota">Oprime <b>Agregar punto GPS</b> varias veces caminando el perímetro. Se dibuja el potrero y se calcula el área aproximada.</p>
+          <div class="acciones">
+            <button type="button" class="btn-terciario" id="btnPuntoGPS">Agregar punto GPS</button>
+            <button type="button" class="btn-secundario" id="btnLimpiarGPS">Borrar puntos</button>
+          </div>
+          <div class="mapa-wrap">
+            <canvas id="canvasPotrero" width="800" height="320"></canvas>
+            <div class="puntos" id="listaPuntos">Sin puntos aún.</div>
+          </div>
+        </details>
+
+        <div class="acciones">
+          <button type="submit" class="btn-primario">Guardar potrero</button>
+          <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-potreros'); limpiarPuntos();">Limpiar</button>
+        </div>
+      </form>
+
+      <div class="lista" id="lista-potreros"></div>
+    </div>
+
+    <!-- Corrales -->
+    <div id="sub-pot-corrales" class="submodulo">
+      <form id="form-corrales">
+        <div class="fila-tres">
+          <div>
+            <label>Corral (2 dígitos)</label>
+            <input name="corralId" required maxlength="2" placeholder="Ej. 01" />
+          </div>
+          <div>
+            <label>Potrero asociado (letra)</label>
+            <select name="potrero" id="selPotreroCorrales"></select>
+          </div>
+          <div>
+            <label>Grupo de animales</label>
+            <select name="grupo" id="selGrupoCorrales"></select>
+          </div>
+        </div>
+
+        <div class="fila-tres">
+          <div>
+            <label>Área aproximada (m²)</label>
+            <input type="number" step="1" name="area" />
+          </div>
+          <div>
+            <label>Fecha / hora entrada</label>
+            <input type="datetime-local" name="entrada" />
+          </div>
+          <div>
+            <label>Fecha / hora salida</label>
+            <input type="datetime-local" name="salida" />
+          </div>
+        </div>
+
+        <div class="fila-tres">
+          <div>
+            <label>Densidad (animales/ha)</label>
+            <input type="number" step="1" name="densidad" placeholder="Ej. 1500" />
+            <div class="nota">Se movió aquí desde Potreros, porque la densidad del potrero es el promedio de sus corrales.</div>
+          </div>
+          <div>
+            <label>Acceso a bebederos</label>
+            <select name="bebedero">
+              <option value="">No especificado</option>
+              <option>Sí</option>
+              <option>No</option>
+            </select>
+          </div>
+          <div>
+            <label>Acceso a comederos</label>
+            <select name="comedero">
+              <option value="">No especificado</option>
+              <option>Sí</option>
+              <option>No</option>
+            </select>
+          </div>
+        </div>
+
+        <label>Observaciones</label>
+        <textarea name="obs" placeholder="Tipo de zacate o maleza disponible, condición del suelo, etc."></textarea>
+
+        <div class="acciones">
+          <button type="submit" class="btn-primario">Guardar corral</button>
+          <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-corrales')">Limpiar</button>
+          <button type="button" class="btn-terciario" id="btnAbrirSuplementos">Capturar suplemento</button>
+        </div>
+      </form>
+
+      <div class="lista" id="lista-corrales"></div>
+    </div>
+
+    <!-- Suplementos -->
+    <div id="sub-pot-supl" class="submodulo">
+      <h3>Suplementos (recetas por zona / temporada)</h3>
+      <p class="nota">Aquí se registran suplementos con ingredientes, proporciones, preparación y frecuencia, acorde a temporadas y clima.</p>
+
+      <div class="acciones">
+        <button type="button" class="btn-primario" id="btnNuevoSupl">Nuevo suplemento</button>
+        <button type="button" class="btn-secundario" id="btnBorrarSupl">Borrar todos (solo suplementos)</button>
+      </div>
+
+      <div class="lista" id="lista-supl"></div>
+    </div>
+  </section>
+
+  <!-- REPRODUCCIÓN Y PARTOS -->
+  <section id="mod-repro" class="modulo">
+    <h2>Reproducción y partos</h2>
+    <p>Seguimiento de empadres, gestaciones y partos. Incluye cruza del vientre y del toro (preponderante + cruza 1/2) para estimar cruza de la cría.</p>
+
+    <form id="form-repro">
+      <h3>Hembra (vientre)</h3>
+      <div class="fila-tres">
+        <div>
+          <label>Arete hembra (vientre)</label>
+          <input name="vientre" required />
+        </div>
+        <div>
+          <label>Raza preponderante</label>
+          <select name="razaH" class="selRaza"></select>
+        </div>
+        <div>
+          <label>Cruza 1 / Cruza 2</label>
+          <div class="fila-dos">
+            <select name="cruzaH1" class="selRaza"></select>
+            <select name="cruzaH2" class="selRaza"></select>
+          </div>
+        </div>
+      </div>
+
+      <h3>Macho (toro)</h3>
+      <div class="fila-tres">
+        <div>
+          <label>Arete / nombre del toro</label>
+          <input name="toro" />
+        </div>
+        <div>
+          <label>Raza preponderante</label>
+          <select name="razaM" class="selRaza"></select>
+        </div>
+        <div>
+          <label>Cruza 1 / Cruza 2</label>
+          <div class="fila-dos">
+            <select name="cruzaM1" class="selRaza"></select>
+            <select name="cruzaM2" class="selRaza"></select>
+          </div>
+        </div>
+      </div>
+
+      <div class="fila-tres">
+        <div>
+          <label>Peso estimado vientre (kg)</label>
+          <input type="number" step="0.1" name="pesoVientre" />
+        </div>
+        <div>
+          <label>Peso estimado toro (kg)</label>
+          <input type="number" step="0.1" name="pesoToro" />
+        </div>
+        <div>
+          <label>Cruza estimada de la cría</label>
+          <input name="cruzaCria" readonly />
+        </div>
+      </div>
+
+      <div class="fila-tres">
+        <div>
+          <label>Fecha de empadre</label>
+          <input type="date" name="fechaEmp" />
+        </div>
+        <div>
+          <label>Fecha probable de parición</label>
+          <input type="date" name="fechaProb" />
+          <div class="nota">Se puede calcular automático con gestación típica (283 días).</div>
+        </div>
+        <div style="display:flex; align-items:end; gap:6px;">
+          <button type="button" class="btn-terciario" id="btnCalcularProb">Calcular (283 días)</button>
+        </div>
+      </div>
+
+      <div class="fila-tres">
+        <div>
+          <label>Fecha de parto</label>
+          <input type="date" name="fechaParto" />
+        </div>
+        <div>
+          <label>Sexo de la cría</label>
+          <select name="sexoCria">
+            <option value="">Selecciona…</option>
+            <option>Hembra</option>
+            <option>Macho</option>
+          </select>
+        </div>
+        <div>
+          <label>Peso al nacer (kg)</label>
+          <input type="number" step="0.1" name="pesoCria" />
+        </div>
+      </div>
+
+      <label>Observaciones (condiciones del parto y estado físico del vientre y de la cría)</label>
+      <textarea name="obs"></textarea>
+
+      <div class="acciones">
+        <button type="submit" class="btn-primario">Guardar evento</button>
+        <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-repro')">Limpiar</button>
+      </div>
+    </form>
+
+    <details>
+      <summary>Actividades sugeridas (Reproducción y partos)</summary>
+      <ul>
+        <li>Vigilancia de vientres en gestación.</li>
+        <li>Atención al parto y a la cría (calostro, primeras horas).</li>
+        <li>Registro de problemas y seguimiento.</li>
+      </ul>
+    </details>
+
+    <div class="lista" id="lista-repro"></div>
+  </section>
+
+  <!-- SANIDAD -->
+  <section id="mod-sanidad" class="modulo">
+    <h2>Sanidad</h2>
+    <p>Eventos sanitarios: enfermedades, tratamientos y vacunación.</p>
+    <form id="form-sanidad">
+      <div class="fila-dos">
+        <div>
+          <label>Arete oficial</label>
+          <input name="arete" />
+        </div>
+        <div>
+          <label>Fecha</label>
+          <input type="date" name="fecha" />
+        </div>
+      </div>
+
+      <div class="fila-tres">
+        <div>
+          <label>Tipo de evento</label>
+          <select name="tipo">
+            <option value="">Selecciona…</option>
+            <option>Preventivo (vacuna)</option>
+            <option>Correctivo (enfermedad)</option>
+          </select>
+        </div>
+        <div>
+          <label>Enfermedad / motivo</label>
+          <input name="enfermedad" placeholder="Ej. Anaplasmosis, Brucelosis…" />
+        </div>
+        <div>
+          <label>Temperatura (°C)</label>
+          <input type="number" step="0.1" name="temp" />
+        </div>
+      </div>
+
+      <label>Tratamiento / vacuna aplicada</label>
+      <input name="tratamiento" />
+
+      <label>Observaciones</label>
+      <textarea name="obs"></textarea>
+
+      <div class="acciones">
+        <button type="submit" class="btn-primario">Guardar sanidad</button>
+        <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-sanidad')">Limpiar</button>
+      </div>
+    </form>
+
+    <div class="lista" id="lista-sanidad"></div>
+  </section>
+
+  <!-- CLIMA -->
+  <section id="mod-clima" class="modulo">
+    <h2>Clima</h2>
+    <p>Registro diario de clima del rancho.</p>
+    <form id="form-clima">
+      <div class="fila-tres">
+        <div>
+          <label>Fecha</label>
+          <input type="date" name="fecha" />
+        </div>
+        <div>
+          <label>Temperatura mínima (°C)</label>
+          <input type="number" step="0.1" name="tmin" />
+        </div>
+        <div>
+          <label>Temperatura máxima (°C)</label>
+          <input type="number" step="0.1" name="tmax" />
+        </div>
+      </div>
+
+      <div class="fila-dos">
+        <div>
+          <label>Condición del día</label>
+          <select name="cond">
+            <option value="">Selecciona…</option>
+            <option>Soleado</option>
+            <option>Medio nublado</option>
+            <option>Nublado</option>
+            <option>Lluvia ligera</option>
+            <option>Lluvia fuerte</option>
+          </select>
+        </div>
+        <div>
+          <label>Precipitación (mm)</label>
+          <input type="number" step="0.1" name="lluvia" />
+        </div>
+      </div>
+
+      <label>Observaciones</label>
+      <textarea name="obs"></textarea>
+
+      <div class="acciones">
+        <button type="submit" class="btn-primario">Guardar clima</button>
+        <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-clima')">Limpiar</button>
+      </div>
+    </form>
+
+    <div class="lista" id="lista-clima"></div>
+  </section>
+
+  <!-- CONTABILIDAD -->
+  <section id="mod-conta" class="modulo">
+    <h2>Contabilidad (flujos simples)</h2>
+    <p>Registro básico de ingresos y gastos del rancho.</p>
+    <form id="form-conta">
+      <div class="fila-tres">
+        <div>
+          <label>Fecha</label>
+          <input type="date" name="fecha" />
+        </div>
+        <div>
+          <label>Tipo</label>
+          <select name="tipo">
+            <option value="">Selecciona…</option>
+            <option>Ingreso</option>
+            <option>Gasto</option>
+          </select>
+        </div>
+        <div>
+          <label>Monto</label>
+          <input type="number" step="0.01" name="monto" />
+        </div>
+      </div>
+
+      <label>Cuenta / concepto</label>
+      <input name="cuenta" placeholder="Ej. Ventas, Suplementos, Mano de obra…" />
+
+      <label>Descripción</label>
+      <textarea name="desc"></textarea>
+
+      <div class="acciones">
+        <button type="submit" class="btn-primario">Guardar movimiento</button>
+        <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-conta')">Limpiar</button>
+      </div>
+    </form>
+
+    <div class="lista" id="lista-conta"></div>
+  </section>
+
+  <!-- REGISTROS DEL VELADOR (incluye visitas) -->
+  <section id="mod-seguridad" class="modulo">
+    <h2>Registros del Velador</h2>
+    <p>Registro de visitas, vehículos y bitácora diaria del velador.</p>
+
+    <h3>Registro de visitantes</h3>
+    <form id="form-visitas">
+      <div class="fila-tres">
+        <div>
+          <label>Fecha</label>
+          <input type="date" name="fecha" />
+        </div>
+        <div>
+          <label>Hora llegada</label>
+          <input type="time" name="horaLlegada" />
+        </div>
+        <div>
+          <label>Hora salida</label>
+          <input type="time" name="horaSalida" />
+        </div>
+      </div>
+
+      <div class="fila-dos">
+        <div>
+          <label>Nombre del visitante / grupo</label>
+          <input name="nombre" />
+        </div>
+        <div>
+          <label>Asunto / a quién busca</label>
+          <input name="asunto" />
+        </div>
+      </div>
+
+      <div class="fila-dos">
+        <div>
+          <label>Vehículo</label>
+          <input name="vehiculo" placeholder="Tipo de vehículo" />
+        </div>
+        <div>
+          <label>Placas</label>
+          <input name="placas" />
+        </div>
+      </div>
+
+      <label>Observaciones</label>
+      <textarea name="obs"></textarea>
+
+      <div class="acciones">
+        <button type="submit" class="btn-primario">Guardar visita</button>
+        <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-visitas')">Limpiar</button>
+      </div>
+    </form>
+
+    <h3>Bitácora diaria del velador</h3>
+    <form id="form-bitacora">
+      <div class="fila-dos">
+        <div>
+          <label>Fecha</label>
+          <input type="date" name="fecha" />
+        </div>
+        <div>
+          <label>Hora</label>
+          <input type="time" name="hora" />
+        </div>
+      </div>
+
+      <label>Descripción de hechos / observaciones</label>
+      <textarea name="evento" placeholder="Eventos relevantes del día/noche"></textarea>
+
+      <label>Involucrados (personas, animales, clima, otros)</label>
+      <textarea name="involucrados"></textarea>
+
+      <div class="acciones">
+        <button type="submit" class="btn-primario">Guardar registro</button>
+        <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-bitacora')">Limpiar</button>
+      </div>
+    </form>
+
+    <div class="lista" id="lista-seguridad"></div>
+  </section>
+
+  <!-- MAQUINARIA Y EQUIPO -->
+  <section id="mod-maquinaria" class="modulo">
+    <h2>Maquinaria, equipo y herramientas</h2>
+    <p>Inventario y mantenimiento básico de maquinaria, equipo, instalaciones y herramientas.</p>
+
+    <form id="form-maquinaria">
+      <div class="fila-tres">
+        <div>
+          <label>Tipo de activo</label>
+          <select name="tipo">
+            <option value="">Selecciona…</option>
+            <option>Maquinaria</option>
+            <option>Equipo</option>
+            <option>Herramienta</option>
+            <option>Instalación</option>
+          </select>
+        </div>
+        <div>
+          <label>Cantidad</label>
+          <input type="number" step="1" name="cantidad" />
+        </div>
+        <div>
+          <label>Vida útil (años estimados)</label>
+          <input type="number" step="1" name="vida" />
+        </div>
+      </div>
+
+      <label>Descripción del activo</label>
+      <input name="desc" placeholder="Ej. Tractor 80 HP, Bomba de agua, etc." />
+
+      <div class="fila-dos">
+        <div>
+          <label>Marca / Modelo</label>
+          <input name="marcaModelo" />
+        </div>
+        <div>
+          <label>Número de serie (opcional)</label>
+          <input name="serie" />
+        </div>
+      </div>
+
+      <div class="fila-tres">
+        <div>
+          <label>Fecha de adquisición</label>
+          <input type="date" name="fechaAdq" />
+        </div>
+        <div>
+          <label>Último mantenimiento</label>
+          <input type="date" name="fechaMant" />
+        </div>
+        <div>
+          <label>Costo del último mantenimiento</label>
+          <input type="number" step="0.01" name="costoMant" />
+        </div>
+      </div>
+
+      <label>Descripción del mantenimiento / taller / mecánico</label>
+      <textarea name="detMant"></textarea>
+
+      <div class="acciones">
+        <button type="submit" class="btn-primario">Guardar activo</button>
+        <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-maquinaria')">Limpiar</button>
+      </div>
+    </form>
+
+    <div class="lista" id="lista-maquinaria"></div>
+  </section>
+
+  <!-- ACTIVIDADES -->
+  <section id="mod-actividades" class="modulo">
+    <h2>Actividades por módulo</h2>
+    <p>Guía de trabajo para vaqueros y supervisores, con responsable y periodicidad.</p>
+
+    <form id="form-actividades">
+      <div class="fila-dos">
+        <div>
+          <label>Módulo</label>
+          <select name="modulo">
+            <option value="">Selecciona…</option>
+            <option>Animales</option>
+            <option>Pesajes</option>
+            <option>Potreros</option>
+            <option>Corrales</option>
+            <option>Reproducción y partos</option>
+            <option>Sanidad</option>
+            <option>Clima</option>
+            <option>Contabilidad</option>
+            <option>Registros del Velador</option>
+            <option>Maquinaria y equipo</option>
+            <option>Reportes</option>
+          </select>
+        </div>
+        <div>
+          <label>Responsable</label>
+          <input name="responsable" placeholder="Nombre del vaquero / supervisor" />
+        </div>
+      </div>
+
+      <label>Descripción de la actividad</label>
+      <textarea name="actividad" placeholder="Ej. Revisar animales enfermos, pesar grupo, revisar corrales, etc."></textarea>
+
+      <div class="fila-tres">
+        <div>
+          <label>Periodicidad</label>
+          <select name="periodicidad">
+            <option value="">Selecciona…</option>
+            <option>Diaria</option>
+            <option>Terciada</option>
+            <option>Semanal</option>
+            <option>Quincenal</option>
+            <option>Mensual</option>
+            <option>Trimestral</option>
+            <option>Semestral</option>
+            <option>Anual</option>
+            <option>Esporádica</option>
+            <option>Otra</option>
+          </select>
+        </div>
+        <div>
+          <label>Semáforo objetivo</label>
+          <select name="semaforo">
+            <option value="">Sin color</option>
+            <option>Verde</option>
+            <option>Amarillo</option>
+            <option>Rojo</option>
+          </select>
+        </div>
+        <div>
+          <label>Notas</label>
+          <input name="notas" />
+        </div>
+      </div>
+
+      <div class="acciones">
+        <button type="submit" class="btn-primario">Guardar actividad</button>
+        <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-actividades')">Limpiar</button>
+      </div>
+    </form>
+
+    <div class="lista" id="lista-actividades"></div>
+  </section>
+
+  <!-- REPORTES -->
+  <section id="mod-reportes" class="modulo">
+    <h2>Reportes</h2>
+    <p>Resumen simple de registros por módulo (solo conteos, por ahora).</p>
+
+    <table class="tabla-simple" style="width:100%; border-collapse: collapse; font-size: 12px;">
+      <thead>
+        <tr>
+          <th style="text-align:left; border-bottom:1px solid #ddd; padding:6px;">Módulo</th>
+          <th style="text-align:left; border-bottom:1px solid #ddd; padding:6px;">Registros</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td style="padding:6px;">Animales</td><td style="padding:6px;" id="rep-animales">0</td></tr>
+        <tr><td style="padding:6px;">Pesajes</td><td style="padding:6px;" id="rep-pesajes">0</td></tr>
+        <tr><td style="padding:6px;">Reproducción y partos</td><td style="padding:6px;" id="rep-repro">0</td></tr>
+        <tr><td style="padding:6px;">Sanidad</td><td style="padding:6px;" id="rep-sanidad">0</td></tr>
+        <tr><td style="padding:6px;">Clima</td><td style="padding:6px;" id="rep-clima">0</td></tr>
+        <tr><td style="padding:6px;">Contabilidad</td><td style="padding:6px;" id="rep-conta">0</td></tr>
+        <tr><td style="padding:6px;">Registros del Velador</td><td style="padding:6px;" id="rep-seguridad">0</td></tr>
+        <tr><td style="padding:6px;">Maquinaria y equipo</td><td style="padding:6px;" id="rep-maquinaria">0</td></tr>
+        <tr><td style="padding:6px;">Actividades</td><td style="padding:6px;" id="rep-actividades">0</td></tr>
+        <tr><td style="padding:6px;">Potreros</td><td style="padding:6px;" id="rep-potreros">0</td></tr>
+        <tr><td style="padding:6px;">Corrales</td><td style="padding:6px;" id="rep-corrales">0</td></tr>
+        <tr><td style="padding:6px;">Suplementos</td><td style="padding:6px;" id="rep-supl">0</td></tr>
+      </tbody>
+    </table>
+
+    <p class="nota">En futuras versiones se pueden agregar KPI detallados.</p>
+  </section>
+
+  <!-- PERFIL DEL RANCHO -->
+  <section id="mod-config" class="modulo">
+    <h2>Perfil del rancho</h2>
+    <p>Datos generales del rancho y capacidad estimada.</p>
+
+    <form id="form-config">
+      <label>Nombre del rancho</label>
+      <input name="nombreRancho" />
+
+      <label>Propietario</label>
+      <input name="propietario" />
+
+      <label>Tenencia del rancho</label>
+      <select name="tenencia">
+        <option value="">Selecciona…</option>
+        <option>Propiedad</option>
+        <option>En arrendamiento</option>
+        <option>Derechos ejidales</option>
+        <option>Otros</option>
+      </select>
+
+      <div class="fila-tres">
+        <div>
+          <label>Extensión total (ha)</label>
+          <input type="number" step="0.01" name="haTotales" />
+        </div>
+        <div>
+          <label>Ha de agostadero</label>
+          <input type="number" step="0.01" name="haAgostadero" />
+        </div>
+        <div>
+          <label>Ha de pastos</label>
+          <input type="number" step="0.01" name="haPastos" />
+        </div>
+      </div>
+
+      <div class="fila-dos">
+        <div>
+          <label>Capacidad estimada de vientres y crías al año</label>
+          <input type="number" step="1" name="capacidad" />
+        </div>
+        <div>
+          <label>Animales actuales</label>
+          <input type="number" step="1" name="animalesActuales" />
+        </div>
+      </div>
+
+      <div class="acciones">
+        <button type="submit" class="btn-primario">Guardar perfil</button>
+        <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-config')">Limpiar</button>
+      </div>
+    </form>
+
+    <p class="nota">Estos datos se usan como referencia general y pueden ajustarse en cualquier momento.</p>
+  </section>
+</main>
+
+<!-- MODAL: Nuevo suplemento -->
+<div class="modal" id="modalSupl">
+  <div class="panel">
+    <header>
+      <h2 style="margin:0;">Suplementos</h2>
+      <p class="nota" style="margin:4px 0 0 0;">Ingredientes, proporciones, preparación y frecuencia.</p>
     </header>
 
-    <!-- PANEL -->
-    <section id="panel" class="module active">
-      <div class="grid grid-3">
-        <div class="card">
-          <h3>Nacimientos <span class="badge">Reproducción</span></h3>
-          <div class="metric">0</div>
-          <div class="metric-label">Crías registradas en el periodo</div>
+    <form id="form-supl">
+      <div class="fila-tres">
+        <div>
+          <label>Nombre del suplemento</label>
+          <input name="nombre" required placeholder="Ej. Suplemento de invierno" />
         </div>
-        <div class="card">
-          <h3>Muertes <span class="badge">Sanidad</span></h3>
-          <div class="metric">0</div>
-          <div class="metric-label">Animales muertos / desecho</div>
+        <div>
+          <label>Corral (opcional)</label>
+          <input name="corralId" placeholder="Ej. 01" maxlength="2" />
         </div>
-        <div class="card">
-          <h3>Enfermos <span class="badge">Sanidad</span></h3>
-          <div class="metric">0</div>
-          <div class="metric-label">Animales en seguimiento</div>
+        <div>
+          <label>Temporada / clima</label>
+          <input name="temporada" placeholder="Ej. Frío, Sequía, Lluvias…" />
         </div>
       </div>
 
-      <div style="height:8px;"></div>
+      <label>Ingredientes</label>
+      <textarea name="ingredientes" placeholder="Lista de ingredientes"></textarea>
 
-      <div class="grid grid-3">
-        <div class="card">
-          <h3>Clima <span class="badge">Último registro</span></h3>
-          <div class="metric">—</div>
-          <div class="metric-label">Temp. máx/mín, lluvia y condición del día</div>
-        </div>
-        <div class="card">
-          <h3>Registros del velador <span class="badge">Seguridad</span></h3>
-          <div class="metric">0</div>
-          <div class="metric-label">Visitas y eventos de seguridad registrados</div>
-        </div>
-        <div class="card">
-          <h3>Carga animal <span class="badge">Potreros</span></h3>
-          <div class="metric">—</div>
-          <div class="metric-label">Animales / ha (referencia por potrero)</div>
-        </div>
+      <label>Proporciones</label>
+      <textarea name="proporciones" placeholder="Ej. 40% maíz, 30% soya, 30% ..." ></textarea>
+
+      <label>Forma de preparación</label>
+      <textarea name="preparacion" placeholder="Pasos para preparar"></textarea>
+
+      <label>Frecuencia de suministro</label>
+      <input name="frecuencia" placeholder="Ej. Diario, 3 veces/semana, etc." />
+
+      <div class="acciones">
+        <button type="submit" class="btn-primario">Guardar suplemento</button>
+        <button type="button" class="btn-secundario" id="btnCerrarSupl">Cerrar</button>
       </div>
-
-      <p class="note">
-        En la versión operativa, este Panel se alimentará automáticamente con los datos
-        de los demás módulos (reproducción, sanidad, clima, seguridad, potreros, etc.).
-      </p>
-    </section>
-
-    <!-- ANIMALES -->
-    <section id="animales" class="module">
-      <div class="card">
-        <h3>Registro de animales <span class="badge">Eventos a registrar</span></h3>
-        <form>
-          <div class="row row-3">
-            <div class="field">
-              <label>Arete oficial</label>
-              <input type="text" placeholder="Ej. MX123456" />
-            </div>
-            <div class="field">
-              <label>Arete rancho</label>
-              <input type="text" placeholder="Ej. 001-2025" />
-            </div>
-            <div class="field">
-              <label>Sexo</label>
-              <select>
-                <option value="">Selecciona…</option>
-                <option>Hembra</option>
-                <option>Macho</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="row row-3">
-            <div class="field">
-              <label>Raza preponderante</label>
-              <select>
-                <option value="">Selecciona raza…</option>
-                <option>Charolais</option>
-                <option>Angus</option>
-                <option>Pardo Suizo</option>
-                <option>Holstein</option>
-                <option>Santa Gertrudis</option>
-                <option>Limousin</option>
-                <option>Wagyu</option>
-                <option>Akaushi</option>
-                <option>Beefmaster</option>
-                <option>Hereford</option>
-                <option>Tropicarne</option>
-                <option>Nelore</option>
-                <option>Cebú</option>
-                <option>Braford</option>
-                <option>Simmental</option>
-                <option>Brangus</option>
-                <option>Otro (especificar abajo)</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Cruza 1</label>
-              <select>
-                <option value="">Selecciona…</option>
-                <option>Charolais</option>
-                <option>Angus</option>
-                <option>Pardo Suizo</option>
-                <option>Holstein</option>
-                <option>Santa Gertrudis</option>
-                <option>Limousin</option>
-                <option>Wagyu</option>
-                <option>Akaushi</option>
-                <option>Beefmaster</option>
-                <option>Hereford</option>
-                <option>Tropicarne</option>
-                <option>Nelore</option>
-                <option>Cebú</option>
-                <option>Braford</option>
-                <option>Simmental</option>
-                <option>Brangus</option>
-                <option>Otro (especificar abajo)</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Cruza 2</label>
-              <select>
-                <option value="">Selecciona…</option>
-                <option>Charolais</option>
-                <option>Angus</option>
-                <option>Pardo Suizo</option>
-                <option>Holstein</option>
-                <option>Santa Gertrudis</option>
-                <option>Limousin</option>
-                <option>Wagyu</option>
-                <option>Akaushi</option>
-                <option>Beefmaster</option>
-                <option>Hereford</option>
-                <option>Tropicarne</option>
-                <option>Nelore</option>
-                <option>Cebú</option>
-                <option>Braford</option>
-                <option>Simmental</option>
-                <option>Brangus</option>
-                <option>Otro (especificar abajo)</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="field">
-            <label>Otra raza (si aplica)</label>
-            <input type="text" placeholder="Especificar raza no incluida en la lista" />
-          </div>
-
-          <div class="row row-3">
-            <div class="field">
-              <label>Fecha de nacimiento</label>
-              <input type="date" />
-            </div>
-            <div class="field">
-              <label>Grupo</label>
-              <select>
-                <option value="">Selecciona grupo…</option>
-                <option>Vientres en desarrollo</option>
-                <option>Vientres en empadre</option>
-                <option>Vientres en gestación</option>
-                <option>Vientres en parición</option>
-                <option>Vientres amamantando</option>
-                <option>Vientres vacíos</option>
-                <option>Crías en desarrollo</option>
-                <option>Ganado estabulado</option>
-                <option>Toros</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Estado actual</label>
-              <select>
-                <option value="">Selecciona…</option>
-                <option>Activo</option>
-                <option>Vendido</option>
-                <option>Muerto</option>
-                <option>Desecho</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="field">
-            <label>Comentarios</label>
-            <textarea placeholder="Notas sobre origen, compra, condición corporal, etc."></textarea>
-          </div>
-
-          <div class="actions">
-            <button type="button" class="btn-secondary">Limpiar</button>
-            <button type="button" class="btn-primary"><span class="icon">💾</span>Guardar (maqueta)</button>
-          </div>
-          <p class="note">
-            En la versión operativa, aquí se guardarán las altas, bajas y cambios de grupo, y se
-            podrá consultar la lista de animales y sus eventos.
-          </p>
-        </form>
-      </div>
-    </section>
-
-    <!-- PESAjes -->
-    <section id="pesajes" class="module">
-      <div class="card">
-        <h3>Pesajes individuales</h3>
-        <form>
-          <div class="row row-3">
-            <div class="field">
-              <label>Arete oficial</label>
-              <input type="text" placeholder="MX123456" />
-            </div>
-            <div class="field">
-              <label>Arete rancho</label>
-              <input type="text" placeholder="001-2025" />
-            </div>
-            <div class="field">
-              <label>Fecha de pesaje</label>
-              <input type="date" />
-            </div>
-          </div>
-          <div class="row row-3">
-            <div class="field">
-              <label>Potrero</label>
-              <input type="text" placeholder="Ej. A" />
-            </div>
-            <div class="field">
-              <label>Corral</label>
-              <input type="text" placeholder="Ej. 01" />
-            </div>
-            <div class="field">
-              <label>Peso actual (kg)</label>
-              <input type="number" step="0.1" />
-            </div>
-          </div>
-          <div class="field">
-            <label>Observaciones</label>
-            <textarea placeholder="Ganancias o pérdidas, condición corporal, cambios de potrero, etc."></textarea>
-          </div>
-          <div class="actions">
-            <button type="button" class="btn-secondary">Limpiar</button>
-            <button type="button" class="btn-primary"><span class="icon">💾</span>Guardar (maqueta)</button>
-          </div>
-        </form>
-      </div>
-
-      <div style="height:8px;"></div>
-
-      <div class="card">
-        <h3>Pesajes por grupo</h3>
-        <form>
-          <div class="row row-3">
-            <div class="field">
-              <label>Grupo</label>
-              <select>
-                <option value="">Selecciona…</option>
-                <option>Vientres en desarrollo</option>
-                <option>Vientres en empadre</option>
-                <option>Vientres en gestación</option>
-                <option>Vientres en parición</option>
-                <option>Vientres amamantando</option>
-                <option>Vientres vacíos</option>
-                <option>Crías en desarrollo</option>
-                <option>Ganado estabulado</option>
-                <option>Toros</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Potrero</label>
-              <input type="text" placeholder="Ej. A" />
-            </div>
-            <div class="field">
-              <label>Corral</label>
-              <input type="text" placeholder="Ej. 01" />
-            </div>
-          </div>
-          <div class="row row-3">
-            <div class="field">
-              <label>Fecha de pesaje</label>
-              <input type="date" />
-            </div>
-            <div class="field">
-              <label>Peso total del grupo (kg)</label>
-              <input type="number" step="0.1" />
-            </div>
-            <div class="field">
-              <label>Número de cabezas</label>
-              <input type="number" />
-            </div>
-          </div>
-          <div class="field">
-            <label>Observaciones</label>
-            <textarea placeholder="Condición del corral, suplemento, clima, etc."></textarea>
-          </div>
-          <div class="actions">
-            <button type="button" class="btn-secondary">Limpiar</button>
-            <button type="button" class="btn-primary"><span class="icon">💾</span>Guardar (maqueta)</button>
-          </div>
-        </form>
-      </div>
-    </section>
-
-    <!-- POTREROS Y CORRALES -->
-    <section id="potreros" class="module">
-      <div class="card">
-        <h3>Potreros</h3>
-        <form>
-          <div class="row row-3">
-            <div class="field">
-              <label>Identificador de potrero</label>
-              <input type="text" placeholder="Ej. A, B, C…" />
-              <small>Una letra del abecedario para cada potrero.</small>
-            </div>
-            <div class="field">
-              <label>Área del potrero (m²)</label>
-              <input type="number" step="1" />
-            </div>
-            <div class="field">
-              <label>Ubicación descriptiva</label>
-              <input type="text" placeholder="Ej. Lado norte, junto al arroyo" />
-            </div>
-          </div>
-          <div class="field">
-            <label>Descripción / notas</label>
-            <textarea placeholder="Tipo de zacate, disponibilidad de agua natural o por bebederos, comederos portátiles, sombra, etc."></textarea>
-          </div>
-          <div class="field">
-            <label>Coordenadas (GPS)</label>
-            <input type="text" placeholder="Lat, Lon (en la versión operativa se llenará automático desde el celular)" />
-          </div>
-          <div class="actions">
-            <button type="button" class="btn-secondary">Limpiar</button>
-            <button type="button" class="btn-primary"><span class="icon">💾</span>Guardar (maqueta)</button>
-          </div>
-        </form>
-      </div>
-
-      <div style="height:8px;"></div>
-
-      <div class="card">
-        <h3>Corrales móviles</h3>
-        <form>
-          <div class="row row-3">
-            <div class="field">
-              <label>Potrero</label>
-              <input type="text" placeholder="Ej. A" />
-            </div>
-            <div class="field">
-              <label>Número de corral</label>
-              <input type="text" placeholder="Ej. 01, 02…" />
-            </div>
-            <div class="field">
-              <label>Grupo de animales</label>
-              <select>
-                <option value="">Selecciona…</option>
-                <option>Vientres en desarrollo</option>
-                <option>Vientres en empadre</option>
-                <option>Vientres en gestación</option>
-                <option>Vientres en parición</option>
-                <option>Vientres amamantando</option>
-                <option>Vientres vacíos</option>
-                <option>Crías en desarrollo</option>
-                <option>Ganado estabulado</option>
-                <option>Toros</option>
-              </select>
-            </div>
-          </div>
-          <div class="row row-3">
-            <div class="field">
-              <label>Acceso a agua</label>
-              <select>
-                <option value="">Selecciona…</option>
-                <option>Sí, natural</option>
-                <option>Sí, bebedero</option>
-                <option>No</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Acceso a comederos</label>
-              <select>
-                <option value="">Selecciona…</option>
-                <option>Sí, portátiles</option>
-                <option>Sí, fijos</option>
-                <option>No</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Densidad en el corral (animales/ha)</label>
-              <input type="number" step="1" />
-            </div>
-          </div>
-          <div class="field">
-            <label>Observaciones</label>
-            <textarea placeholder="Tipo de zacate o maleza disponible, condición del suelo, etc."></textarea>
-          </div>
-          <div class="field">
-            <label>Suplementos (descripción)</label>
-            <textarea placeholder="Ingredientes, proporciones, forma de preparación y frecuencia, según temporada y clima."></textarea>
-          </div>
-          <div class="actions">
-            <button type="button" class="btn-secondary">Limpiar</button>
-            <button type="button" class="btn-primary"><span class="icon">💾</span>Guardar (maqueta)</button>
-          </div>
-        </form>
-      </div>
-    </section>
-
-    <!-- REPRODUCCIÓN Y PARTOS -->
-    <section id="reproduccion" class="module">
-      <div class="card">
-        <h3>Empadres</h3>
-        <form>
-          <div class="row row-3">
-            <div class="field">
-              <label>Arete vientre (oficial)</label>
-              <input type="text" />
-            </div>
-            <div class="field">
-              <label>Arete vientre (rancho)</label>
-              <input type="text" />
-            </div>
-            <div class="field">
-              <label>Peso estimado del vientre (kg)</label>
-              <input type="number" step="0.1" />
-            </div>
-          </div>
-          <div class="row row-3">
-            <div class="field">
-              <label>Raza preponderante vientre</label>
-              <input type="text" placeholder="Seleccionable en versión operativa" />
-            </div>
-            <div class="field">
-              <label>Cruza 1 vientre</label>
-              <input type="text" />
-            </div>
-            <div class="field">
-              <label>Cruza 2 vientre</label>
-              <input type="text" />
-            </div>
-          </div>
-
-          <div class="row row-3">
-            <div class="field">
-              <label>Arete toro (oficial)</label>
-              <input type="text" />
-            </div>
-            <div class="field">
-              <label>Arete toro (rancho)</label>
-              <input type="text" />
-            </div>
-            <div class="field">
-              <label>Peso estimado del toro (kg)</label>
-              <input type="number" step="0.1" />
-            </div>
-          </div>
-          <div class="row row-3">
-            <div class="field">
-              <label>Raza preponderante toro</label>
-              <input type="text" />
-            </div>
-            <div class="field">
-              <label>Cruza 1 toro</label>
-              <input type="text" />
-            </div>
-            <div class="field">
-              <label>Cruza 2 toro</label>
-              <input type="text" />
-            </div>
-          </div>
-
-          <div class="row row-3">
-            <div class="field">
-              <label>Fecha de empadre</label>
-              <input type="date" />
-            </div>
-            <div class="field">
-              <label>Fecha estimada de parto</label>
-              <input type="date" />
-            </div>
-            <div class="field">
-              <label>Tipo de empadre</label>
-              <select>
-                <option value="">Selecciona…</option>
-                <option>Montas naturales</option>
-                <option>Inseminación</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="actions">
-            <button type="button" class="btn-secondary">Limpiar</button>
-            <button type="button" class="btn-primary"><span class="icon">💾</span>Guardar (maqueta)</button>
-          </div>
-        </form>
-      </div>
-
-      <div style="height:8px;"></div>
-
-      <div class="card">
-        <h3>Partos</h3>
-        <form>
-          <div class="row row-3">
-            <div class="field">
-              <label>Arete vientre (oficial)</label>
-              <input type="text" />
-            </div>
-            <div class="field">
-              <label>Fecha real de parto</label>
-              <input type="date" />
-            </div>
-            <div class="field">
-              <label>Sexo de la cría</label>
-              <select>
-                <option value="">Selecciona…</option>
-                <option>Hembra</option>
-                <option>Macho</option>
-              </select>
-            </div>
-          </div>
-          <div class="row row-3">
-            <div class="field">
-              <label>Peso al nacer (kg)</label>
-              <input type="number" step="0.1" />
-            </div>
-            <div class="field">
-              <label>Estado de la cría</label>
-              <select>
-                <option value="">Selecciona…</option>
-                <option>Viva y fuerte</option>
-                <option>Viva y débil</option>
-                <option>Muerta</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Tomó calostro</label>
-              <select>
-                <option value="">Selecciona…</option>
-                <option>Sí</option>
-                <option>No</option>
-                <option>Se desconoce</option>
-              </select>
-            </div>
-          </div>
-          <div class="field">
-            <label>Observaciones de parto</label>
-            <textarea placeholder="Condiciones del parto (normal/difícil, ayuda requerida, placenta, etc.) y estado físico del vientre y de la cría."></textarea>
-          </div>
-          <div class="actions">
-            <button type="button" class="btn-secondary">Limpiar</button>
-            <button type="button" class="btn-primary"><span class="icon">💾</span>Guardar (maqueta)</button>
-          </div>
-        </form>
-      </div>
-    </section>
-
-    <!-- SANIDAD -->
-    <section id="sanidad" class="module">
-      <div class="card">
-        <h3>Sanidad — Enfermedades y tratamientos</h3>
-        <form>
-          <div class="row row-3">
-            <div class="field">
-              <label>Arete oficial</label>
-              <input type="text" />
-            </div>
-            <div class="field">
-              <label>Fecha del evento</label>
-              <input type="date" />
-            </div>
-            <div class="field">
-              <label>Temperatura (°C)</label>
-              <input type="number" step="0.1" />
-            </div>
-          </div>
-          <div class="field">
-            <label>Diagnóstico</label>
-            <textarea placeholder="Enfermedad diagnosticada o sospechada."></textarea>
-          </div>
-          <div class="field">
-            <label>Tratamiento</label>
-            <textarea placeholder="Medicamentos, dosis, vía de aplicación, duración."></textarea>
-          </div>
-          <div class="field">
-            <label>Observaciones</label>
-            <textarea placeholder="Evolución, respuesta al tratamiento, retiro de leche/carne, etc."></textarea>
-          </div>
-          <div class="actions">
-            <button type="button" class="btn-secondary">Limpiar</button>
-            <button type="button" class="btn-primary"><span class="icon">💾</span>Guardar (maqueta)</button>
-          </div>
-        </form>
-      </div>
-    </section>
-
-    <!-- CLIMA -->
-    <section id="clima" class="module">
-      <div class="card">
-        <h3>Registro diario de clima</h3>
-        <form>
-          <div class="row row-3">
-            <div class="field">
-              <label>Fecha</label>
-              <input type="date" />
-            </div>
-            <div class="field">
-              <label>Temperatura máxima (°C)</label>
-              <input type="number" step="0.1" />
-            </div>
-            <div class="field">
-              <label>Temperatura mínima (°C)</label>
-              <input type="number" step="0.1" />
-            </div>
-          </div>
-          <div class="row row-3">
-            <div class="field">
-              <label>Condición del día</label>
-              <select>
-                <option value="">Selecciona…</option>
-                <option>Soleado</option>
-                <option>Medio nublado</option>
-                <option>Nublado</option>
-                <option>Lluvia ligera</option>
-                <option>Lluvia fuerte</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Lluvia (mm)</label>
-              <input type="number" step="0.1" />
-            </div>
-          </div>
-          <div class="field">
-            <label>Observaciones</label>
-            <textarea placeholder="Eventos extremos (heladas, sequía, tormentas), acciones preventivas tomadas, etc."></textarea>
-          </div>
-          <div class="actions">
-            <button type="button" class="btn-secondary">Limpiar</button>
-            <button type="button" class="btn-primary"><span class="icon">💾</span>Guardar (maqueta)</button>
-          </div>
-        </form>
-      </div>
-    </section>
-
-    <!-- CONTABILIDAD -->
-    <section id="contabilidad" class="module">
-      <div class="card">
-        <h3>Registro de movimientos contables</h3>
-        <p class="note">
-          Aquí se capturarán los flujos de caja y movimientos por cuenta (ingresos, gastos, inventario de ganado,
-          suplementos, etc.) según el catálogo que ya definiste.
-        </p>
-        <form>
-          <div class="row row-3">
-            <div class="field">
-              <label>Fecha</label>
-              <input type="date" />
-            </div>
-            <div class="field">
-              <label>Tipo</label>
-              <select>
-                <option value="">Selecciona…</option>
-                <option>Ingreso</option>
-                <option>Gasto</option>
-                <option>Movimiento de balance</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Cuenta</label>
-              <input type="text" placeholder="Ej. G-08-001 Suplementos vientres en desarrollo" />
-            </div>
-          </div>
-          <div class="row row-3">
-            <div class="field">
-              <label>Importe</label>
-              <input type="number" step="0.01" />
-            </div>
-            <div class="field">
-              <label>Medio de pago / cobro</label>
-              <input type="text" placeholder="Caja, bancos, etc." />
-            </div>
-          </div>
-          <div class="field">
-            <label>Descripción</label>
-            <textarea placeholder="Detalle del movimiento, proveedor/cliente, concepto, número de animales, etc."></textarea>
-          </div>
-          <div class="actions">
-            <button type="button" class="btn-secondary">Limpiar</button>
-            <button type="button" class="btn-primary"><span class="icon">💾</span>Guardar (maqueta)</button>
-          </div>
-        </form>
-      </div>
-    </section>
-
-    <!-- SEGURIDAD Y VISITAS -->
-    <section id="seguridad" class="module">
-      <div class="card">
-        <h3>Registro de visitantes</h3>
-        <form>
-          <div class="row row-3">
-            <div class="field">
-              <label>Fecha</label>
-              <input type="date" />
-            </div>
-            <div class="field">
-              <label>Hora de llegada</label>
-              <input type="time" />
-            </div>
-            <div class="field">
-              <label>Hora de salida</label>
-              <input type="time" />
-            </div>
-          </div>
-          <div class="row row-3">
-            <div class="field">
-              <label>Nombre / grupo</label>
-              <input type="text" placeholder="Persona o grupo" />
-            </div>
-            <div class="field">
-              <label>Asunto</label>
-              <input type="text" placeholder="Motivo de la visita" />
-            </div>
-            <div class="field">
-              <label>Vehículo / placas</label>
-              <input type="text" placeholder="Ej. Pick-up blanca, ABC-123" />
-            </div>
-          </div>
-          <div class="field">
-            <label>Observaciones</label>
-            <textarea placeholder="Áreas visitadas, persona a la que buscaron, acuerdos, etc."></textarea>
-          </div>
-          <div class="actions">
-            <button type="button" class="btn-secondary">Limpiar</button>
-            <button type="button" class="btn-primary"><span class="icon">💾</span>Guardar (maqueta)</button>
-          </div>
-        </form>
-      </div>
-
-      <div style="height:8px;"></div>
-
-      <div class="card">
-        <h3>Bitácora del velador</h3>
-        <form>
-          <div class="row row-3">
-            <div class="field">
-              <label>Fecha</label>
-              <input type="date" />
-            </div>
-            <div class="field">
-              <label>Hora</label>
-              <input type="time" />
-            </div>
-          </div>
-          <div class="field">
-            <label>Descripción del evento</label>
-            <textarea placeholder="Personas o vehículos sospechosos, ruidos, movimientos de ganado, clima, etc."></textarea>
-          </div>
-          <div class="actions">
-            <button type="button" class="btn-secondary">Limpiar</button>
-            <button type="button" class="btn-primary"><span class="icon">💾</span>Guardar (maqueta)</button>
-          </div>
-        </form>
-      </div>
-    </section>
-
-    <!-- MAQUINARIA Y EQUIPO -->
-    <section id="maquinaria" class="module">
-      <div class="card">
-        <h3>Inventario de maquinaria, equipo y herramientas</h3>
-        <form>
-          <div class="row row-3">
-            <div class="field">
-              <label>Tipo de activo</label>
-              <select>
-                <option value="">Selecciona…</option>
-                <option>Maquinaria</option>
-                <option>Equipo</option>
-                <option>Herramienta</option>
-                <option>Instalación</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Descripción</label>
-              <input type="text" placeholder="Ej. Tractor 90 HP, bomba de agua, báscula, etc." />
-            </div>
-            <div class="field">
-              <label>Cantidad</label>
-              <input type="number" />
-            </div>
-          </div>
-          <div class="row row-3">
-            <div class="field">
-              <label>Marca / modelo</label>
-              <input type="text" />
-            </div>
-            <div class="field">
-              <label>Vida útil estimada (años)</label>
-              <input type="number" />
-            </div>
-            <div class="field">
-              <label>Ubicación</label>
-              <input type="text" placeholder="Ej. Corrales, bodega, taller" />
-            </div>
-          </div>
-          <div class="field">
-            <label>Observaciones del activo</label>
-            <textarea placeholder="Estado actual, comentarios relevantes."></textarea>
-          </div>
-          <div class="actions">
-            <button type="button" class="btn-secondary">Limpiar</button>
-            <button type="button" class="btn-primary"><span class="icon">💾</span>Guardar (maqueta)</button>
-          </div>
-        </form>
-      </div>
-
-      <div style="height:8px;"></div>
-
-      <div class="card">
-        <h3>Registro de mantenimiento / reparaciones</h3>
-        <form>
-          <div class="row row-3">
-            <div class="field">
-              <label>Activo</label>
-              <input type="text" placeholder="Relacionar con inventario en versión operativa" />
-            </div>
-            <div class="field">
-              <label>Fecha</label>
-              <input type="date" />
-            </div>
-            <div class="field">
-              <label>Tipo de trabajo</label>
-              <input type="text" placeholder="Preventivo / correctivo" />
-            </div>
-          </div>
-          <div class="row row-3">
-            <div class="field">
-              <label>Taller / mecánico</label>
-              <input type="text" />
-            </div>
-            <div class="field">
-              <label>Costo (materiales)</label>
-              <input type="number" step="0.01" />
-            </div>
-            <div class="field">
-              <label>Costo (mano de obra)</label>
-              <input type="number" step="0.01" />
-            </div>
-          </div>
-          <div class="field">
-            <label>Descripción del trabajo</label>
-            <textarea></textarea>
-          </div>
-          <div class="actions">
-            <button type="button" class="btn-secondary">Limpiar</button>
-            <button type="button" class="btn-primary"><span class="icon">💾</span>Guardar (maqueta)</button>
-          </div>
-        </form>
-      </div>
-    </section>
-
-    <!-- ACTIVIDADES / EVENTOS -->
-    <section id="actividades" class="module">
-      <div class="card">
-        <h3>Actividades / eventos a registrar</h3>
-        <p class="note">
-          Aquí se listarán las actividades por módulo (animales, pesajes, potreros, sanidad, etc.)
-          con su periodicidad (diaria, semanal, mensual, anual, esporádica) y responsable.
-        </p>
-        <form>
-          <div class="row row-3">
-            <div class="field">
-              <label>Módulo</label>
-              <select>
-                <option value="">Selecciona…</option>
-                <option>Animales</option>
-                <option>Pesajes</option>
-                <option>Potreros y corrales</option>
-                <option>Reproducción y partos</option>
-                <option>Sanidad</option>
-                <option>Clima</option>
-                <option>Contabilidad</option>
-                <option>Seguridad y visitas</option>
-                <option>Maquinaria y equipo</option>
-                <option>Reportes</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Actividad / evento</label>
-              <input type="text" placeholder="Ej. Revisar vientres cercanos a parto" />
-            </div>
-            <div class="field">
-              <label>Responsable</label>
-              <input type="text" placeholder="Nombre del vaquero o supervisor" />
-            </div>
-          </div>
-          <div class="row row-3">
-            <div class="field">
-              <label>Periodicidad</label>
-              <select>
-                <option value="">Selecciona…</option>
-                <option>Diaria</option>
-                <option>Terciaria</option>
-                <option>Semanal</option>
-                <option>Quincenal</option>
-                <option>Mensual</option>
-                <option>Trimestral</option>
-                <option>Semestral</option>
-                <option>Anual</option>
-                <option>Esporádica</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Semáforo</label>
-              <select>
-                <option value="">Selecciona…</option>
-                <option>Verde (en tiempo)</option>
-                <option>Amarillo (atrasado)</option>
-                <option>Rojo (crítico)</option>
-              </select>
-            </div>
-          </div>
-          <div class="field">
-            <label>Notas</label>
-            <textarea></textarea>
-          </div>
-          <div class="actions">
-            <button type="button" class="btn-secondary">Limpiar</button>
-            <button type="button" class="btn-primary"><span class="icon">💾</span>Guardar (maqueta)</button>
-          </div>
-        </form>
-      </div>
-    </section>
-
-    <!-- REPORTES -->
-    <section id="reportes" class="module">
-      <div class="card">
-        <h3>Reportes</h3>
-        <p class="note">
-          Este módulo concentrará los reportes clave: animales por grupo, nacimientos, muertes,
-          enfermos, cargas por potrero/corral, suplementos, clima, flujos de caja, etc.
-        </p>
-        <p class="note">
-          En la maqueta solo se muestra la estructura; en la versión operativa se generarán
-          tablas y gráficos a partir de los datos capturados en los demás módulos.
-        </p>
-      </div>
-    </section>
-
-    <!-- PERFIL DEL RANCHO -->
-    <section id="perfil" class="module">
-      <div class="card">
-        <h3>Perfil del rancho</h3>
-        <form>
-          <div class="row row-2">
-            <div class="field">
-              <label>Nombre del rancho</label>
-              <input type="text" />
-            </div>
-            <div class="field">
-              <label>Propietario / razón social</label>
-              <input type="text" />
-            </div>
-          </div>
-          <div class="row row-3">
-            <div class="field">
-              <label>Tipo de propiedad</label>
-              <select>
-                <option value="">Selecciona…</option>
-                <option>Propio</option>
-                <option>Arrendado</option>
-                <option>Derechos ejidales</option>
-                <option>Otro</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Extensión total (ha)</label>
-              <input type="number" step="0.1" />
-            </div>
-            <div class="field">
-              <label>Animales actuales (referencia)</label>
-              <input type="number" />
-            </div>
-          </div>
-          <div class="row row-3">
-            <div class="field">
-              <label>Ha de agostadero</label>
-              <input type="number" step="0.1" />
-            </div>
-            <div class="field">
-              <label>Ha de pastos</label>
-              <input type="number" step="0.1" />
-            </div>
-            <div class="field">
-              <label>Capacidad estimada (vientres + crías / año)</label>
-              <input type="number" />
-            </div>
-          </div>
-          <div class="field">
-            <label>Comentarios</label>
-            <textarea placeholder="Notas generales del rancho, historia, objetivos, etc."></textarea>
-          </div>
-          <div class="actions">
-            <button type="button" class="btn-secondary">Limpiar</button>
-            <button type="button" class="btn-primary"><span class="icon">💾</span>Guardar (maqueta)</button>
-          </div>
-        </form>
-      </div>
-    </section>
-
-  </main>
-</section>
+    </form>
+  </div>
+</div>
 
 <script>
-  // Mostrar app al hacer clic en "Entrar"
-  const portada = document.getElementById('portada');
-  const app = document.getElementById('app');
-  const btnEntrar = document.getElementById('btnEntrar');
-  btnEntrar.addEventListener('click', () => {
-    portada.classList.add('hidden');
-    app.classList.remove('hidden');
-  });
+  // ======================
+  // Utilidades localStorage
+  // ======================
+  function getData(key) {
+    try {
+      return JSON.parse(localStorage.getItem(key)) || [];
+    } catch (e) {
+      return [];
+    }
+  }
+  function setData(key, value) {
+    localStorage.setItem(key, JSON.stringify(value));
+  }
 
-  // Navegación entre módulos
-  const navButtons = document.querySelectorAll('.nav button');
-  const modules = document.querySelectorAll('.module');
-  const tituloModulo = document.getElementById('tituloModulo');
+  // ======================
+  // Listas maestras (razas, grupos, potreros)
+  // ======================
+  const razasBase = [
+    "Charolais","Angus","Pardo Suizo","Brahman","Holstein","Santa Gertrudis",
+    "Limousin","Wagyu","Akaushi","Nelore","Brafor","Tropicarne","Hereford",
+    "Beefmaster","Brangus"
+  ];
 
-  navButtons.forEach(btn => {
+  const gruposBase = [
+    "Vientre en desarrollo",
+    "Vientre en empadre",
+    "Vientre en gestación",
+    "Vientre en parición",
+    "Vientre amamantando",
+    "Vientre vacío",
+    "Cría en desarrollo",
+    "Ganado estabulado",
+    "Toro"
+  ];
+
+  function getRazas() {
+    const extra = getData('pecuario_razas_extra');
+    const all = [...razasBase, ...extra].filter(Boolean);
+    // dedupe
+    return Array.from(new Set(all.map(r => (r||'').trim()).filter(Boolean))).sort((a,b)=>a.localeCompare(b,'es'));
+  }
+
+  function llenarSelect(selectEl, opciones, withBlank=true, blankText="Selecciona…") {
+    if (!selectEl) return;
+    selectEl.innerHTML = '';
+    if (withBlank) {
+      const o = document.createElement('option');
+      o.value = '';
+      o.textContent = blankText;
+      selectEl.appendChild(o);
+    }
+    opciones.forEach(v => {
+      const o = document.createElement('option');
+      o.value = v;
+      o.textContent = v;
+      selectEl.appendChild(o);
+    });
+  }
+
+  function llenarPotreros(selectEl) {
+    const letras = [];
+    for (let i=0;i<26;i++) letras.push(String.fromCharCode(65+i));
+    llenarSelect(selectEl, letras, true, "Selecciona…");
+  }
+
+  function refrescarRazasEnUI() {
+    const razas = getRazas();
+    llenarSelect(document.getElementById('selRazaPre'), razas);
+    llenarSelect(document.getElementById('selCruza1'), razas, true, "Cruza 1…");
+    llenarSelect(document.getElementById('selCruza2'), razas, true, "Cruza 2…");
+
+    // Repro: todos los selects con clase selRaza
+    document.querySelectorAll('select.selRaza').forEach(sel => llenarSelect(sel, razas));
+  }
+
+  function refrescarGruposEnUI() {
+    llenarSelect(document.getElementById('selGrupoAnimales'), gruposBase);
+    llenarSelect(document.getElementById('selGrupoPesajes'), gruposBase);
+    llenarSelect(document.getElementById('selGrupoCorrales'), gruposBase);
+  }
+
+  function refrescarPotrerosEnUI() {
+    llenarPotreros(document.getElementById('selPotreroLetra'));
+    llenarPotreros(document.getElementById('selPotreroPesajes'));
+    llenarPotreros(document.getElementById('selPotreroCorrales'));
+  }
+
+  // ======================
+  // Portada
+  // ======================
+  (function portadaInit(){
+    const portada = document.getElementById('portada');
+    const btnEntrar = document.getElementById('btnEntrar');
+    const btnCerrarMarca = document.getElementById('btnCerrarMarca');
+    const wm = portada.querySelector('.watermark');
+
+    btnEntrar.addEventListener('click', ()=> {
+      portada.style.display = 'none';
+    });
+    btnCerrarMarca.addEventListener('click', ()=> {
+      if (wm) wm.style.display = (wm.style.display === 'none') ? 'grid' : 'none';
+    });
+  })();
+
+  // ======================
+  // Navegación principal
+  // ======================
+  const navBtns = document.querySelectorAll('nav button');
+  const modulos = document.querySelectorAll('section.modulo');
+
+  navBtns.forEach(btn => {
     btn.addEventListener('click', () => {
-      navButtons.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-
-      const target = btn.getAttribute('data-module');
-      modules.forEach(m => m.classList.remove('active'));
-      const mod = document.getElementById(target);
-      if(mod){ mod.classList.add('active'); }
-
-      tituloModulo.textContent = btn.textContent.trim();
+      const target = btn.getAttribute('data-modulo');
+      navBtns.forEach(b => b.classList.remove('activo'));
+      btn.classList.add('activo');
+      modulos.forEach(sec => sec.classList.remove('activo'));
+      const destino = document.getElementById('mod-' + target);
+      if (destino) destino.classList.add('activo');
+      actualizarPanel();
+      actualizarReportes();
     });
   });
-</script>
 
+  // ======================
+  // Subtabs (Animales / Potreros)
+  // ======================
+  function initSubtabs(scopeEl) {
+    if (!scopeEl) return;
+    const btns = scopeEl.querySelectorAll('.subtabs button');
+    btns.forEach(b => {
+      b.addEventListener('click', () => {
+        const sub = b.getAttribute('data-sub');
+        btns.forEach(x => x.classList.remove('activo'));
+        b.classList.add('activo');
+
+        scopeEl.querySelectorAll('.submodulo').forEach(sm => sm.classList.remove('activo'));
+        const target = scopeEl.querySelector('#sub-' + sub);
+        if (target) target.classList.add('activo');
+      });
+    });
+  }
+  initSubtabs(document.getElementById('mod-animales'));
+  initSubtabs(document.getElementById('mod-potreros'));
+
+  // ======================
+  // Formularios base
+  // ======================
+  function limpiarFormulario(idForm) {
+    const form = document.getElementById(idForm);
+    if (form) form.reset();
+  }
+
+  function manejarFormulario(idForm, storageKey, idLista, formatearLinea, extraCallback) {
+    const form = document.getElementById(idForm);
+    if (!form) return;
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const datos = new FormData(form);
+      const obj = {};
+      datos.forEach((val, key) => { obj[key] = val; });
+      const lista = getData(storageKey);
+      obj._fechaRegistro = new Date().toISOString();
+      lista.push(obj);
+      setData(storageKey, lista);
+      if (idLista) pintarLista(storageKey, idLista, formatearLinea);
+      form.reset();
+      actualizarPanel();
+      actualizarReportes();
+      if (extraCallback) extraCallback(obj, lista);
+      alert('Registro guardado.');
+    });
+    if (idLista) pintarLista(storageKey, idLista, formatearLinea);
+  }
+
+  function pintarLista(storageKey, idLista, formatearLinea) {
+    const cont = document.getElementById(idLista);
+    if (!cont) return;
+    const lista = getData(storageKey);
+    cont.innerHTML = '';
+    if (!lista.length) {
+      cont.innerHTML = '<div>Sin registros.</div>';
+      return;
+    }
+    lista.slice().reverse().forEach(item => {
+      const div = document.createElement('div');
+      div.textContent = formatearLinea ? formatearLinea(item) : JSON.stringify(item);
+      cont.appendChild(div);
+    });
+  }
+
+  // ======================
+  // Migración simple v38 -> v39 (no borra datos, solo copia si no hay nuevos)
+  // ======================
+  (function migracion(){
+    const oldPesos = getData('pecuario_pesos'); // v38
+    const newInd = getData('pecuario_pesaje_ind');
+    if (oldPesos.length && !newInd.length) {
+      const conv = oldPesos.map(p => ({
+        areteOficial: p.areteOficial || '',
+        areteRancho: '',
+        sexo: '',
+        fecha: p.fecha || '',
+        peso: p.peso || '',
+        ubicacion: p.lote || '',
+        obs: p.obs || '',
+        _fechaRegistro: p._fechaRegistro || new Date().toISOString()
+      }));
+      setData('pecuario_pesaje_ind', conv);
+    }
+  })();
+
+  // ======================
+  // Animales
+  // ======================
+  manejarFormulario(
+    'form-animales',
+    'pecuario_animales',
+    'lista-animales',
+    (a) => `Arete ${a.areteOficial || '-'} | Sexo: ${a.sexo || '-'} | Raza: ${a.razaPre || '-'} | Cruza: ${[a.cruza1,a.cruza2].filter(Boolean).join(' / ') || '-'} | Grupo: ${a.grupo || '-'}`,
+    null
+  );
+
+  // ======================
+  // Pesajes: Individual
+  // ======================
+  function ultimoPesajeAnimal(arete) {
+    const lista = getData('pecuario_pesaje_ind');
+    const matches = lista.filter(x => (x.areteOficial||'') === (arete||'') && x.peso);
+    if (matches.length < 2) return null;
+    // último previo (antes del último)
+    const last = matches[matches.length - 1];
+    const prev = matches[matches.length - 2];
+    const delta = (parseFloat(last.peso||0) - parseFloat(prev.peso||0));
+    return { last, prev, delta };
+  }
+
+  manejarFormulario(
+    'form-pesaje-ind',
+    'pecuario_pesaje_ind',
+    'lista-pesaje-ind',
+    (p) => {
+      const w = parseFloat(p.peso||0);
+      const arete = p.areteOficial || '-';
+      const deltaObj = ultimoPesajeAnimal(p.areteOficial);
+      const deltaTxt = deltaObj ? ` | Δ vs último: ${deltaObj.delta.toFixed(1)} kg` : '';
+      return `Arete ${arete} | Fecha: ${p.fecha || '-'} | Peso: ${w ? w.toFixed(1) : ''} kg | Ubicación: ${p.ubicacion || '-'}${deltaTxt}`;
+    },
+    (obj) => {
+      const el = document.getElementById('notaDeltaInd');
+      const info = ultimoPesajeAnimal(obj.areteOficial);
+      if (el) {
+        if (info) el.textContent = `Ganancia/Pérdida vs último pesaje: ${info.delta.toFixed(1)} kg (Arete ${obj.areteOficial}).`;
+        else el.textContent = 'Primer pesaje de este arete (no hay comparación aún).';
+      }
+    }
+  );
+
+  // ======================
+  // Pesajes: Grupo
+  // ======================
+  const formPesGrupo = document.getElementById('form-pesaje-grupo');
+  if (formPesGrupo) {
+    formPesGrupo.addEventListener('input', () => {
+      const cabezas = parseFloat(formPesGrupo.cabezas.value || '0') || 0;
+      const total = parseFloat(formPesGrupo.pesoTotal.value || '0') || 0;
+      const prom = (cabezas > 0) ? (total / cabezas) : 0;
+      formPesGrupo.pesoProm.value = prom ? prom.toFixed(1) : '';
+
+      // delta promedio vs último del mismo "grupo"
+      const g = formPesGrupo.grupo.value || '';
+      const lista = getData('pecuario_pesaje_grupo').filter(x => (x.grupo||'') === g && x.pesoProm);
+      if (lista.length) {
+        const last = lista[lista.length - 1];
+        const lastProm = parseFloat(last.pesoProm||0) || 0;
+        const delta = prom - lastProm;
+        formPesGrupo.deltaProm.value = (cabezas>0 && total>0 && g) ? delta.toFixed(1) : '';
+      } else {
+        formPesGrupo.deltaProm.value = '';
+      }
+    });
+  }
+
+  manejarFormulario(
+    'form-pesaje-grupo',
+    'pecuario_pesaje_grupo',
+    'lista-pesaje-grupo',
+    (p) => {
+      const prom = parseFloat(p.pesoProm||0) || ((parseFloat(p.pesoTotal||0) || 0) / (parseFloat(p.cabezas||0) || 1));
+      const delta = parseFloat(p.deltaProm||0);
+      const deltaTxt = (p.deltaProm !== '' && !isNaN(delta)) ? ` | Δ prom: ${delta.toFixed(1)} kg/cab` : '';
+      return `Grupo ${p.grupo || '-'} | Fecha: ${p.fecha || '-'} | Potrero: ${p.potrero || '-'} | Corral: ${p.corral || '-'} | Cabezas: ${p.cabezas || ''} | Total: ${p.pesoTotal || ''} kg | Prom: ${prom.toFixed(1)} kg/cab${deltaTxt}`;
+    },
+    (obj) => {
+      const el = document.getElementById('notaDeltaGrupo');
+      if (!el) return;
+      if (obj.deltaProm) el.textContent = `Ganancia/Pérdida promedio vs último del grupo: ${obj.deltaProm} kg/cabeza.`;
+      else el.textContent = 'Primer pesaje de este grupo (no hay comparación aún).';
+    }
+  );
+
+  // ======================
+  // Potreros: puntos GPS y área
+  // ======================
+  let puntos = [];
+  const canvas = document.getElementById('canvasPotrero');
+  const ctx = canvas ? canvas.getContext('2d') : null;
+  const listaPuntosEl = document.getElementById('listaPuntos');
+  const areaM2El = document.getElementById('areaM2');
+
+  function limpiarPuntos() {
+    puntos = [];
+    renderPuntos();
+  }
+  window.limpiarPuntos = limpiarPuntos;
+
+  function geoGetPoint() {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) return reject(new Error('Geolocalización no soportada'));
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          resolve({
+            lat: pos.coords.latitude,
+            lon: pos.coords.longitude,
+            acc: pos.coords.accuracy
+          });
+        },
+        (err) => reject(err),
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+      );
+    });
+  }
+
+  function areaPoligonoM2(latlon) {
+    if (latlon.length < 3) return 0;
+    // equirectangular projection around centroid
+    const R = 6371000;
+    const lat0 = latlon.reduce((s,p)=>s+p.lat,0)/latlon.length * Math.PI/180;
+    const lon0 = latlon.reduce((s,p)=>s+p.lon,0)/latlon.length * Math.PI/180;
+
+    const pts = latlon.map(p => {
+      const lat = p.lat * Math.PI/180;
+      const lon = p.lon * Math.PI/180;
+      const x = (lon - lon0) * Math.cos(lat0) * R;
+      const y = (lat - lat0) * R;
+      return {x,y};
+    });
+
+    let sum = 0;
+    for (let i=0;i<pts.length;i++) {
+      const j = (i+1) % pts.length;
+      sum += pts[i].x * pts[j].y - pts[j].x * pts[i].y;
+    }
+    return Math.abs(sum) / 2;
+  }
+
+  function drawPolygon(latlon) {
+    if (!ctx || !canvas) return;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    if (latlon.length < 2) {
+      ctx.fillStyle = '#7f8c8d';
+      ctx.font = '14px system-ui';
+      ctx.fillText('Agrega 3+ puntos GPS para dibujar el potrero.', 16, 28);
+      return;
+    }
+
+    // normalize to canvas
+    const lats = latlon.map(p=>p.lat);
+    const lons = latlon.map(p=>p.lon);
+    const minLat = Math.min(...lats), maxLat = Math.max(...lats);
+    const minLon = Math.min(...lons), maxLon = Math.max(...lons);
+
+    const pad = 26;
+    const w = canvas.width - pad*2;
+    const h = canvas.height - pad*2;
+
+    function mapX(lon) {
+      if (maxLon === minLon) return pad + w/2;
+      return pad + (lon - minLon) / (maxLon - minLon) * w;
+    }
+    function mapY(lat) {
+      if (maxLat === minLat) return pad + h/2;
+      // invert y (north up)
+      return pad + (maxLat - lat) / (maxLat - minLat) * h;
+    }
+
+    // path
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = '#8b4513';
+    ctx.fillStyle = 'rgba(240,224,192,0.35)';
+
+    ctx.beginPath();
+    ctx.moveTo(mapX(latlon[0].lon), mapY(latlon[0].lat));
+    for (let i=1;i<latlon.length;i++) {
+      ctx.lineTo(mapX(latlon[i].lon), mapY(latlon[i].lat));
+    }
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // points
+    ctx.fillStyle = '#4b3b2d';
+    latlon.forEach((p, idx) => {
+      const x = mapX(p.lon), y = mapY(p.lat);
+      ctx.beginPath();
+      ctx.arc(x, y, 5, 0, Math.PI*2);
+      ctx.fill();
+      ctx.fillText(String(idx+1), x+8, y-8);
+    });
+  }
+
+  function renderPuntos() {
+    if (listaPuntosEl) {
+      if (!puntos.length) {
+        listaPuntosEl.textContent = 'Sin puntos aún.';
+      } else {
+        listaPuntosEl.innerHTML = puntos.map((p,i)=>`<div>#${i+1}: ${p.lat.toFixed(6)}, ${p.lon.toFixed(6)} (±${Math.round(p.acc||0)}m)</div>`).join('');
+      }
+    }
+    drawPolygon(puntos);
+
+    const area = areaPoligonoM2(puntos);
+    if (areaM2El) areaM2El.value = area ? Math.round(area).toString() : '';
+  }
+
+  const btnPuntoGPS = document.getElementById('btnPuntoGPS');
+  if (btnPuntoGPS) {
+    btnPuntoGPS.addEventListener('click', async ()=> {
+      try {
+        const p = await geoGetPoint();
+        puntos.push(p);
+        renderPuntos();
+      } catch(e) {
+        alert('No se pudo tomar GPS. Revisa permisos de ubicación del navegador.');
+      }
+    });
+  }
+  const btnLimpiarGPS = document.getElementById('btnLimpiarGPS');
+  if (btnLimpiarGPS) btnLimpiarGPS.addEventListener('click', ()=> limpiarPuntos());
+
+  // Potreros storage
+  manejarFormulario(
+    'form-potreros',
+    'pecuario_potreros',
+    'lista-potreros',
+    (p) => {
+      const letra = p.letra || p.nombre || '-';
+      const area = p.areaM2 || '';
+      const pts = (p.puntos && p.puntos.length) ? p.puntos.length : 0;
+      return `Potrero ${letra} | Área: ${area ? area + ' m²' : '—'} | Puntos GPS: ${pts} | ${p.nombre ? 'Nombre: ' + p.nombre : ''}`;
+    },
+    (obj, lista) => {
+      // anexar puntos y área al último registro guardado (obj)
+      obj.puntos = puntos.slice();
+      obj.areaM2 = (areaM2El && areaM2El.value) ? areaM2El.value : '';
+      // re-guardar corrigiendo el último elemento
+      lista[lista.length - 1] = obj;
+      setData('pecuario_potreros', lista);
+      pintarLista('pecuario_potreros', 'lista-potreros', (p) => {
+        const letra = p.letra || p.nombre || '-';
+        const area = p.areaM2 || '';
+        const pts = (p.puntos && p.puntos.length) ? p.puntos.length : 0;
+        return `Potrero ${letra} | Área: ${area ? area + ' m²' : '—'} | Puntos GPS: ${pts} | ${p.nombre ? 'Nombre: ' + p.nombre : ''}`;
+      });
+      limpiarPuntos();
+    }
+  );
+
+  // ======================
+  // Corrales
+  // ======================
+  manejarFormulario(
+    'form-corrales',
+    'pecuario_corrales',
+    'lista-corrales',
+    (c) => `Corral ${c.corralId || '-'} | Potrero ${c.potrero || '-'} | Grupo: ${c.grupo || '-'} | Densidad: ${c.densidad || '-'} | Bebedero: ${c.bebedero || '-'} | Comedero: ${c.comedero || '-'}`,
+    null
+  );
+
+  // ======================
+  // Reproducción: calcular cruza cría y fecha probable
+  // ======================
+  function calcCruzaCria(form) {
+    const partes = [];
+    const add = (x)=>{ if (x && x.trim()) partes.push(x.trim()); };
+    add(form.razaH.value); add(form.cruzaH1.value); add(form.cruzaH2.value);
+    add('×');
+    add(form.razaM.value); add(form.cruzaM1.value); add(form.cruzaM2.value);
+    form.cruzaCria.value = partes.filter(Boolean).join(' ');
+  }
+
+  const formRepro = document.getElementById('form-repro');
+  if (formRepro) {
+    formRepro.addEventListener('change', ()=> calcCruzaCria(formRepro));
+    formRepro.addEventListener('input', ()=> calcCruzaCria(formRepro));
+  }
+  const btnCalcularProb = document.getElementById('btnCalcularProb');
+  if (btnCalcularProb && formRepro) {
+    btnCalcularProb.addEventListener('click', ()=> {
+      const fe = formRepro.fechaEmp.value;
+      if (!fe) return alert('Primero captura la fecha de empadre.');
+      const d = new Date(fe + 'T00:00:00');
+      d.setDate(d.getDate() + 283);
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth()+1).padStart(2,'0');
+      const dd = String(d.getDate()).padStart(2,'0');
+      formRepro.fechaProb.value = `${yyyy}-${mm}-${dd}`;
+    });
+  }
+
+  manejarFormulario(
+    'form-repro',
+    'pecuario_repro',
+    'lista-repro',
+    (r) => `Hembra ${r.vientre || '-'} (${r.razaH || '-'}) | Toro: ${r.toro || '-'} (${r.razaM || '-'}) | Empadre: ${r.fechaEmp || '-'} | Prob: ${r.fechaProb || '-'} | Parto: ${r.fechaParto || '-'} | Cría: ${r.sexoCria || '-'} ${r.pesoCria || ''} kg`,
+    null
+  );
+
+  // ======================
+  // Sanidad, Clima, Contabilidad, Seguridad, Maquinaria, Actividades
+  // ======================
+  manejarFormulario(
+    'form-sanidad',
+    'pecuario_sanidad',
+    'lista-sanidad',
+    (s) => `Arete ${s.arete || '-'} | ${s.tipo || ''} | Enf: ${s.enfermedad || '-'} | Tratamiento: ${s.tratamiento || '-'}`,
+    null
+  );
+
+  manejarFormulario(
+    'form-clima',
+    'pecuario_clima',
+    'lista-clima',
+    (c) => `Fecha ${c.fecha || '-'} | Tmin: ${c.tmin || ''}°C / Tmax: ${c.tmax || ''}°C | Condición: ${c.cond || '-'} | Lluvia: ${c.lluvia || ''} mm`,
+    null
+  );
+
+  manejarFormulario(
+    'form-conta',
+    'pecuario_conta',
+    'lista-conta',
+    (c) => `${c.tipo || ''} | ${c.fecha || ''} | ${c.cuenta || '-'} | $${c.monto || ''}`,
+    null
+  );
+
+  manejarFormulario(
+    'form-visitas',
+    'pecuario_visitas',
+    null,
+    null,
+    null
+  );
+  manejarFormulario(
+    'form-bitacora',
+    'pecuario_bitacora',
+    'lista-seguridad',
+    (b) => `Fecha ${b.fecha || '-'} ${b.hora || ''} | Evento: ${b.evento || '-'}`,
+    null
+  );
+
+  manejarFormulario(
+    'form-maquinaria',
+    'pecuario_maquinaria',
+    'lista-maquinaria',
+    (m) => `${m.tipo || '-'} | ${m.desc || '-'} | Cant: ${m.cantidad || ''} | Últ. mantto: ${m.fechaMant || '-'}`,
+    null
+  );
+
+  manejarFormulario(
+    'form-actividades',
+    'pecuario_actividades',
+    'lista-actividades',
+    (a) => `${a.modulo || '-'} | ${a.actividad || '-'} | Resp: ${a.responsable || '-'} | ${a.periodicidad || ''} (${a.semaforo || ''})`,
+    null
+  );
+
+  // Perfil del rancho
+  (function () {
+    const form = document.getElementById('form-config');
+    if (!form) return;
+    const saved = getData('pecuario_config');
+    if (saved && saved.length) {
+      const cfg = saved[saved.length - 1];
+      Object.keys(cfg).forEach(k => {
+        if (form.elements[k]) form.elements[k].value = cfg[k];
+      });
+    }
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const datos = new FormData(form);
+      const obj = {};
+      datos.forEach((val, key) => { obj[key] = val; });
+      const lista = getData('pecuario_config');
+      lista.push(obj);
+      setData('pecuario_config', lista);
+      alert('Perfil guardado.');
+      actualizarPanel();
+      actualizarReportes();
+    });
+  })();
+
+  // ======================
+  // Razas: agregar
+  // ======================
+  const btnAgregarRaza = document.getElementById('btnAgregarRaza');
+  if (btnAgregarRaza) {
+    btnAgregarRaza.addEventListener('click', ()=> {
+      const txt = document.getElementById('txtNuevaRaza');
+      const raza = (txt.value || '').trim();
+      if (!raza) return;
+      const extra = getData('pecuario_razas_extra');
+      extra.push(raza);
+      setData('pecuario_razas_extra', extra);
+      txt.value = '';
+      refrescarRazasEnUI();
+      alert('Raza agregada a las listas.');
+    });
+  }
+
+  // ======================
+  // Suplementos (modal)
+  // ======================
+  const modal = document.getElementById('modalSupl');
+  const btnAbrirSuplementos = document.getElementById('btnAbrirSuplementos');
+  const btnNuevoSupl = document.getElementById('btnNuevoSupl');
+  const btnCerrarSupl = document.getElementById('btnCerrarSupl');
+  const btnBorrarSupl = document.getElementById('btnBorrarSupl');
+
+  function abrirModalSupl(corralId) {
+    if (!modal) return;
+    modal.classList.add('activo');
+    const form = document.getElementById('form-supl');
+    if (form) {
+      form.reset();
+      if (corralId) form.corralId.value = corralId;
+    }
+  }
+  function cerrarModalSupl() {
+    if (!modal) return;
+    modal.classList.remove('activo');
+  }
+
+  if (btnAbrirSuplementos) {
+    btnAbrirSuplementos.addEventListener('click', ()=> {
+      // si el usuario estaba capturando un corral, pre-llenar
+      const f = document.getElementById('form-corrales');
+      const c = f ? (f.corralId.value || '') : '';
+      abrirModalSupl(c);
+    });
+  }
+  if (btnNuevoSupl) btnNuevoSupl.addEventListener('click', ()=> abrirModalSupl(''));
+  if (btnCerrarSupl) btnCerrarSupl.addEventListener('click', ()=> cerrarModalSupl());
+  if (modal) {
+    modal.addEventListener('click', (e)=> {
+      if (e.target === modal) cerrarModalSupl();
+    });
+  }
+
+  function pintarSuplementos() {
+    const cont = document.getElementById('lista-supl');
+    if (!cont) return;
+    const lista = getData('pecuario_suplementos');
+    cont.innerHTML = '';
+    if (!lista.length) {
+      cont.innerHTML = '<div>Sin registros.</div>';
+      return;
+    }
+    lista.slice().reverse().forEach(s => {
+      const div = document.createElement('div');
+      const cor = s.corralId ? ` | Corral ${s.corralId}` : '';
+      div.textContent = `${s.nombre || '-'}${cor} | Temporada/Clima: ${s.temporada || '-'} | Frec: ${s.frecuencia || '-'}`;
+      cont.appendChild(div);
+    });
+  }
+
+  const formSupl = document.getElementById('form-supl');
+  if (formSupl) {
+    formSupl.addEventListener('submit', (e)=> {
+      e.preventDefault();
+      const datos = new FormData(formSupl);
+      const obj = {};
+      datos.forEach((val, key) => { obj[key] = val; });
+      const lista = getData('pecuario_suplementos');
+      obj._fechaRegistro = new Date().toISOString();
+      lista.push(obj);
+      setData('pecuario_suplementos', lista);
+      pintarSuplementos();
+      actualizarPanel();
+      actualizarReportes();
+      cerrarModalSupl();
+      alert('Suplemento guardado.');
+    });
+  }
+
+  if (btnBorrarSupl) {
+    btnBorrarSupl.addEventListener('click', ()=> {
+      if (confirm('¿Borrar TODOS los suplementos?')) {
+        setData('pecuario_suplementos', []);
+        pintarSuplementos();
+        actualizarReportes();
+      }
+    });
+  }
+
+  // ======================
+  // Panel + Reportes
+  // ======================
+  function actualizarPanel() {
+    const animales  = getData('pecuario_animales');
+    const pesInd    = getData('pecuario_pesaje_ind');
+    const pesGrp    = getData('pecuario_pesaje_grupo');
+    const repro     = getData('pecuario_repro');
+    const sanidad   = getData('pecuario_sanidad');
+    const visitas   = getData('pecuario_visitas');
+    const bitacora  = getData('pecuario_bitacora');
+    const climas    = getData('pecuario_clima');
+    const conta     = getData('pecuario_conta');
+
+    document.getElementById('pnl-animales').textContent = animales.length;
+    document.getElementById('pnl-pesajes').textContent  = pesInd.length + pesGrp.length;
+
+    const nac = repro.filter(r => (r.fechaParto || '').trim() !== '').length;
+    document.getElementById('pnl-nacimientos').textContent = nac;
+
+    document.getElementById('pnl-sanidad').textContent  = sanidad.length;
+    document.getElementById('pnl-seguridad').textContent = visitas.length + bitacora.length;
+
+    if (climas.length) {
+      const ultimo = climas[climas.length - 1];
+      document.getElementById('pnl-clima').textContent =
+        `${ultimo.fecha || ''} | ${ultimo.cond || ''} | Tmin ${ultimo.tmin || ''} / Tmax ${ultimo.tmax || ''}`;
+    } else {
+      document.getElementById('pnl-clima').textContent = 'Sin datos';
+    }
+
+    let totalIng = 0;
+    let totalGas = 0;
+    conta.forEach(c => {
+      const monto = parseFloat(c.monto || '0') || 0;
+      if (c.tipo === 'Ingreso') totalIng += monto;
+      if (c.tipo === 'Gasto')   totalGas += monto;
+    });
+    document.getElementById('pnl-conta').textContent =
+      `$${totalIng.toFixed(2)} / $${totalGas.toFixed(2)}`;
+  }
+
+  function actualizarReportes() {
+    const setCount = (id, n) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = String(n);
+    };
+
+    setCount('rep-animales',    getData('pecuario_animales').length);
+    setCount('rep-pesajes',     getData('pecuario_pesaje_ind').length + getData('pecuario_pesaje_grupo').length);
+    setCount('rep-repro',       getData('pecuario_repro').length);
+    setCount('rep-sanidad',     getData('pecuario_sanidad').length);
+    setCount('rep-clima',       getData('pecuario_clima').length);
+    setCount('rep-conta',       getData('pecuario_conta').length);
+    setCount('rep-seguridad',   getData('pecuario_visitas').length + getData('pecuario_bitacora').length);
+    setCount('rep-maquinaria',  getData('pecuario_maquinaria').length);
+    setCount('rep-actividades', getData('pecuario_actividades').length);
+    setCount('rep-potreros',    getData('pecuario_potreros').length);
+    setCount('rep-corrales',    getData('pecuario_corrales').length);
+    setCount('rep-supl',        getData('pecuario_suplementos').length);
+  }
+
+  // ======================
+  // Init UI
+  // ======================
+  refrescarRazasEnUI();
+  refrescarGruposEnUI();
+  refrescarPotrerosEnUI();
+
+  // Listas iniciales
+  pintarLista('pecuario_pesaje_ind', 'lista-pesaje-ind', (p) => {
+    const deltaObj = ultimoPesajeAnimal(p.areteOficial);
+    const deltaTxt = deltaObj ? ` | Δ vs último: ${deltaObj.delta.toFixed(1)} kg` : '';
+    return `Arete ${p.areteOficial || '-'} | Fecha: ${p.fecha || '-'} | Peso: ${p.peso || ''} kg | Ubicación: ${p.ubicacion || '-'}${deltaTxt}`;
+  });
+  pintarLista('pecuario_pesaje_grupo', 'lista-pesaje-grupo', (p) => {
+    const prom = parseFloat(p.pesoProm||0) || 0;
+    const delta = p.deltaProm ? ` | Δ prom: ${p.deltaProm} kg/cab` : '';
+    return `Grupo ${p.grupo || '-'} | Fecha: ${p.fecha || '-'} | Potrero: ${p.potrero || '-'} | Corral: ${p.corral || '-'} | Cabezas: ${p.cabezas || ''} | Total: ${p.pesoTotal || ''} kg | Prom: ${prom.toFixed(1)} kg/cab${delta}`;
+  });
+
+  pintarSuplementos();
+  renderPuntos();
+  actualizarPanel();
+  actualizarReportes();
+</script>
 </body>
 </html>
