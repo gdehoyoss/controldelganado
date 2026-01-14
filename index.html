@@ -425,7 +425,7 @@ header small {
     <h1>PECUARIO GB</h1>
     <h2>PERMANENCIA y CRECIMIENTO</h2>
     <div class="accionesPortada">
-      <button class="btn-primario" id="btnEntrar">Entrar a la app</button>
+      <button type="button" class="btn-primario" id="btnEntrar" onclick="(function(){var p=document.getElementById('portada'); if(p) p.style.display='none';})();">Entrar a la app</button>
       <button class="btn-secundario" id="btnCerrarMarca">Ocultar “etapa de prueba”</button>
     </div>
 
@@ -494,9 +494,14 @@ header small {
         <span id="pnl-corrales-abiertos">—</span>
       </div>
       <div class="tarjeta" data-perm="conta">
-        <strong>Ingresos - Gastos (simple)</strong>
+        <strong>Ingresos / Egresos</strong>
         <span id="pnl-conta">0 / 0</span>
       </div>
+      <div class="tarjeta" data-perm="conta">
+        <strong>Saldo Caja y Bancos (B-01)</strong>
+        <span id="pnl-b01">$0.00</span>
+      </div>
+      
       <div class="tarjeta" style="grid-column: 1 / -1;">
         <strong>Pronóstico 7 días</strong>
         <div class="wx-wrap">
@@ -748,6 +753,7 @@ header small {
     <div class="subtabs" aria-label="Submódulos Potreros">
       <button type="button" class="activo" data-sub="pot-potreros">Potreros</button>
       <button type="button" data-sub="pot-corrales">Corrales</button>
+      <button type="button" data-sub="pot-pirnos">Indicadores</button>
       <button type="button" data-sub="pot-supl">Suplementos</button>
     </div>
 
@@ -893,6 +899,127 @@ header small {
       </form>
 
       <div class="lista" id="lista-corrales"></div>
+    </div>
+
+
+    <!-- Indicadores -->
+    <div id="sub-pot-pirnos" class="submodulo">
+      <h3 style="margin-top:0;">Indicadores</h3>
+      <p class="nota">Pastoreo intensivo, regenerativo, no selectivo. Registros <b>por corral</b> con fecha.</p>
+
+      <form id="form-pirnos">
+        <div class="fila-tres">
+          <div>
+            <label>Corral</label>
+            <select name="corralKey" id="selCorralPirnos" required></select>
+          </div>
+          <div>
+            <label>Fecha de registro</label>
+            <input type="date" name="fecha" id="pirnosFecha" required />
+          </div>
+          <div>
+            <label>Recuperación del corral (días)</label>
+            <input type="number" min="0" step="1" name="recuperacionDias" placeholder="Ej. 30" />
+          </div>
+        </div>
+
+        <h4 style="margin:10px 0 6px;">I. Salud del suelo</h4>
+        <div class="fila-tres">
+          <div>
+            <label>Infiltración del agua a 15 cm</label>
+            <select name="infil15" required>
+              <option value="">Selecciona…</option>
+              <option value="Sí">Sí</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+          <div>
+            <label>Infiltración del agua a 30 cm</label>
+            <select name="infil30" required>
+              <option value="">Selecciona…</option>
+              <option value="Sí">Sí</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+          <div>
+            <label>Suelo desnudo (% sin forraje)</label>
+            <input type="number" min="0" max="100" step="0.1" name="sueloDesnudoPct" placeholder="0 - 100" />
+          </div>
+        </div>
+
+        <div class="fila-tres">
+          <div>
+            <label>Presencia de escarabajos</label>
+            <select name="escarabajos" required>
+              <option value="">Selecciona…</option>
+              <option value="Sí">Sí</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+          <div>
+            <label>Heces (1-3)</label>
+            <select name="heces" required>
+              <option value="">Selecciona…</option>
+              <option value="1">1 - Sopa (exceso proteína / humedad)</option>
+              <option value="2">2 - Pastel (ideal, volcán)</option>
+              <option value="3">3 - Piedra (exceso fibra)</option>
+            </select>
+          </div>
+          <div>
+            <label>Actividad biológica (días en desaparecer heces)</label>
+            <input type="number" min="0" step="1" name="actividadDias" placeholder="Ej. 4" />
+          </div>
+        </div>
+
+        <h4 style="margin:10px 0 6px;">I.6 Mantillo</h4>
+        <div class="fila-tres">
+          <div>
+            <label>Aparición de nuevas especies</label>
+            <select name="nuevasEspecies" required>
+              <option value="">Selecciona…</option>
+              <option value="Sí">Sí</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+          <div>
+            <label>% del forraje acostado</label>
+            <input type="number" min="0" max="100" step="0.1" name="forrajeAcostadoPct" placeholder="0 - 100" />
+          </div>
+          <div>
+            <label>&nbsp;</label>
+            <div class="nota" style="padding:10px;">Tip: mide el % del área con forraje “acostado” (cama).</div>
+          </div>
+        </div>
+
+        <h4 style="margin:10px 0 6px;">II. Condición corporal</h4>
+        <div class="fila-tres">
+          <div>
+            <label>Llenado del rumen (1-3)</label>
+            <select name="rumen" required>
+              <option value="">Selecciona…</option>
+              <option value="1">1 - Vacío (triángulo hundido)</option>
+              <option value="2">2 - Medio (triángulo plano)</option>
+              <option value="3">3 - Lleno (abultado)</option>
+            </select>
+          </div>
+          <div>
+            <label>&nbsp;</label>
+            <div class="nota" style="padding:10px;">Evalúa visualmente el llenado del rumen.</div>
+          </div>
+          <div></div>
+        </div>
+
+        <div class="acciones">
+          <button type="submit" class="btn-primario">Guardar indicadores</button>
+          <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-pirnos')">Limpiar</button>
+        </div>
+      </form>
+
+      <div class="acciones" style="margin-top:10px;">
+        <button type="button" class="btn-terciario" id="btnVerTodosPirnos">Ver todos</button>
+      </div>
+
+      <div class="lista" id="lista-pirnos"></div>
     </div>
 
     <!-- Suplementos -->
@@ -1202,11 +1329,8 @@ header small {
   </section>
 <!-- CONTABILIDAD -->
   <section id="mod-conta" class="modulo">
-    <h2>Contabilidad: Ingresos y Egresos (Caja y Bancos)</h2>
-    <p class="nota">
-      Contabilidad por flujo de efectivo: todas las transacciones se registran contra <b>Caja y Bancos (B-01)</b>.
-      Compras/ventas a crédito se registran únicamente cuando se paga o se cobra.
-    </p>
+    <h2>Contabilidad: Resultados y Balance (flujo de efectivo)</h2>
+    <p class="nota">Contabilidad por <b>flujo de efectivo</b> con cuentas de <b>Resultados</b> y <b>Balance</b>. Todas las transacciones se registran contra <b>Caja y Bancos (B-01)</b>. Operaciones a crédito se registran únicamente al <b>cobrar</b> o <b>pagar</b>.</p>
 
     <div class="conta-bar">
       <div class="fila-tres">
@@ -1300,7 +1424,7 @@ header small {
       </div>
 
       <div id="conta-arete-wrap" style="display:none;">
-        <label>Arete Oficial (Ventas V-01..V-06 o Baja MD-01)</label>
+        <label>Arete Oficial (Venta RV-01..RV-06 o Baja RMD-01)</label>
         <input name="areteOficial" placeholder="Ej. MX123456789" />
       </div>
 
@@ -1366,6 +1490,61 @@ header small {
           </tr>
         </thead>
         <tbody id="conta-resumen-tbody"></tbody>
+      </table>
+    </div>
+
+    
+    <h3>Estado de Resultados (acumulado del año)</h3>
+    <div class="conta-table-wrap">
+      <table class="conta-table">
+        <thead>
+          <tr>
+            <th>Cuenta</th>
+            <th style="text-align:right;">Valor</th>
+            <th style="text-align:right;">% del Ing. Result.</th>
+            <th style="text-align:right;">Por Vientre</th>
+          </tr>
+        </thead>
+        <tbody id="conta-er-ing-tbody"></tbody>
+        <tbody id="conta-er-egr-tbody"></tbody>
+        <tfoot>
+          <tr>
+            <th colspan="1">Utilidad / Pérdida</th>
+            <th id="conta-er-util" style="text-align:right;"></th>
+            <th></th>
+            <th id="conta-er-util-v" style="text-align:right;"></th>
+          </tr>
+        </tfoot>
+      </table>
+      <div class="nota" style="margin-top:8px;">
+        * % calculado contra el <b>Total de Ingresos de Resultados</b>. "Por Vientre" usa el número de vientres activos en Inventario.
+      </div>
+    </div>
+
+    <h3>Balance General (al cierre del periodo)</h3>
+    <div class="conta-table-wrap">
+      <table class="conta-table">
+        <thead>
+          <tr>
+            <th>Cuenta</th>
+            <th style="text-align:right;">Saldo</th>
+          </tr>
+        </thead>
+        <tbody id="conta-bg-tbody"></tbody>
+        <tfoot>
+          <tr>
+            <th>Total Activos</th>
+            <th id="conta-bg-total-act" style="text-align:right;"></th>
+          </tr>
+          <tr>
+            <th>Préstamos Bancarios (saldo)</th>
+            <th id="conta-bg-pasivo" style="text-align:right;"></th>
+          </tr>
+          <tr>
+            <th>Patrimonio (calculado)</th>
+            <th id="conta-bg-patrimonio" style="text-align:right;"></th>
+          </tr>
+        </tfoot>
       </table>
     </div>
 
@@ -1650,6 +1829,7 @@ header small {
         <tr data-rep="actividades"><td style="padding:6px;">Actividades</td><td style="padding:6px;" id="rep-actividades">0</td></tr>
         <tr data-rep="potreros"><td style="padding:6px;">Potreros</td><td style="padding:6px;" id="rep-potreros">0</td></tr>
         <tr data-rep="corrales"><td style="padding:6px;">Corrales</td><td style="padding:6px;" id="rep-corrales">0</td></tr>
+        <tr data-rep="indicadores"><td style="padding:6px;">Indicadores</td><td style="padding:6px;" id="rep-indicadores">0</td></tr>
         <tr data-rep="supl"><td style="padding:6px;">Suplementos</td><td style="padding:6px;" id="rep-supl">0</td></tr>
       </tbody>
     </table>
@@ -2067,6 +2247,7 @@ actualizarPanel();
     {key:"actividades", label:"Actividades"},
     {key:"potreros", label:"Potreros"},
     {key:"corrales", label:"Corrales"},
+    {key:"indicadores", label:"Indicadores"},
     {key:"supl", label:"Suplementos"}
   ];
 
@@ -2210,11 +2391,12 @@ const renderChecks = ()=>{
         {label:"Sexo", field:"sexo"},
         {label:"Raza", field:"razaPre"},
         {label:"Ubicación", field:"ubicacion"},
-        {label:"Peso", field:"peso"},
-        {label:"Fecha nac.", field:"fechaNac"},
+        {label:"Edad", field:"edad"},
+        {label:"Estado", field:"estado"},
         {label:"Obs.", field:"obs"}
       ]
     },
+
     bajas: {
       title: "Bajas (Ventas / Muertes / Desechos)",
       keys: ["pecuario_animales_bajas"],
@@ -2230,7 +2412,9 @@ const renderChecks = ()=>{
             fecha: x._fechaBaja || x.fecha || '',
             motivo: x._motivoBaja || x.motivo || '',
             cuentaCodigo: code,
-            cuentaLabel: cuentaLabel,
+            cuentaNombre: nm,
+            cuentaLabel,
+            monto: (x._montoVenta!==undefined && x._montoVenta!==null && x._montoVenta!=='') ? x._montoVenta : (x.monto||''),
             areteOficial: x.areteOficial || '',
             grupo: x.grupo || '',
             sexo: x.sexo || '',
@@ -2242,16 +2426,17 @@ const renderChecks = ()=>{
       },
       filters: [
         {label:"Motivo", field:"motivo", values: ()=> ["Venta","Muerte/Desecho"]},
-        {label:"Cuenta", field:"cuentaLabel", values: ()=> CONTA_ACCOUNTS.filter(a=>a.code.startsWith('V-') || a.code==='MD-01').map(a=>`${a.code} — ${a.name}`)},
+        {label:"Cuenta", field:"cuentaLabel", values: ()=> CONTA_ACCOUNTS.filter(a=>a.code && (a.code.startsWith('RV-') || a.code==='RMD-01')).map(a=>`${a.code} — ${a.name}`)},
         {label:"Grupo", field:"grupo", values: ()=> gruposBase},
         {label:"Sexo", field:"sexo", values: ()=> ["Hembra","Macho"]},
-        {label:"Raza", field:"razaPre", values: ()=> getRazas()}
+        {label:"Raza", field:"razaPre", values: ()=> getRazas()},
+        {label:"Arete oficial", field:"areteOficial", type:"text"}
       ],
       columns: [
         {label:"Fecha", field:"fecha"},
         {label:"Motivo", field:"motivo"},
         {label:"Cuenta", field:"cuentaLabel"},
-        {label:"Código", field:"cuentaCodigo"},
+        {label:"Monto", field:"monto"},
         {label:"Arete", field:"areteOficial"},
         {label:"Grupo", field:"grupo"},
         {label:"Sexo", field:"sexo"},
@@ -2260,41 +2445,88 @@ const renderChecks = ()=>{
         {label:"Registró", field:"usuario"}
       ]
     },
+
     pesajes: {
       title: "Pesajes (Individual y por grupo)",
       keys: ["pecuario_pesaje_ind","pecuario_pesaje_grupo"],
       normalize: (dataByKey) => {
-        const ind = (dataByKey["pecuario_pesaje_ind"]||[]).map(x=>({...x,_tipo:"Individual"}));
-        const grp = (dataByKey["pecuario_pesaje_grupo"]||[]).map(x=>({...x,_tipo:"Grupo"}));
+        const ind = (dataByKey["pecuario_pesaje_ind"]||[]).map(x=>({
+          ...x,
+          _tipo:"Individual",
+          potrero: x.potrero || '',
+          corral: x.corral || '',
+          cabezas: x.cabezas || '',
+          pesoTotal: x.pesoTotal || '',
+          pesoProm: x.pesoProm || '',
+          deltaProm: x.deltaProm || x.delta || '',
+          ganPer: (parseFloat(x.deltaProm||x.delta||0)>0) ? "Ganancia" : (parseFloat(x.deltaProm||x.delta||0)<0 ? "Pérdida" : "Sin cambio")
+        }));
+        const grp = (dataByKey["pecuario_pesaje_grupo"]||[]).map(x=>({
+          ...x,
+          _tipo:"Grupo",
+          areteOficial: x.areteOficial || '',
+          areteRancho: x.areteRancho || '',
+          peso: x.peso || '',
+          ubicacion: x.ubicacion || '',
+          delta: x.delta || '',
+          ganPer: (parseFloat(x.deltaProm||0)>0) ? "Ganancia" : (parseFloat(x.deltaProm||0)<0 ? "Pérdida" : "Sin cambio")
+        }));
         return ind.concat(grp);
       },
       filters: [
+        {label:"Arete oficial", field:"areteOficial", type:"text"},
+        {label:"Arete rancho", field:"areteRancho", type:"text"},
+        {label:"Fecha", field:"fecha"},
         {label:"Tipo", field:"_tipo", values: ()=> ["Individual","Grupo"]},
         {label:"Grupo", field:"grupo", values: ()=> gruposBase},
-        {label:"Arete", field:"areteOficial"}
+        {label:"Potrero", field:"potrero", values: ()=> (getData('pecuario_potreros')||[]).map(p=>p.letra).filter(Boolean)},
+        {label:"Corral", field:"corral"},
+        {label:"No. de cabezas", field:"cabezas"},
+        {label:"Peso", field:"peso"},
+        {label:"Peso total", field:"pesoTotal"},
+        {label:"Peso promedio", field:"pesoProm"},
+        {label:"Ganancia o pérdida", field:"ganPer", values: ()=> ["Ganancia","Pérdida","Sin cambio"]}
       ],
       columns: [
         {label:"Fecha", field:"fecha"},
         {label:"Tipo", field:"_tipo"},
         {label:"Grupo", field:"grupo"},
         {label:"Arete", field:"areteOficial"},
+        {label:"Arete rancho", field:"areteRancho"},
+        {label:"Potrero", field:"potrero"},
+        {label:"Corral", field:"corral"},
+        {label:"No. cabezas", field:"cabezas"},
         {label:"Peso", field:"peso"},
         {label:"Peso total", field:"pesoTotal"},
         {label:"Promedio", field:"pesoProm"},
-        {label:"Δ", field:"delta"},
+        {label:"Gan/Per", field:"ganPer"},
+        {label:"Δ", field:"deltaProm"},
         {label:"Ubicación", field:"ubicacion"}
       ]
     },
+
     repro: {
       title: "Reproducción y partos",
       keys: ["pecuario_repro"],
+      normalize: (dataByKey) => {
+        return (dataByKey["pecuario_repro"]||[]).map(x=>({
+          ...x,
+          saludCat: (x.saludCat && x.saludCat.trim()) ? x.saludCat : "Ninguno"
+        }));
+      },
       filters: [
+        {label:"Fecha probable de parición", field:"fechaProb"},
+        {label:"Calostro — toma (nivel)", field:"calostroNivel", values: ()=> ["Normal","Regular","Mala"]},
+        {label:"Calostro — completó", field:"calostroComp", values: ()=> ["Sí","No"]},
+        {label:"Problema de salud al nacer", field:"saludCat", values: ()=> ["Ninguno","Digestivo","Respiratorio","Infeccioso","Motriz","Ocular","Otro"]},
         {label:"Raza hembra", field:"razaH", values: ()=> getRazas()},
         {label:"Raza toro", field:"razaT", values: ()=> getRazas()},
-        {label:"Resultado", field:"resultado", values: ()=> ["Empadre","Gestación","Preñez","Parto","Nacimiento","Aborto","Falla","Otro"]}
+        {label:"Resultado", field:"resultado", values: ()=> ["Gestación","Preñez","Parto","Nacimiento","Aborto","Falla","Otro"]}
       ],
       columns: [
         {label:"Fecha", field:"fecha"},
+        {label:"Fecha empadre", field:"fechaEmp"},
+        {label:"Fecha probable", field:"fechaProb"},
         {label:"Vientre", field:"vientre"},
         {label:"Raza H", field:"razaH"},
         {label:"Toro", field:"toro"},
@@ -2302,111 +2534,181 @@ const renderChecks = ()=>{
         {label:"Cruza 1", field:"cruza1"},
         {label:"Cruza 2", field:"cruza2"},
         {label:"Resultado", field:"resultado"},
+        {label:"Calostro", field:"calostroNivel"},
+        {label:"Salud nacer", field:"saludCat"},
         {label:"Obs.", field:"obs"}
       ]
     },
+
     sanidad: {
       title: "Sanidad",
       keys: ["pecuario_sanidad"],
       filters: [
-        {label:"Tipo de evento", field:"tipo"},
-        {label:"Enfermedad / motivo", field:"enfermedadCat"},
-        {label:"Arete", field:"arete"}
+        {label:"Arete oficial", field:"arete", type:"text"},
+        {label:"Fecha", field:"fecha"},
+        {label:"Tipo de evento", field:"tipo", values: ()=> ["Preventivo (vacuna)","Correctivo (enfermedad)"]},
+        {label:"Enfermedad / motivo", field:"enfermedadCat", values: ()=> ["Digestivo","Respiratorio","Infeccioso","Motriz","Ocular","Otro"]},
+        {label:"Temperatura", field:"temp"},
+        {label:"Tratamiento / vacuna", field:"tratamiento"}
       ],
       columns: [
         {label:"Fecha", field:"fecha"},
         {label:"Arete", field:"arete"},
         {label:"Tipo", field:"tipo"},
         {label:"Enfermedad", field:"enfermedadCat"},
-        {label:"Detalle", field:"detalle"},
+        {label:"Temperatura", field:"temp"},
         {label:"Tratamiento", field:"tratamiento"},
+        {label:"Detalle", field:"detalle"},
         {label:"Obs.", field:"obs"}
       ]
     },
+
     conta: {
-      title: "Contabilidad (Movimientos)",
+      title: "Contabilidad",
       keys: ["pecuario_conta_ledger"],
       filters: [
-        {label:"Año", field:"anio", values: ()=> { const y=new Date().getFullYear(); return [String(y-2),String(y-1),String(y),String(y+1)]; }},
         {label:"Tipo", field:"tipo", values: ()=> ["Ingreso","Egreso"]},
         {label:"Cuenta", field:"cuentaLabel", values: ()=> CONTA_ACCOUNTS.map(a=>`${a.code} — ${a.name}`)},
-        {label:"Referencia pago", field:"refPago", values: ()=> ["Transferencia","Efectivo","Cheque","Tarjeta de Credito","Tarjeta de Debito"]}
+        {label:"Referencia pago", field:"refPago", values: ()=> ["Transferencia","Efectivo","Cheque","Tarjeta de Credito","Tarjeta de Debito"]},
+        {label:"Proveedor/Cliente", field:"proveedor", type:"text"}
       ],
+      normalize: (dataByKey) => {
+        const arr = (dataByKey["pecuario_conta_ledger"]||[]).map(x=>({ ...x }));
+        return arr.map(r=>{
+          const cod = (r.cuentaCodigo || r.cuentaCode || r.cuenta || '').trim();
+          const acc = cod ? CONTA_ACCOUNTS.find(a=>a.code===cod) : null;
+          const name = (r.cuentaNombre || r.cuentaName || (acc ? acc.name : '') || '').trim();
+
+          return {
+            fecha: r.fecha || '',
+            tipo: r.tipo || (acc ? acc.tipo : ''),
+            cuentaCodigo: cod,
+            cuentaNombre: name,
+            cuentaLabel: cod ? (name ? `${cod} — ${name}` : cod) : (name || ''),
+            proveedor: r.tercero || r.proveedor || r.cliente || '',
+            factura: r.factura || '',
+            producto: r.productoTipo || r.producto || '',
+            refPago: r.refPago || '',
+            monto: r.monto,
+            arete: r.arete || '',
+            descripcion: r.descripcion || ''
+          };
+        });
+      },
       columns: [
         {label:"Fecha", field:"fecha"},
+        {label:"Tipo", field:"tipo"},
         {label:"Cuenta", field:"cuentaLabel"},
-        {label:"Código", field:"cuentaCodigo"},
-        {label:"Arete", field:"areteOficial"},
         {label:"Proveedor/Cliente", field:"proveedor"},
         {label:"Factura", field:"factura"},
-        {label:"Tipo prod.", field:"tipoProducto"},
+        {label:"Producto", field:"producto"},
         {label:"Ref. pago", field:"refPago"},
-        {label:"Descripción", field:"descripcion"},
-        {label:"Monto", field:"monto"}
+        {label:"Monto", field:"monto"},
+        {label:"Arete", field:"arete"},
+        {label:"Descripción", field:"descripcion"}
       ]
     },
+
     seguridad: {
       title: "Registros del Velador (Bitácora + Visitas)",
       keys: ["pecuario_bitacora","pecuario_visitas"],
       normalize: (dataByKey) => {
-        const b = (dataByKey["pecuario_bitacora"]||[]).map(x=>({...x,_tipo:"Bitácora"}));
-        const v = (dataByKey["pecuario_visitas"]||[]).map(x=>({...x,_tipo:"Visitas"}));
+        const b = (dataByKey["pecuario_bitacora"]||[]).map(x=>({
+          ...x,
+          _tipo:"Bitacora diaria del velador",
+          horaLlegada: x.hora || x.horaLlegada || '',
+          horaSalida: x.horaSalida || '',
+          nombre: x.nombre || '',
+          asunto: x.asunto || '',
+          vehiculo: x.vehiculo || '',
+          placas: x.placas || ''
+        }));
+        const v = (dataByKey["pecuario_visitas"]||[]).map(x=>({
+          ...x,
+          _tipo:"Registro de visitantes"
+        }));
         return b.concat(v);
       },
       filters: [
-        {label:"Tipo", field:"_tipo"},
-        {label:"Usuario", field:"usuario"},
-        {label:"Fecha", field:"fecha"}
+        {label:"Tipo", field:"_tipo", values: ()=> ["Registro de visitantes","Bitacora diaria del velador"]},
+        {label:"Fecha", field:"fecha"},
+        {label:"Hora llegada", field:"horaLlegada"},
+        {label:"Hora salida", field:"horaSalida"},
+        {label:"Nombre visitante / grupo", field:"nombre", type:"text"},
+        {label:"Asunto / a quien busca", field:"asunto", type:"text"},
+        {label:"Vehículo", field:"vehiculo"},
+        {label:"Placas", field:"placas", type:"text"}
       ],
       columns: [
         {label:"Fecha", field:"fecha"},
         {label:"Tipo", field:"_tipo"},
-        {label:"Usuario", field:"usuario"},
-        {label:"Descripción", field:"desc"},
-        {label:"Detalle", field:"detalle"}
+        {label:"Hora llegada", field:"horaLlegada"},
+        {label:"Hora salida", field:"horaSalida"},
+        {label:"Nombre", field:"nombre"},
+        {label:"Asunto", field:"asunto"},
+        {label:"Vehículo", field:"vehiculo"},
+        {label:"Placas", field:"placas"},
+        {label:"Descripción/Obs.", field:"evento"},
+        {label:"Obs.", field:"obs"},
+        {label:"Usuario", field:"usuario"}
       ]
     },
+
     maquinaria: {
       title: "Maquinaria y equipo",
       keys: ["pecuario_maquinaria"],
       filters: [
-        {label:"Tipo", field:"tipo"},
-        {label:"Estado", field:"estado"},
-        {label:"Ubicación", field:"ubicacion"}
+        {label:"Tipo de activo", field:"tipo", values: ()=> ["Maquinaria","Equipo","Herramienta","Instalación"]},
+        {label:"Cantidad", field:"cantidad"},
+        {label:"Vida útil", field:"vida"},
+        {label:"Descripción", field:"desc", type:"text"},
+        {label:"Fecha de adquisición", field:"fechaAdq"},
+        {label:"Último mantenimiento", field:"fechaMant"}
       ],
       columns: [
-        {label:"Equipo", field:"equipo"},
         {label:"Tipo", field:"tipo"},
-        {label:"Estado", field:"estado"},
-        {label:"Ubicación", field:"ubicacion"},
-        {label:"Último serv.", field:"fechaServ"},
-        {label:"Obs.", field:"obs"}
+        {label:"Cantidad", field:"cantidad"},
+        {label:"Vida útil", field:"vida"},
+        {label:"Descripción", field:"desc"},
+        {label:"Marca/Modelo", field:"marcaModelo"},
+        {label:"Fecha adq.", field:"fechaAdq"},
+        {label:"Último mant.", field:"fechaMant"},
+        {label:"Costo mant.", field:"costoMant"},
+        {label:"Detalle mant.", field:"detMant"}
       ]
     },
+
     actividades: {
       title: "Actividades / Tareas",
       keys: ["pecuario_actividades"],
       filters: [
-        {label:"Estado", field:"estado"},
+        {label:"Módulo", field:"modulo", values: ()=> ["Animales","Pesajes","Potreros","Corrales","Reproducción y Partos","Sanidad","Contabilidad","Seguridad","Maquinaria y Equipo","Otro"]},
         {label:"Asignado a", field:"asignadoA"},
-        {label:"Semáforo", field:"semaforo"}
+        {label:"Fecha de inicio", field:"fechaInicio"},
+        {label:"Fecha fin", field:"fechaFin"},
+        {label:"Estado", field:"estado", values: ()=> ["Pendiente","Completada"]},
+        {label:"Periodicidad", field:"periodicidad", values: ()=> ["Diaria","Terciada","Semanal","Quincenal","Mensual","Trimestral","Semestral","Anual"]},
+        {label:"Color", field:"semaforo", values: ()=> ["Verde","Amarillo","Rojo","Sin color"]}
       ],
       columns: [
+        {label:"Módulo", field:"modulo"},
         {label:"Inicio", field:"fechaInicio"},
         {label:"Fin", field:"fechaFin"},
         {label:"Estado", field:"estado"},
         {label:"Asignado a", field:"asignadoA"},
+        {label:"Periodicidad", field:"periodicidad"},
         {label:"Descripción", field:"descripcion"},
-        {label:"Semáforo", field:"semaforo"},
+        {label:"Color", field:"semaforo"},
         {label:"Creó", field:"creadoPor"}
       ]
     },
+
     potreros: {
       title: "Potreros",
       keys: ["pecuario_potreros"],
       filters: [
-        {label:"Letra", field:"letra"},
-        {label:"Nombre", field:"nombre"},
+        {label:"Potrero", field:"letra"},
+        {label:"Área estimada (m²)", field:"areaM2"},
         {label:"Estatus", field:"estatus"}
       ],
       columns: [
@@ -2417,29 +2719,94 @@ const renderChecks = ()=>{
         {label:"Descripción", field:"desc"}
       ]
     },
+
     corrales: {
       title: "Corrales",
       keys: ["pecuario_corrales"],
       filters: [
-        {label:"Potrero", field:"potrero"},
-        {label:"Estatus", field:"estatus"},
-        {label:"Corral", field:"corral"}
+        {label:"Corral", field:"corralId"},
+        {label:"Potrero asociado", field:"potrero", values: ()=> (getData('pecuario_potreros')||[]).map(p=>p.letra).filter(Boolean)},
+        {label:"Grupo animales", field:"grupo", values: ()=> gruposBase},
+        {label:"Área (m²)", field:"areaM2"},
+        {label:"Fecha/hora entrada", field:"entrada"},
+        {label:"Fecha/hora salida", field:"salida"},
+        {label:"No. animales", field:"cabezas"},
+        {label:"m² por animal", field:"m2PorCabeza"},
+        {label:"Densidad", field:"densidadAuto"},
+        {label:"Acceso a bebederos", field:"bebedero", values: ()=> ["Sí","No","No especificado"]},
+        {label:"Acceso a comederos", field:"comedero", values: ()=> ["Sí","No","No especificado"]},
+        {label:"Fecha de registro", field:"_fechaRegistro"}
       ],
       columns: [
+        {label:"Corral", field:"corralId"},
         {label:"Potrero", field:"potrero"},
-        {label:"Corral", field:"corral"},
-        {label:"Estatus", field:"estatus"},
-        {label:"Fecha apertura", field:"fechaApertura"},
+        {label:"Grupo", field:"grupo"},
+        {label:"Área (m²)", field:"areaM2"},
+        {label:"Entrada", field:"entrada"},
+        {label:"Salida", field:"salida"},
+        {label:"No. animales", field:"cabezas"},
+        {label:"m²/animal", field:"m2PorCabeza"},
+        {label:"Densidad", field:"densidadAuto"},
+        {label:"Bebederos", field:"bebedero"},
+        {label:"Comederos", field:"comedero"},
+        {label:"Fecha reg.", field:"_fechaRegistro"},
         {label:"Obs.", field:"obs"}
       ]
     },
+
+    indicadores: {
+      title: "Indicadores (Pastoreo intensivo / regenerativo / no selectivo)",
+      keys: ["pecuario_pirnos"],
+      filters: [
+        {label:"Corral", field:"corralKey"},
+        {label:"Recuperación corral (días)", field:"recuperacionDias"},
+        {label:"Infiltración 15 cm", field:"infil15", values: ()=> ["Sí","No"]},
+        {label:"Infiltración 30 cm", field:"infil30", values: ()=> ["Sí","No"]},
+        {label:"Escarabajos", field:"escarabajos", values: ()=> ["Sí","No"]},
+        {label:"Heces", field:"heces", values: ()=> ["Sopa","Pastel","Piedra"]},
+        {label:"Nuevas especies", field:"nuevasEspecies", values: ()=> ["Sí","No"]},
+        {label:"Llenado del rumen", field:"rumen", values: ()=> ["Vacío","Medio","Lleno"]}
+      ],
+      normalize: (dataByKey) => {
+        return (dataByKey["pecuario_pirnos"]||[]).map(x=>({
+          ...x,
+          escarabajos: x.escarabajos || x.escarabajosSiNo || '',
+          heces: (x.heces||'')==="1" ? "Sopa" : ((x.heces||'')==="2" ? "Pastel" : ((x.heces||'')==="3" ? "Piedra" : (x.heces||''))),
+          nuevasEspecies: x.nuevasEspecies || x.nuevasEsp || '',
+          rumen: (x.rumen||'')==="1" ? "Vacío" : ((x.rumen||'')==="2" ? "Medio" : ((x.rumen||'')==="3" ? "Lleno" : (x.rumen||'')))
+        }));
+      },
+      columns: [
+        {label:"Fecha", field:"fecha"},
+        {label:"Corral", field:"corralKey"},
+        {label:"Recuperación (d)", field:"recuperacionDias"},
+        {label:"Infil 15", field:"infil15"},
+        {label:"Infil 30", field:"infil30"},
+        {label:"Suelo desnudo %", field:"sueloDesnudoPct"},
+        {label:"Escarabajos", field:"escarabajos"},
+        {label:"Heces", field:"heces"},
+        {label:"Bio (días)", field:"bioDias"},
+        {label:"Nuevas especies", field:"nuevasEspecies"},
+        {label:"Forraje acostado %", field:"forrajeAcostadoPct"},
+        {label:"Rumen", field:"rumen"}
+      ]
+    },
+
     supl: {
-      title: "Suplementos",
+      title: "Suplementos (catálogo)",
       keys: ["pecuario_suplementos"],
       filters: [
-        {label:"Temporada", field:"temporada"},
-        {label:"Uso/objetivo", field:"uso"},
-        {label:"Ingrediente", field:"_ing"}
+        {label:"Clave", field:"clave"},
+        {label:"Nombre del suplemento", field:"nombre", type:"text"},
+        {label:"Temporada/Clima", field:"temporada"},
+        {label:"Uso/Objetivo", field:"uso"},
+        {label:"Ingrediente", field:"_ing~", values: ()=> {
+          const s = getData('pecuario_suplementos')||[];
+          const all = new Set();
+          s.forEach(x=> (x.ingredientes||[]).forEach(i=>{ if(i && i.nombre) all.add(i.nombre); }));
+          return Array.from(all).sort();
+        }},
+        {label:"Frecuencia", field:"frecuencia"}
       ],
       normalize: (dataByKey) => {
         const s = (dataByKey["pecuario_suplementos"]||[]).map(x=>{
@@ -2449,6 +2816,7 @@ const renderChecks = ()=>{
         return s;
       },
       columns: [
+        {label:"Clave", field:"clave"},
         {label:"Nombre", field:"nombre"},
         {label:"Temporada", field:"temporada"},
         {label:"Uso", field:"uso"},
@@ -2539,15 +2907,22 @@ const renderChecks = ()=>{
         if (/^\d{4}$/.test(y)) r.anio = y;
       }
       if (modKey==="conta") {
-        if (!r.cuentaCodigo && r.cuenta && typeof r.cuenta==='string') r.cuentaCodigo = r.cuenta;
+        // Compatibilidad (versiones anteriores / campos internos)
+        if (!r.cuentaCodigo) r.cuentaCodigo = String(r.cuentaCode || r.cuenta || '').trim();
+        if (!r.cuentaNombre) r.cuentaNombre = String(r.cuentaName || r.cuentaDesc || '').trim();
+        if (!r.proveedor) r.proveedor = String(r.tercero || r.provCliente || r.cliente || r.proveedorCliente || '').trim();
+
         const cod = (r.cuentaCodigo || '').trim();
         const acc = cod ? CONTA_ACCOUNTS.find(a=>a.code===cod) : null;
+
         if (!r.tipo && acc) r.tipo = acc.tipo;
-        if (!r.cuentaNombre && acc) r.cuentaNombre = acc.name;
+        if ((!r.cuentaNombre || !r.cuentaNombre.trim()) && acc) r.cuentaNombre = acc.name;
+
         if (!r.cuentaLabel) {
-          const lbl = (r.cuentaNombre || r.cuentaDesc || r.cuentaLabel || '').trim();
-          r.cuentaLabel = lbl ? `${cod} — ${lbl}` : cod;
+          const lbl = (r.cuentaNombre || '').trim();
+          r.cuentaLabel = cod ? (lbl ? `${cod} — ${lbl}` : cod) : (lbl || '');
         }
+
         if (r.monto != null) r.monto = (typeof r.monto==='number') ? r.monto.toFixed(2) : r.monto;
       }
       if (modKey==="actividades") {
@@ -2580,6 +2955,8 @@ const renderChecks = ()=>{
       sel.appendChild(o0);
 
       function getValsForFilter(f){
+        // filtros de texto: permitir captura manual
+        if (f && f.type === 'text') return ['__PROMPT__'];
         try{
           if (Array.isArray(f.values)) return f.values;
           if (typeof f.values === 'function') return f.values(rows) || [];
@@ -2598,8 +2975,8 @@ const renderChecks = ()=>{
         og.label = f.label || f.field;
         values.forEach(v=>{
           const o = document.createElement('option');
-          o.value = `${f.field}::${v}`;
-          o.textContent = v;
+          o.value = (v==='__PROMPT__') ? `${f.field}::__PROMPT__` : `${f.field}::${v}`;
+          o.textContent = (v==='__PROMPT__') ? '✍ Escribir…' : v;
           og.appendChild(o);
         });
         sel.appendChild(og);
@@ -2630,7 +3007,17 @@ function getFiltered(){
         const field = parts[0] || '';
         const val = parts.slice(1).join('::'); // por si el valor trae "::"
         if (!field) return;
-        out = out.filter(r => repToText(r[field]).trim() === val);
+        {
+        let f = field;
+        let mode = 'eq';
+        if (f.endsWith('~')) { mode = 'contains'; f = f.slice(0,-1); }
+        if (!f) return;
+        if (mode==='contains') {
+          out = out.filter(r => repToText(r[f]).toLowerCase().includes(String(val||'').toLowerCase()));
+        } else {
+          out = out.filter(r => repToText(r[f]).trim() === val);
+        }
+      }
       });
       const q = (search && search.value) ? search.value.trim().toLowerCase() : '';
       if (q){
@@ -2662,7 +3049,27 @@ function getFiltered(){
     }
 
     // listeners
-    [f1,f2,f3].forEach(s=>{ if (s) s.onchange = render; });
+    [f1,f2,f3].forEach(s=>{
+      if (!s) return;
+      s.onchange = ()=>{
+        const v = (s.value||'');
+        if (v.endsWith('::__PROMPT__')){
+          const field = v.split('::')[0] || '';
+          const label = (field||'').replace('~','');
+          const txt = window.prompt('Escribe el valor para filtrar:', '');
+          if (txt === null){ s.value=''; render(); return; }
+          const clean = String(txt).trim();
+          if (!clean){ s.value=''; render(); return; }
+          // crea opción temporal
+          const opt = document.createElement('option');
+          opt.value = `${field}::${clean}`;
+          opt.textContent = clean;
+          s.appendChild(opt);
+          s.value = opt.value;
+        }
+        render();
+      };
+    });
     if (search) search.oninput = () => { window.clearTimeout(search._t); search._t = window.setTimeout(render, 120); };
 
     render();
@@ -2729,7 +3136,7 @@ function refrescarPotrerosEnUI() {
     const wm = portada.querySelector('.watermark');
 
     if (btnEntrar) {
-      btnEntrar.addEventListener('click', () => {
+      btnEntrar.addEventListener('click', (e) => { if(e) e.preventDefault();
         portada.style.display = 'none';
       });
     }
@@ -3352,64 +3759,72 @@ try { obj.img = (canvas && canvas.toDataURL) ? canvas.toDataURL('image/png') : '
   const CONTA_CLOSED_KEY  = 'pecuario_conta_closed';
 
   const CONTA_ACCOUNTS = [
-    // Ingresos
-    { tipo:'Ingreso', code:'P-01',  name:'Patrimonio' },
-    { tipo:'Ingreso', code:'PB-01', name:'Préstamos Bancarios' },
-    { tipo:'Ingreso', code:'I-01',  name:'Ingresos por intereses' },
-    { tipo:'Ingreso', code:'I-02',  name:'Apoyos Institucionales' },
-    { tipo:'Ingreso', code:'I-03',  name:'Subsidios' },
-    { tipo:'Ingreso', code:'I-02',  name:'Otros Ingresos' },
-    { tipo:'Ingreso', code:'V-01',  name:'Venta de becerros' },
-    { tipo:'Ingreso', code:'V-02',  name:'Venta de Vaquillas' },
-    { tipo:'Ingreso', code:'V-03',  name:'Venta de Novillos' },
-    { tipo:'Ingreso', code:'V-04',  name:'Venta de Vientres' },
-    { tipo:'Ingreso', code:'V-05',  name:'Venta de Toretes' },
-    { tipo:'Ingreso', code:'V-06',  name:'Venta de Toros' },
-    { tipo:'Ingreso', code:'V-07',  name:'Venta de insumos' },
-    { tipo:'Ingreso', code:'V-08',  name:'Venta de Maquinaria, Equipo y Herramientas' },
-    { tipo:'Ingreso', code:'V-09',  name:'Venta activos' },
-    { tipo:'Ingreso', code:'V-09',  name:'Venta Otros' },
+    // ===================== CUENTAS DE RESULTADOS — INGRESOS
+    { tipo:'Ingreso', grupo:'Resultados', code:'RV-01', name:'Venta de becerros' },
+    { tipo:'Ingreso', grupo:'Resultados', code:'RV-02', name:'Venta de Vaquillas' },
+    { tipo:'Ingreso', grupo:'Resultados', code:'RV-03', name:'Venta de Novillos' },
+    { tipo:'Ingreso', grupo:'Resultados', code:'RV-04', name:'Venta de Vientres' },
+    { tipo:'Ingreso', grupo:'Resultados', code:'RV-05', name:'Venta de Toretes' },
+    { tipo:'Ingreso', grupo:'Resultados', code:'RV-06', name:'Venta de Toros' },
+    { tipo:'Ingreso', grupo:'Resultados', code:'RV-07', name:'Venta de insumos' },
+    { tipo:'Ingreso', grupo:'Resultados', code:'RV-10', name:'Ingresos Varios' },
+    { tipo:'Ingreso', grupo:'Resultados', code:'RV-12', name:'Ingresos por intereses' },
+    { tipo:'Ingreso', grupo:'Resultados', code:'RV-13', name:'Apoyos y subsidios' },
 
-    // Egresos
-    { tipo:'Egreso', code:'P-01',  name:'Devoluciones Patrimonio' },
-    { tipo:'Egreso', code:'PB-01', name:'Pagos préstamos Bancarios' },
-    { tipo:'Egreso', code:'I-01',  name:'Pago de intereses' },
-    { tipo:'Egreso', code:'I-02',  name:'Otros Pagos' },
+    // ===================== CUENTAS DE BALANCE — INGRESOS (entradas de efectivo)
+    { tipo:'Ingreso', grupo:'Balance', code:'BP-01',  name:'Patrimonio', balanceClass:'Equity' },
+    { tipo:'Ingreso', grupo:'Balance', code:'BPB-02', name:'Préstamos Bancarios', balanceClass:'Liability' },
 
-    { tipo:'Egreso', code:'N-01',  name:'Gastos Nóminas' },
-    { tipo:'Egreso', code:'PT-01', name:'Prestaciones a Trabajadores' },
-    { tipo:'Egreso', code:'TP-01', name:'Gastos de traslado personal' },
-    { tipo:'Egreso', code:'AP-01', name:'Alimentos al personal' },
-    { tipo:'Egreso', code:'OP-01', name:'Otros - Personal' },
-    { tipo:'Egreso', code:'GV-01', name:'Gastos de viaje' },
+    // (Opcional) Entradas por recuperación/venta de activos: si se usan, disminuyen el saldo del activo
+    { tipo:'Ingreso', grupo:'Balance', code:'BA-01',  name:'Inventario de Animales', balanceClass:'Asset' },
+    { tipo:'Ingreso', grupo:'Balance', code:'BME-01', name:'Maquinaria y Equipo', balanceClass:'Asset' },
+    { tipo:'Ingreso', grupo:'Balance', code:'BCI-01', name:'Corrales e Instalaciones', balanceClass:'Asset' },
+    { tipo:'Ingreso', grupo:'Balance', code:'BTE-01', name:'Terrenos y Edificios', balanceClass:'Asset' },
+    { tipo:'Ingreso', grupo:'Balance', code:'BV-03',  name:'Otros Activos', balanceClass:'Asset' },
 
-    { tipo:'Egreso', code:'GM-01', name:'Mantenimiento: Maquinaria y equipo' },
-    { tipo:'Egreso', code:'GM-02', name:'Mantenimiento: Corrales y cercas' },
-    { tipo:'Egreso', code:'GM-03', name:'Mantenimiento: Bodegas y casas' },
-    { tipo:'Egreso', code:'GM-04', name:'Mantenimiento: Equipo de riego y bombas' },
-    { tipo:'Egreso', code:'GM-05', name:'Mantenimiento: Otros' },
+    // ===================== CUENTAS DE RESULTADOS — EGRESOS
+    { tipo:'Egreso', grupo:'Resultados', code:'RGP-01', name:'Gastos Nóminas' },
+    { tipo:'Egreso', grupo:'Resultados', code:'RGP-02', name:'Prestaciones a Trabajadores' },
+    { tipo:'Egreso', grupo:'Resultados', code:'RGP-03', name:'Gastos de traslado personal' },
+    { tipo:'Egreso', grupo:'Resultados', code:'RGP-04', name:'Alimentos al personal' },
+    { tipo:'Egreso', grupo:'Resultados', code:'RGP-05', name:'Otros - Personal' },
 
-    { tipo:'Egreso', code:'GAG-01', name:'Gastos alimento Ganado' },
-    { tipo:'Egreso', code:'GMD-01', name:'Gastos Medicamentos' },
-    { tipo:'Egreso', code:'GH-01',  name:'Gastos Herramientas' },
-    { tipo:'Egreso', code:'H-01',   name:'Honorarios' },
-    { tipo:'Egreso', code:'M-01',   name:'Mermas' },
-    { tipo:'Egreso', code:'MD-01',  name:'Muertes y desechos' },
-    { tipo:'Egreso', code:'CL-01',  name:'Combustibles y Lub.' },
-    { tipo:'Egreso', code:'E-01',   name:'Electricidad Riego' },
-    { tipo:'Egreso', code:'E-02',   name:'Electricidad general' },
-    { tipo:'Egreso', code:'S-01',   name:'Servicios en general' },
-    { tipo:'Egreso', code:'DI-01',  name:'Derechos e impuestos' },
-    { tipo:'Egreso', code:'FG-01',  name:'Fletes Ganado' },
-    { tipo:'Egreso', code:'FA-01',  name:'Fletes Alimento' },
+    { tipo:'Egreso', grupo:'Resultados', code:'RGV-01', name:'Gastos de viaje' },
 
-    // Adquisición de Activos (registradas como egreso)
-    { tipo:'Egreso', code:'AME-01', name:'Adquisición de Activos: Maq. y Equipo' },
-    { tipo:'Egreso', code:'AC-01',  name:'Adquisición de Activos: Corrales' },
-    { tipo:'Egreso', code:'ATE-01', name:'Adquisición de Activos: Terrenos y Edificios' },
-    { tipo:'Egreso', code:'AI-01',  name:'Adquisición de Activos: Instalaciones' },
-    { tipo:'Egreso', code:'VT-01',  name:'Compra de Vientres y Toros' },
-  ].map(a => ({ ...a, key: `${a.code}||${a.name}||${a.tipo}` }));
+    { tipo:'Egreso', grupo:'Resultados', code:'RGM-01', name:'Mantenimiento: Maquinaria y equipo' },
+    { tipo:'Egreso', grupo:'Resultados', code:'RGM-02', name:'Mantenimiento: Corrales y cercas' },
+    { tipo:'Egreso', grupo:'Resultados', code:'RGM-03', name:'Mantenimiento: Bodegas y casas' },
+    { tipo:'Egreso', grupo:'Resultados', code:'RGM-04', name:'Mantenimiento: Equipo de riego y bombas' },
+    { tipo:'Egreso', grupo:'Resultados', code:'RGM-05', name:'Mantenimiento: Otros' },
+
+    { tipo:'Egreso', grupo:'Resultados', code:'RGAG-01', name:'Gastos alimento Ganado' },
+    { tipo:'Egreso', grupo:'Resultados', code:'RGMD-01', name:'Gastos Medicamentos' },
+    { tipo:'Egreso', grupo:'Resultados', code:'RGH-01',  name:'Gastos Herramientas' },
+    { tipo:'Egreso', grupo:'Resultados', code:'RH-01',   name:'Honorarios' },
+    { tipo:'Egreso', grupo:'Resultados', code:'RM-01',   name:'Mermas' },
+    { tipo:'Egreso', grupo:'Resultados', code:'RMD-01',  name:'Muertes y desechos' },
+    { tipo:'Egreso', grupo:'Resultados', code:'RCL-01',  name:'Combustibles y Lub.' },
+    { tipo:'Egreso', grupo:'Resultados', code:'RE-01',   name:'Electricidad Riego' },
+    { tipo:'Egreso', grupo:'Resultados', code:'RE-02',   name:'Electricidad general' },
+    { tipo:'Egreso', grupo:'Resultados', code:'RS-01',   name:'Servicios en general' },
+    { tipo:'Egreso', grupo:'Resultados', code:'RDI-01',  name:'Derechos e impuestos' },
+    { tipo:'Egreso', grupo:'Resultados', code:'RFG-01',  name:'Fletes Ganado' },
+    { tipo:'Egreso', grupo:'Resultados', code:'RFA-01',  name:'Fletes Alimento' },
+
+    // ===================== CUENTAS DE BALANCE — EGRESOS (salidas de efectivo)
+    { tipo:'Egreso', grupo:'Balance', code:'BP-01',  name:'Devoluciones Patrimonio', balanceClass:'Equity' },
+    { tipo:'Egreso', grupo:'Balance', code:'BPB-02', name:'Pagos préstamos Bancarios', balanceClass:'Liability' },
+    { tipo:'Egreso', grupo:'Balance', code:'BGI-01', name:'Pago de intereses', balanceClass:'Expense' },
+    { tipo:'Egreso', grupo:'Balance', code:'BOG-02', name:'Otros Pagos', balanceClass:'Expense' },
+
+    // Adquisición de Activos (erogación de efectivo, incrementa activos)
+    { tipo:'Egreso', grupo:'Balance', code:'BME-01', name:'Maquinaria y Equipo (adquisición)', balanceClass:'Asset' },
+    { tipo:'Egreso', grupo:'Balance', code:'BCI-01', name:'Corrales e Instalaciones (adquisición)', balanceClass:'Asset' },
+    { tipo:'Egreso', grupo:'Balance', code:'BTE-01', name:'Terrenos y Edificios (adquisición)', balanceClass:'Asset' },
+    { tipo:'Egreso', grupo:'Balance', code:'BVT-01', name:'Vientres y Toros (adquisición)', balanceClass:'Asset' },
+    { tipo:'Egreso', grupo:'Balance', code:'BA-01',  name:'Inventario de Animales (adquisición)', balanceClass:'Asset' },
+    { tipo:'Egreso', grupo:'Balance', code:'BV-03',  name:'Otros Activos (adquisición)', balanceClass:'Asset' },
+  ].map(a => ({ ...a, key: `${a.code}||${a.name}||${a.tipo}||${a.grupo}` }));
 
   function fmtMXN(n){
     const v = Number(n||0);
@@ -3474,7 +3889,7 @@ try { obj.img = (canvas && canvas.toDataURL) ? canvas.toDataURL('image/png') : '
     if (acc) return acc;
     // Legacy / desconocida
     const parts = String(key||'').split('||');
-    return { key, code: parts[0] || '', name: parts[1] || 'Cuenta', tipo: parts[2] || 'Egreso' };
+    return { key, code: parts[0] || '', name: parts[1] || 'Cuenta', tipo: parts[2] || 'Egreso', grupo: parts[3] || '' };
   }
 
   function contaYears(){
@@ -3536,44 +3951,43 @@ try { obj.img = (canvas && canvas.toDataURL) ? canvas.toDataURL('image/png') : '
       sel.appendChild(o);
     }
 
-    const mkGroup = (label) => {
-      const g = document.createElement('optgroup');
-      g.label = label;
-      return g;
-    };
+    // Agrupar por Tipo (Ingreso/Egreso) y Grupo (Resultados/Balance)
+    const groups = [
+      { tipo:'Ingreso', grupo:'Resultados', label:'Ingresos — Resultados' },
+      { tipo:'Ingreso', grupo:'Balance',    label:'Ingresos — Balance' },
+      { tipo:'Egreso',  grupo:'Resultados', label:'Egresos — Resultados' },
+      { tipo:'Egreso',  grupo:'Balance',    label:'Egresos — Balance' },
+    ];
 
-    const gIn = mkGroup('Ingresos');
-    const gOut = mkGroup('Egresos');
-
-    CONTA_ACCOUNTS.filter(a=>a.tipo==='Ingreso').forEach(a=>{
-      const o = document.createElement('option');
-      o.value = a.key;
-      o.textContent = `${a.code} — ${a.name}`;
-      gIn.appendChild(o);
+    groups.forEach(g=>{
+      const og = document.createElement('optgroup');
+      og.label = g.label;
+      CONTA_ACCOUNTS
+        .filter(a=>a.tipo===g.tipo && a.grupo===g.grupo)
+        .forEach(a=>{
+          const o = document.createElement('option');
+          o.value = a.key;
+          o.textContent = `${a.code} — ${a.name}`;
+          og.appendChild(o);
+        });
+      if (og.children.length) sel.appendChild(og);
     });
-    CONTA_ACCOUNTS.filter(a=>a.tipo==='Egreso').forEach(a=>{
-      const o = document.createElement('option');
-      o.value = a.key;
-      o.textContent = `${a.code} — ${a.name}`;
-      gOut.appendChild(o);
-    });
-
-    sel.appendChild(gIn);
-    sel.appendChild(gOut);
 
     if (includeLegacy){
       const legacyKeys = new Set(
         (getContaLedger()||[])
           .map(m=>m.cuentaKey)
-          .filter(k=>k && String(k).startsWith('LEG||'))
+          .filter(k=>k && String(k).startsWith('LEGACY:'))
       );
+
       if (legacyKeys.size){
-        const gL = mkGroup('Legacy / sin catálogo');
+        const gL = document.createElement('optgroup');
+        gL.label = 'Cuentas (históricas)';
         Array.from(legacyKeys).sort().forEach(k=>{
           const a = contaGetAccountByKey(k);
           const o = document.createElement('option');
           o.value = k;
-          o.textContent = `${a.name}`;
+          o.textContent = `${a.code ? (a.code+' — ') : ''}${a.name || 'Cuenta'}`;
           gL.appendChild(o);
         });
         sel.appendChild(gL);
@@ -3739,7 +4153,146 @@ try { obj.img = (canvas && canvas.toDataURL) ? canvas.toDataURL('image/png') : '
       }).join('') || `<tr><td colspan="4" class="muted">Sin movimientos.</td></tr>`;
     }
 
-    // Reporte por cuenta
+    // =====================
+    // Estado de Resultados (Resultados)
+    const erIngBody = document.getElementById('conta-er-ing-tbody');
+    const erEgrBody = document.getElementById('conta-er-egr-tbody');
+    const erUtil = document.getElementById('conta-er-util');
+    const erUtilV = document.getElementById('conta-er-util-v');
+
+    // contar vientres activos (para "Por Vientre")
+    const activos = (getData('pecuario_animales') || []);
+    const nVientres = (activos||[]).filter(a => String(a.grupo||'').toLowerCase().includes('vient')).length || 0;
+
+    const sumByKey = new Map();
+    t.ledger.forEach(m=>{
+      const acc = contaGetAccountByKey(m.cuentaKey);
+      const k = m.cuentaKey;
+      const amt = Number(m.monto||0);
+      if (!sumByKey.has(k)) sumByKey.set(k, {acc, sum:0});
+      sumByKey.get(k).sum += amt;
+    });
+
+    const resIng = CONTA_ACCOUNTS.filter(a=>a.grupo==='Resultados' && a.tipo==='Ingreso');
+    const resEgr = CONTA_ACCOUNTS.filter(a=>a.grupo==='Resultados' && a.tipo==='Egreso');
+
+    const getSum = (a)=> (sumByKey.get(a.key)?.sum || 0);
+    const totalIngRes = resIng.reduce((s,a)=> s + getSum(a), 0);
+    const totalEgrRes = resEgr.reduce((s,a)=> s + getSum(a), 0);
+    const utilRes = totalIngRes - totalEgrRes;
+
+    const pct = (v)=> totalIngRes ? ((v/totalIngRes)*100).toFixed(1)+'%' : '';
+    const perV = (v)=> nVientres ? fmtMXN(v / nVientres) : '';
+
+    if (erIngBody){
+      const rows = [];
+      rows.push(`<tr><td colspan="4"><b>Ingresos de Resultados</b></td></tr>`);
+      resIng.forEach(a=>{
+        const v = getSum(a);
+        rows.push(`<tr>
+          <td>${escapeHtml(a.code+' — '+a.name)}</td>
+          <td style="text-align:right;">${escapeHtml(fmtMXN(v))}</td>
+          <td style="text-align:right;">${escapeHtml(pct(v))}</td>
+          <td style="text-align:right;">${escapeHtml(perV(v))}</td>
+        </tr>`);
+      });
+      rows.push(`<tr>
+        <td><b>Total Ingresos de Resultados</b></td>
+        <td style="text-align:right;"><b>${escapeHtml(fmtMXN(totalIngRes))}</b></td>
+        <td></td>
+        <td style="text-align:right;"><b>${escapeHtml(nVientres? fmtMXN(totalIngRes/nVientres): '')}</b></td>
+      </tr>`);
+      erIngBody.innerHTML = rows.join('');
+    }
+
+    if (erEgrBody){
+      const rows = [];
+      rows.push(`<tr><td colspan="4"><b>Egresos de Resultados</b></td></tr>`);
+      resEgr.forEach(a=>{
+        const v = getSum(a);
+        rows.push(`<tr>
+          <td>${escapeHtml(a.code+' — '+a.name)}</td>
+          <td style="text-align:right;">${escapeHtml(fmtMXN(v))}</td>
+          <td style="text-align:right;">${escapeHtml(pct(v))}</td>
+          <td style="text-align:right;">${escapeHtml(perV(v))}</td>
+        </tr>`);
+      });
+      rows.push(`<tr>
+        <td><b>Total Egresos de Resultados</b></td>
+        <td style="text-align:right;"><b>${escapeHtml(fmtMXN(totalEgrRes))}</b></td>
+        <td></td>
+        <td style="text-align:right;"><b>${escapeHtml(nVientres? fmtMXN(totalEgrRes/nVientres): '')}</b></td>
+      </tr>`);
+      erEgrBody.innerHTML = rows.join('');
+    }
+
+    if (erUtil) erUtil.textContent = fmtMXN(utilRes);
+    if (erUtilV) erUtilV.textContent = nVientres ? fmtMXN(utilRes/nVientres) : '';
+
+    // =====================
+    // Balance General (Balance)
+    const bgBody = document.getElementById('conta-bg-tbody');
+    const bgTotAct = document.getElementById('conta-bg-total-act');
+    const bgPasivo = document.getElementById('conta-bg-pasivo');
+    const bgPatr = document.getElementById('conta-bg-patrimonio');
+
+    // Saldos de cuentas de Balance por clase
+    const bal = {
+      assets: {'BA-01':0,'BVT-01':0,'BME-01':0,'BCI-01':0,'BTE-01':0,'BV-03':0},
+      loan: 0,
+      equity: 0
+    };
+
+    const nameByCode = {};
+    CONTA_ACCOUNTS.forEach(a=>{
+      if (a.grupo==='Balance'){
+        nameByCode[a.code] = nameByCode[a.code] || a.name;
+      }
+    });
+
+    t.ledger.forEach(m=>{
+      const acc = contaGetAccountByKey(m.cuentaKey);
+      if (!acc || acc.grupo!=='Balance') return;
+      const code = String(acc.code||'').trim();
+      const amt = Number(m.monto||0);
+
+      const cls = acc.balanceClass || '';
+      if (cls==='Asset'){
+        if (bal.assets.hasOwnProperty(code)){
+          // Egreso = compra (sube activo). Ingreso = venta/recuperación (baja activo)
+          bal.assets[code] += (acc.tipo==='Egreso' ? amt : -amt);
+        }
+      } else if (cls==='Liability'){
+        if (code==='BPB-02'){
+          bal.loan += (acc.tipo==='Ingreso' ? amt : -amt);
+        }
+      } else if (cls==='Equity'){
+        if (code==='BP-01'){
+          bal.equity += (acc.tipo==='Ingreso' ? amt : -amt);
+        }
+      }
+    });
+
+    const cash = Number(t.cash||0);
+    const totalAssets = cash + Object.values(bal.assets).reduce((s,v)=>s+Number(v||0),0);
+    const patrimonioCalc = totalAssets - bal.loan;
+
+    if (bgBody){
+      const rows = [];
+      rows.push(`<tr><td><b>Activos</b></td><td></td></tr>`);
+      rows.push(`<tr><td>B-01 — Caja y Bancos</td><td style="text-align:right;">${escapeHtml(fmtMXN(cash))}</td></tr>`);
+      const order = ['BA-01','BVT-01','BME-01','BCI-01','BTE-01','BV-03'];
+      order.forEach(code=>{
+        const nm = nameByCode[code] || code;
+        rows.push(`<tr><td>${escapeHtml(code+' — '+nm)}</td><td style="text-align:right;">${escapeHtml(fmtMXN(bal.assets[code]||0))}</td></tr>`);
+      });
+      bgBody.innerHTML = rows.join('');
+    }
+    if (bgTotAct) bgTotAct.textContent = fmtMXN(totalAssets);
+    if (bgPasivo) bgPasivo.textContent = fmtMXN(bal.loan);
+    if (bgPatr) bgPatr.textContent = fmtMXN(patrimonioCalc);
+
+// Reporte por cuenta
     const repSel = document.getElementById('conta-rep-cuenta');
     const repKey = repSel?.value || '';
     const repBody = document.getElementById('conta-rep-tbody');
@@ -3778,13 +4331,13 @@ try { obj.img = (canvas && canvas.toDataURL) ? canvas.toDataURL('image/png') : '
     const areteInp = areteWrap ? areteWrap.querySelector('input[name="areteOficial"]') : null;
 
     function contaIsVentaAnimal(code){
-      return ['V-01','V-02','V-03','V-04','V-05','V-06'].includes(String(code||'').trim());
+      return ['RV-01','RV-02','RV-03','RV-04','RV-05','RV-06'].includes(String(code||'').trim());
     }
     function contaToggleArete(){
       if (!areteWrap || !selCuenta) return;
       const acc = contaGetAccountByKey(selCuenta.value || '');
       const code = String(acc?.code || '').trim();
-      const show = !!acc && (contaIsVentaAnimal(code) || code === 'MD-01');
+      const show = !!acc && (contaIsVentaAnimal(code) || code === 'RMD-01');
       areteWrap.style.display = show ? '' : 'none';
       if (!show && areteInp) areteInp.value = '';
     }
@@ -3891,10 +4444,10 @@ try { obj.img = (canvas && canvas.toDataURL) ? canvas.toDataURL('image/png') : '
         ledger.push(mov);
         setContaLedger(ledger);
 
-        // Si es venta de animal (V-01..V-06) o baja por MD-01, y el arete existe en inventario, muévelo a Bajas
+        // Si es venta de animal (RV-01..RV-06) o baja por RMD-01, y el arete existe en inventario, muévelo a Bajas
         const accCode = String(acc.code||'').trim();
-        const esVentaAnimal = ['V-01','V-02','V-03','V-04','V-05','V-06'].includes(accCode);
-        const esBajaMD = (accCode === 'MD-01');
+        const esVentaAnimal = ['RV-01','RV-02','RV-03','RV-04','RV-05','RV-06'].includes(accCode);
+        const esBajaMD = (accCode === 'RMD-01');
         if ((esVentaAnimal || esBajaMD) && mov.areteOficial){
           const moved = moverAnimalABajas(mov.areteOficial, {
             fecha: mov.fecha,
@@ -4437,6 +4990,115 @@ renderTareasUI();
   }
 
   // ======================
+  // Indicadores (Indicadores por corral)
+  // ======================
+  function hoyISODate(){
+    const d = new Date();
+    const z = (n)=> String(n).padStart(2,'0');
+    return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}`;
+  }
+
+  function refrescarCorralesPirnos(){
+    const sel = document.getElementById('selCorralPirnos');
+    if (!sel) return;
+    const corr = getData('pecuario_corrales') || [];
+    const seen = new Set();
+    const items = [];
+    corr.forEach(c=>{
+      const pot = (c.potrero||'').trim();
+      const id = (c.corralId||c.corral||'').trim();
+      if (!id) return;
+      const key = `${pot}|${id}`;
+      if (seen.has(key)) return;
+      seen.add(key);
+      items.push({key, pot, id});
+    });
+    items.sort((a,b)=> (a.pot+a.id).localeCompare(b.pot+b.id,'es'));
+    sel.innerHTML = '<option value="">Selecciona…</option>';
+    items.forEach(it=>{
+      const o = document.createElement('option');
+      o.value = it.key;
+      o.textContent = `${it.pot ? 'Potrero '+it.pot+' · ' : ''}Corral ${it.id}`;
+      sel.appendChild(o);
+    });
+  }
+
+  function pirnosResumen(r){
+    const f = r.fecha || (r._fechaRegistro ? r._fechaRegistro.slice(0,10) : '');
+    const cor = r.corralId ? `Corral ${r.corralId}` : (r.corralKey||'');
+    const pot = r.potrero ? `Potrero ${r.potrero}` : '';
+    const head = `${f || '-'} | ${pot ? pot+' | ' : ''}${cor}`;
+    const infil = `Infil: 15cm ${r.infil15||'-'} / 30cm ${r.infil30||'-'}`;
+    const suelo = `Desnudo: ${r.sueloDesnudoPct||'0'}% | Escarabajos: ${r.escarabajos||'-'}`;
+    const hec = `Heces: ${r.heces||'-'} | Act. biol.: ${r.actividadDias||'-'} d`;
+    const man = `Mantillo: nuevas esp. ${r.nuevasEspecies||'-'} | Forraje acostado ${r.forrajeAcostadoPct||'0'}%`;
+    const rec = `Recuperación: ${r.recuperacionDias||'-'} d | Rumen: ${r.rumen||'-'}`;
+    return `${head}\n${infil}\n${suelo}\n${hec}\n${man}\n${rec}`;
+  }
+
+  function renderPirnosList(filterKey){
+    const cont = document.getElementById('lista-pirnos');
+    if (!cont) return;
+    const lista = getData('pecuario_pirnos') || [];
+    const rows = filterKey ? lista.filter(r => (r.corralKey||'') === filterKey) : lista;
+    if (!rows.length){
+      cont.innerHTML = '<div>Sin registros.</div>';
+      return;
+    }
+    cont.innerHTML = '';
+    rows.slice().reverse().forEach(r=>{
+      const div = document.createElement('div');
+      div.className = 'item';
+      div.style.whiteSpace = 'pre-line';
+      div.textContent = pirnosResumen(r);
+      cont.appendChild(div);
+    });
+  }
+
+  // Form handler
+  manejarFormulario(
+    'form-pirnos',
+    'pecuario_pirnos',
+    null,
+    null,
+    (obj, lista) => {
+      // Derivar potrero/corral desde corralKey
+      const key = (obj.corralKey||'').trim();
+      const parts = key.split('|');
+      obj.potrero = (parts[0]||'').trim();
+      obj.corralId = (parts[1]||'').trim();
+      // Re-render list
+      renderPirnosList(document.getElementById('selCorralPirnos')?.value || '');
+      // reponer fecha por default
+      const f = document.getElementById('pirnosFecha');
+      if (f) f.value = hoyISODate();
+    },
+    (obj, form) => {
+      if (!obj.fecha) obj.fecha = hoyISODate();
+      if (!obj.corralKey) { alert('Selecciona un corral.'); return false; }
+      return true;
+    }
+  );
+
+  // UI wiring
+  document.addEventListener('DOMContentLoaded', () => {
+    const f = document.getElementById('pirnosFecha');
+    if (f && !f.value) f.value = hoyISODate();
+    refrescarCorralesPirnos();
+    const sel = document.getElementById('selCorralPirnos');
+    if (sel){
+      sel.addEventListener('change', ()=> renderPirnosList(sel.value || ''));
+    }
+    const btnAll = document.getElementById('btnVerTodosPirnos');
+    if (btnAll){
+      btnAll.addEventListener('click', ()=> renderPirnosList(''));
+    }
+    // render initial
+    renderPirnosList('');
+  });
+
+
+  // ======================
   // Suplementos (modal)
   // ======================
   const modal = document.getElementById('modalSupl');
@@ -4558,16 +5220,30 @@ const conta     = getData('pecuario_conta_ledger') || [];
     const elCorr = document.getElementById('pnl-corrales-abiertos');
     if (elCorr) elCorr.textContent = txt || '0';
 
-    let totalIng = 0;
-    let totalGas = 0;
-    conta.forEach(c => {
-      const monto = parseFloat(c.monto || '0') || 0;
-      if (c.tipo === 'Ingreso') totalIng += monto;
-      if (c.tipo === 'Gasto')   totalGas += monto;
-    });
-    document.getElementById('pnl-conta').textContent =
-      `$${totalIng.toFixed(2)} / $${totalGas.toFixed(2)}`;
-  }
+    
+    // Totales de Contabilidad (año seleccionado) + Saldo B-01
+    try {
+      const yEl = document.getElementById('conta-year');
+      const year = yEl ? Number(yEl.value) : (new Date()).getFullYear();
+      if (typeof contaTotalsForYear === 'function') {
+        const sum = contaTotalsForYear(year);
+        const ing = Number(sum.tin || 0);
+        const egr = Number(sum.tout || 0);
+        const cash = Number(sum.cash || 0);
+
+        const elIE = document.getElementById('pnl-conta');
+        if (elIE) elIE.textContent = `Ing: ${fmtMXN(ing)} | Egr: ${fmtMXN(egr)}`;
+
+        const elB01 = document.getElementById('pnl-b01');
+        if (elB01) elB01.textContent = fmtMXN(cash);
+      }
+    } catch (e) {
+      const elIE = document.getElementById('pnl-conta');
+      if (elIE) elIE.textContent = '—';
+      const elB01 = document.getElementById('pnl-b01');
+      if (elB01) elB01.textContent = '—';
+    }
+}
 
   function actualizarReportes() {
     const setCount = (id, n) => {
@@ -4639,7 +5315,9 @@ setCount('rep-conta',       (getData('pecuario_conta_ledger')||[]).length);
       o.textContent = `Corral ${id}`;
       selCor.appendChild(o);
     });
-  }
+ 
+    try { if (typeof refrescarCorralesPirnos === 'function') refrescarCorralesPirnos(); } catch(e) {}
+ }
 
   // --------- Pesaje: ubicaciones (Potrero/Corral) + sexo automático ----------
   function refrescarUbicacionesEnUI(){
@@ -5086,7 +5764,7 @@ setCount('rep-conta',       (getData('pecuario_conta_ledger')||[]).length);
     const btnUpd  = document.getElementById('btnActualizarPronostico');
     const grid    = document.getElementById('wx7');
     const status  = document.getElementById('wxStatus');
-    const accumEl = document.getElementById('wxAccum');
+    let accumEl = document.getElementById("wxAccum");
     if (!btnPerm || !btnUpd || !grid) return;
 
     const W = {
@@ -5191,9 +5869,18 @@ setCount('rep-conta',       (getData('pecuario_conta_ledger')||[]).length);
         }
 
         grid.innerHTML = '';
+
+        // Re-crear el acumulado anual (se borra al limpiar el grid)
+        accumEl = document.createElement('div');
+        accumEl.className = 'wx-accum';
+        accumEl.id = 'wxAccum';
+        accumEl.textContent = 'Acumulado anual: —';
+        
         fechas.forEach((iso, i)=>{
           const d = new Date(String(iso) + 'T12:00:00');
-          const day = D[d.getDay()] || String(iso);
+          const dayName = D[d.getDay()] || String(iso);
+          const dayNum = d.getDate();
+          const day = `${dayName} ${dayNum}`;
           const kind = kindFromCode(code[i]);
           const desc = W[code[i]] || '';
           const mm = Number(rain[i] ?? 0);
@@ -5208,6 +5895,9 @@ setCount('rep-conta',       (getData('pecuario_conta_ledger')||[]).length);
           `;
           grid.appendChild(card);
         });
+
+                // Poner el acumulado al final de las tarjetas
+        if (accumEl && !accumEl.isConnected) grid.appendChild(accumEl);
 
         await cargarAcumuladoAnual(p);
 
