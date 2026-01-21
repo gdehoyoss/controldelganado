@@ -1,115 +1,79 @@
-  (function initPesajeAuto(){
-    const form = document.getElementById('form-pesaje-ind');
-    if (!form) return;
-    const inArete = form.querySelector('input[name="areteOficial"]');
-    const inAreteR = form.querySelector('input[name="areteRancho"]');
-    const selSexo = document.getElementById('selSexoPesInd');
+// ======================
+  // Pesajes: Individual
+  // ======================
+  function ultimoPesajeAnimal(arete) {
+    const lista = getData('pecuario_pesaje_ind');
+    const matches = lista.filter(x => (x.areteOficial||'') === (arete||'') && x.peso);
+    if (matches.length < 2) return null;
+    // último previo (antes del último)
+    const last = matches[matches.length - 1];
+    const prev = matches[matches.length - 2];
+    const delta = (parseFloat(last.peso||0) - parseFloat(prev.peso||0));
+    return { last, prev, delta };
+  }
 
-    const sync = ()=>{
-      const a = buscarAnimalPorArete(inArete ? inArete.value : '');
-      if (!a) return;
-      if (inAreteR && !inAreteR.value) inAreteR.value = a.areteRancho || '';
-      if (selSexo && a.sexo) selSexo.value = a.sexo;
-    };
-
-    if (inArete) {
-      inArete.addEventListener('change', sync);
-      inArete.addEventListener('blur', sync);
+  manejarFormulario(
+    'form-pesaje-ind',
+    'pecuario_pesaje_ind',
+    'lista-pesaje-ind',
+    (p) => {
+      const w = parseFloat(p.peso||0);
+      const arete = p.areteOficial || '-';
+      const deltaObj = ultimoPesajeAnimal(p.areteOficial);
+      const deltaTxt = deltaObj ? ` | Δ vs último: ${deltaObj.delta.toFixed(1)} kg` : '';
+      return `Arete ${arete} | Fecha: ${p.fecha || '-'} | Peso: ${w ? w.toFixed(1) : ''} kg | Ubicación: ${p.ubicacion || '-'}${deltaTxt}`;
+    },
+    (obj) => {
+      const el = document.getElementById('notaDeltaInd');
+      const info = ultimoPesajeAnimal(obj.areteOficial);
+      if (el) {
+        if (info) el.textContent = `Ganancia/Pérdida vs último pesaje: ${info.delta.toFixed(1)} kg (Arete ${obj.areteOficial}).`;
+        else el.textContent = 'Primer pesaje de este arete (no hay comparación aún).';
+      }
     }
-  })();
+  );
 
-  // --------- GPS Corrales ----------
-  window.puntosCorral = [];
-  function drawPolygonOn(canvas, points){
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    if (!points || points.length < 2) return;
+  // ======================
+  // Pesajes: Grupo
+  // ======================
+  const formPesGrupo = document.getElementById('form-pesaje-grupo');
+  if (formPesGrupo) {
+    formPesGrupo.addEventListener('input', () => {
+      const cabezas = parseFloat(formPesGrupo.cabezas.value || '0') || 0;
+      const total = parseFloat(formPesGrupo.pesoTotal.value || '0') || 0;
+      const prom = (cabezas > 0) ? (total / cabezas) : 0;
+      formPesGrupo.pesoProm.value = prom ? prom.toFixed(1) : '';
 
-    // bbox
-    let minLat=Infinity,maxLat=-Infinity,minLon=Infinity,maxLon=-Infinity;
-    points.forEach(p=>{
-      minLat=Math.min(minLat,p.lat); maxLat=Math.max(maxLat,p.lat);
-      minLon=Math.min(minLon,p.lon); maxLon=Math.max(maxLon,p.lon);
-    });
-    const pad=20;
-    const w=canvas.width-2*pad, h=canvas.height-2*pad;
-    const dx = (maxLon-minLon) || 1e-9;
-    const dy = (maxLat-minLat) || 1e-9;
-
-    const xy = (p)=>{
-      const x = pad + ((p.lon - minLon)/dx)*w;
-      const y = pad + (1-((p.lat - minLat)/dy))*h;
-      return {x,y};
-    };
-
-    // poly
-    ctx.beginPath();
-    points.forEach((p,i)=>{
-      const {x,y}=xy(p);
-      if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
-    });
-    ctx.closePath();
-    ctx.lineWidth=3;
-    ctx.strokeStyle='rgba(209,0,0,0.85)';
-    ctx.stroke();
-    ctx.fillStyle='rgba(209,0,0,0.08)';
-    ctx.fill();
-
-    // vertices
-    points.forEach((p,i)=>{
-      const {x,y}=xy(p);
-      ctx.beginPath();
-      ctx.arc(x,y,4,0,Math.PI*2);
-      ctx.fillStyle='rgba(17,24,39,0.85)';
-      ctx.fill();
-      ctx.font='12px system-ui';
-      ctx.fillText(String(i+1), x+6, y-6);
+      // delta promedio vs último del mismo "grupo"
+      const g = formPesGrupo.grupo.value || '';
+      const lista = getData('pecuario_pesaje_grupo').filter(x => (x.grupo||'') === g && x.pesoProm);
+      if (lista.length) {
+        const last = lista[lista.length - 1];
+        const lastProm = parseFloat(last.pesoProm||0) || 0;
+        const delta = prom - lastProm;
+        formPesGrupo.deltaProm.value = (cabezas>0 && total>0 && g) ? delta.toFixed(1) : '';
+      } else {
+        formPesGrupo.deltaProm.value = '';
+      }
     });
   }
 
-  function renderPuntosCorral(){
-    const lista = document.getElementById('listaPuntosCorral');
-    const areaEl = document.getElementById('areaCorralM2');
-    const canvas = document.getElementById('canvasCorral');
-    if (lista) {
-      if (!window.puntosCorral.length) lista.textContent = 'Sin puntos aún.';
-      else lista.textContent = window.puntosCorral.map((p,i)=>`${i+1}. ${p.lat.toFixed(6)}, ${p.lon.toFixed(6)}`).join(' | ');
+  manejarFormulario(
+    'form-pesaje-grupo',
+    'pecuario_pesaje_grupo',
+    'lista-pesaje-grupo',
+    (p) => {
+      const prom = parseFloat(p.pesoProm||0) || ((parseFloat(p.pesoTotal||0) || 0) / (parseFloat(p.cabezas||0) || 1));
+      const delta = parseFloat(p.deltaProm||0);
+      const deltaTxt = (p.deltaProm !== '' && !isNaN(delta)) ? ` | Δ prom: ${delta.toFixed(1)} kg/cab` : '';
+      return `Grupo ${p.grupo || '-'} | Fecha: ${p.fecha || '-'} | Potrero: ${p.potrero || '-'} | Corral: ${p.corral || '-'} | Cabezas: ${p.cabezas || ''} | Total: ${p.pesoTotal || ''} kg | Prom: ${prom.toFixed(1)} kg/cab${deltaTxt}`;
+    },
+    (obj) => {
+      const el = document.getElementById('notaDeltaGrupo');
+      if (!el) return;
+      if (obj.deltaProm) el.textContent = `Ganancia/Pérdida promedio vs último del grupo: ${obj.deltaProm} kg/cabeza.`;
+      else el.textContent = 'Primer pesaje de este grupo (no hay comparación aún).';
     }
-    if (areaEl) {
-      const area = window.puntosCorral.length >=3 ? areaPoligonoM2(window.puntosCorral) : 0;
-      areaEl.value = area ? String(Math.round(area)) : '';
-    }
-    if (canvas) drawPolygonOn(canvas, window.puntosCorral);
+  );
 
-    recalcularCorralForm();
-  }
-
-  function limpiarPuntosCorral(){
-    window.puntosCorral = [];
-    renderPuntosCorral();
-  }
-
-  function recalcularCorralForm(){
-    const form = document.getElementById('form-corrales');
-    if (!form) return;
-    const area = parseFloat((form.areaM2 && form.areaM2.value) ? form.areaM2.value : '0') || 0;
-    const cab  = parseFloat(form.cabezas ? form.cabezas.value : '0') || 0;
-
-    const m2El = form.m2PorCabeza;
-    const haEl = form.cabezasHa;
-    const densEl = form.densidadAuto;
-
-    if (area>0 && cab>0) {
-      const m2 = area/cab;
-      const ha = cab*10000/area;
-      if (m2El) m2El.value = m2.toFixed(1);
-      if (haEl) haEl.value = ha.toFixed(0);
-      if (densEl) densEl.value = ha.toFixed(0);
-    } else {
-      if (m2El) m2El.value = '';
-      if (haEl) haEl.value = '';
-      if (densEl) densEl.value = '';
-    }
-  }
-
+  
