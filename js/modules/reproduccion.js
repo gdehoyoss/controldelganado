@@ -335,4 +335,12 @@
     null
   );
 
+  // Asegurar inicialización tardía de proporciones/estimación.
+  // Antes se intentaba ejecutar desde otros scripts ANTES de que este módulo cargara,
+  // provocando UI incompleta (selects/estimación).
+  (window.DOMHelpers?.ready || ((cb)=>document.addEventListener('DOMContentLoaded', cb)))(() => {
+    try { if (typeof initReproProporciones === 'function') initReproProporciones(); } catch(e) {}
+    try { if (formRepro) calcCruzaCria(formRepro); } catch(e) {}
+  });
+
   
