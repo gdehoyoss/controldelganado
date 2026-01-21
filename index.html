@@ -1,0 +1,1877 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Pecuario GB - v40.7</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<!-- PORTADA (se cierra con "Entrar") -->
+<div id="portada" role="dialog" aria-modal="true">
+  <div class="marco">
+    <div class="watermark"><span>APP EN ETAPA DE PRUEBA</span></div>
+
+    <h1>PECUARIO GB</h1>
+    <h2>PERMANENCIA y CRECIMIENTO</h2>
+    <div class="accionesPortada">
+      <button type="button" class="btn-primario" id="btnEntrar" onclick="(function(){var p=document.getElementById('portada'); if(p) p.style.display='none';})();">Entrar a la app</button>
+      <button class="btn-secundario" id="btnCerrarMarca">Ocultar “etapa de prueba”</button>
+    </div>
+
+    <div class="notaLegal">
+      App en proceso de registro en Propiedad Intelectual. Derechos protegidos.
+    </div>
+  </div>
+</div>
+
+<header>
+  <div class="toprow">
+    <h1>Pecuario GB <span class="chip">v40.17</span></h1>
+    <div class="userbar">
+    <span><b>Usuario:</b></span>
+    <select id="selUsuario"></select>
+    <span class="chip" id="lblRol" style="background:#111827;color:#fff;">—</span>
+  </div>
+  </div>
+  <small>Control operativo integral de ganado bovino</small>
+  <div class="subleyenda">Información para la permanencia y crecimiento de tu rancho</div>
+
+</header>
+
+<nav>
+  <button data-modulo="panel" class="activo">Panel</button>
+  <button data-modulo="animales">Ganado</button>
+  <button data-modulo="potreros">Potreros y Corrales</button>
+  <button data-modulo="repro">Reproducción y partos</button>
+  <button data-modulo="sanidad">Sanidad</button>
+<button data-modulo="conta">Contabilidad</button>
+  <button data-modulo="seguridad">Registros del Velador</button>
+  <button data-modulo="maquinaria">Maquinaria y equipo</button>
+  <button data-modulo="actividades">Responsabilidades y tareas</button>
+  <button data-modulo="reportes">Reportes</button>
+  <button data-modulo="config">Perfil del rancho</button>
+</nav>
+
+<main>
+  <!-- PANEL -->
+  <section id="mod-panel" class="modulo activo">
+    <h2>Panel general</h2>
+    <p>Resumen rápido del rancho con base en los registros capturados.</p>
+    <div class="tarjeta" style="background:#fff;border:1px solid #e5e7eb; padding:10px 12px; display:flex; gap:14px; align-items:center; justify-content:space-between; flex-wrap:wrap;">
+      <div><strong>Hora</strong> <span id="pnl-hora">—</span></div>
+      <div><strong>Temperatura</strong> <span id="pnl-temp">—</span></div>
+    </div>
+
+    <div class="tarjetas-grid">
+      <div class="tarjeta" data-perm="animales">
+        <strong>Cabezas Registradas</strong>
+        <span id="pnl-animales">0</span>
+      </div>
+      <div class="tarjeta" data-perm="animales">
+        <strong>Pesajes registrados</strong>
+        <span id="pnl-pesajes">0</span>
+      </div>
+      <div class="tarjeta" data-perm="repro">
+        <strong>Nacimientos</strong>
+        <span id="pnl-nacimientos">0</span>
+      </div>
+      <div class="tarjeta" data-perm="sanidad">
+        <strong>Eventos de sanidad</strong>
+        <span id="pnl-sanidad">0</span>
+      </div>
+      <div class="tarjeta" data-perm="seguridad">
+        <strong>Registros del Velador (incluye visitas)</strong>
+        <span id="pnl-seguridad">0</span>
+      </div>
+<div class="tarjeta" data-perm="potreros">
+        <strong>Potreros y Corrales</strong>
+        <span id="pnl-corrales-abiertos">—</span>
+      </div>
+      <div class="tarjeta" data-perm="conta">
+        <strong>Ingresos / Egresos</strong>
+        <span id="pnl-conta">0 / 0</span>
+      </div>
+      <div class="tarjeta" data-perm="conta">
+        <strong>Saldo Caja y Bancos (B-01)</strong>
+        <span id="pnl-b01">$0.00</span>
+      </div>
+      
+      <div class="tarjeta" style="grid-column: 1 / -1;">
+        <strong>Pronóstico 7 días</strong>
+        <div class="wx-wrap">
+          <div class="wx-controls">
+            <button type="button" class="btn-terciario" id="btnPermitirUbicacion">Permitir ubicación</button>
+            <button type="button" class="btn-secundario" id="btnActualizarPronostico">Actualizar</button>
+            <span class="wx-status" id="wxStatus">Sin ubicación aún.</span>
+          </div>
+          <div class="wx-grid" id="wx7">
+            <div class="nota">Oprime <b>Permitir ubicación</b> para ver el pronóstico aquí.</div>
+          <div class="wx-accum" id="wxAccum">Acumulado anual: —</div>
+        </div>
+        </div>
+      </div>
+
+    </div>
+    <p class="nota">Resumen simple con base en la información capturada en los módulos.</p>
+  </section>
+
+  <!-- ANIMALES (incluye PESAJES) -->
+  <section id="mod-animales" class="modulo">
+    <h2>Cabezas</h2>
+    <p>Altas, bajas y movimientos de animales. Incluye el sub-módulo de <b>Pesajes</b>.</p>
+
+    
+    <div class="subtabs" aria-label="Submódulos Cabezas">
+      <button type="button" class="activo" data-sub="anim-altas">Altas</button>
+      <button type="button" data-sub="anim-bajas">Bajas</button>
+      <button type="button" data-sub="anim-pes">Pesajes</button>
+      <button type="button" data-sub="anim-cambios">Cambios de Grupo</button>
+    </div>
+
+
+    <!-- Altas -->
+    <div id="sub-anim-altas" class="submodulo activo">
+      <form id="form-animales">
+        <div class="fila-dos">
+          <div>
+            <label>Arete oficial</label>
+            <input name="areteOficial" required />
+          </div>
+          <div>
+            <label>Arete rancho</label>
+            <input name="areteRancho" />
+          </div>
+        </div>
+
+        <div class="fila-tres">
+          <div>
+            <label>Sexo</label>
+            <select name="sexo">
+              <option value="">Selecciona…</option>
+              <option value="Hembra">Hembra</option>
+              <option value="Macho">Macho</option>
+            </select>
+          </div>
+          <div>
+            <label>Raza preponderante</label>
+            <select name="razaPre" id="selRazaPre"></select>
+          </div>
+          <div>
+            <label>Cruza 1 / Cruza 2 (opcional)</label>
+            <div class="fila-dos">
+              <select name="cruza1" id="selCruza1"></select>
+              <select name="cruza2" id="selCruza2"></select>
+              <div class="nota">Se llena automáticamente al capturar el arete (puedes corregirlo si hiciera falta).</div>
+            </div>
+          </div>
+        </div>
+
+        
+<div class="fila-tres">
+  <div>
+    <label>Fecha de nacimiento</label>
+    <input type="date" name="fechaNac" />
+  </div>
+  <div>
+    <label>Grupo</label>
+    <select name="grupo" id="selGrupoAnimales" required></select>
+  </div>
+  <div>
+    <label>Agregar raza</label>
+    <div class="fila-dos">
+      <input id="txtNuevaRaza" placeholder="Ej. Simmental" />
+      <button type="button" class="btn-terciario" id="btnAgregarRaza">Añadir</button>
+    </div>
+  </div>
+</div>
+
+<label>Observaciones</label>
+<input name="obs" />
+<div class="nota">La raza agregada se suma a los desplegables de raza y cruzas.</div>
+
+
+        <div class="acciones">
+          <button type="submit" class="btn-primario">Guardar alta</button>
+          <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-animales')">Limpiar</button>
+        </div>
+      </form>
+
+      <h3 style="margin-top:18px;">Inventario de Cabezas (en existencia)</h3>
+      <p class="nota">Aquí se muestran todas las cabezas registradas.</p>
+      
+<div>
+            <label>Nuevo grupo</label>
+            <select id="selNuevoGrupoAnimal"></select>
+          </div>
+          <div style="display:flex; gap:10px; align-items:end;">
+            <button type="button" class="btn-terciario" id="btnCambiarGrupoAnimal">Guardar cambio</button>
+          </div>
+        </form>
+      </div>
+
+
+      <div class="lista" id="lista-animales"></div>
+    </div>
+
+
+    <!-- Cambios de Grupo -->
+    <div id="sub-anim-cambios" class="submodulo">
+      <h3>Cambios de Grupo</h3>
+      <p class="nota">Registra cambios de grupo sin duplicar cabezas. Todo cambio queda en bitácora.</p>
+      <div class="tarjeta" style="margin:12px 0; background:#fff; border:1px solid #e5e7eb;">
+        <h4 style="margin:0 0 8px 0;">Cambiar grupo</h4>
+        <p class="nota" style="margin:0 0 10px 0;">Selecciona un animal y asígnalo a un nuevo grupo. Se guardará la fecha del cambio.</p>
+        <form id="form-cambiar-grupo" class="fila-dos" style="gap:12px; align-items:end;">
+          <div>
+            <label>Animal (arete oficial)</label>
+            <select id="selAnimalCambioGrupo"></select>
+          </div>
+          
+      <h4 style="margin-top:14px;">Historial</h4>
+      <div class="lista" id="lista-cambios-grupo"></div>
+    </div>
+
+    <!-- Pesajes -->
+    <div id="sub-anim-pes" class="submodulo">
+      <h3>Pesajes</h3>
+      <p class="nota">Se divide en <b>Individual</b> y <b>Por grupo</b>, con cálculo de ganancia/pérdida respecto al último pesaje.</p>
+
+      <details open>
+        <summary>Pesaje individual</summary>
+        <form id="form-pesaje-ind">
+          <div class="fila-tres">
+            <div>
+              <label>Arete oficial</label>
+              <input name="areteOficial" required />
+            </div>
+            <div>
+              <label>Arete rancho</label>
+              <input name="areteRancho" />
+            </div>
+            <div>
+              <label>Sexo</label>
+              <select name="sexo" id="selSexoPesInd">
+                <option value="">Selecciona…</option>
+                <option>Hembra</option>
+                <option>Macho</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="fila-tres">
+            <div>
+              <label>Fecha de pesaje</label>
+              <input type="date" name="fecha" required />
+            </div>
+            <div>
+              <label>Peso (kg)</label>
+              <input type="number" step="0.1" name="peso" required />
+            </div>
+            <div>
+              <label>Ubicación (Potrero / Corral)</label>
+              <select name="ubicacion" id="selUbicInd"></select>
+              <div class="nota">Selecciona la ubicación correspondiente.</div>
+            </div>
+          </div>
+
+          <label>Observaciones</label>
+          <textarea name="obs"></textarea>
+
+          <div class="acciones">
+            <button type="submit" class="btn-primario">Guardar pesaje individual</button>
+            <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-pesaje-ind')">Limpiar</button>
+          </div>
+          <div class="nota" id="notaDeltaInd"></div>
+        </form>
+
+        <div class="lista" id="lista-pesaje-ind"></div>
+      </details>
+
+      <details>
+        <summary>Pesaje por grupo</summary>
+        <form id="form-pesaje-grupo">
+          <div class="fila-tres">
+            <div>
+              <label>Grupo</label>
+              <select name="grupo" id="selGrupoPesajes"></select>
+            </div>
+            <div>
+              <label>Potrero</label>
+              <select name="potrero" id="selPotreroPesajes"></select>
+            </div>
+            <div>
+              <label>Corral (2 dígitos)</label>
+              <input name="corral" placeholder="Ej. 01" maxlength="2" />
+            </div>
+          </div>
+
+          <div class="fila-tres">
+            <div>
+              <label>Fecha</label>
+              <input type="date" name="fecha" required />
+            </div>
+            <div>
+              <label>No. de cabezas</label>
+              <input type="number" step="1" name="cabezas" required />
+            </div>
+            <div>
+              <label>Peso total (kg)</label>
+              <input type="number" step="0.1" name="pesoTotal" required />
+            </div>
+          </div>
+
+          <div class="fila-dos">
+            <div>
+              <label>Peso promedio (kg/cabeza)</label>
+              <input type="number" step="0.1" name="pesoProm" readonly />
+            </div>
+            <div>
+              <label>Ganancia / pérdida promedio vs último (kg/cabeza)</label>
+              <input type="number" step="0.1" name="deltaProm" readonly />
+            </div>
+          </div>
+
+          <label>Observaciones</label>
+          <textarea name="obs"></textarea>
+
+          <div class="acciones">
+            <button type="submit" class="btn-primario">Guardar pesaje por grupo</button>
+            <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-pesaje-grupo')">Limpiar</button>
+          </div>
+          <div class="nota" id="notaDeltaGrupo"></div>
+        </form>
+
+        <div class="lista" id="lista-pesaje-grupo"></div>
+      </details>
+    </div>
+    <!-- Bajas -->
+    <div id="sub-anim-bajas" class="submodulo">
+      <h3>Inventario de bajas</h3>
+      <p class="nota">Aquí se guardan animales que salieron del inventario activo (por ejemplo, por venta). No aparecen en el inventario general ni en los reportes de animales.</p>
+
+      <form id="form-baja-cabeza" class="tarjeta" style="background:#fff;border:1px solid #e5e7eb; margin:10px 0;">
+        <h4 style="margin:0 0 8px;">Dar de baja una cabeza</h4>
+        <div class="fila-tres">
+          <div>
+            <label>Arete oficial</label>
+            <input id="baja-arete" required />
+          </div>
+          <div>
+            <label>Causa</label>
+            <select id="baja-causa" required>
+              <option value="">Selecciona…</option>
+              <option>Venta</option>
+              <option>Muerte</option>
+              <option>Desecho</option>
+              <option>Otros</option>
+            </select>
+          </div>
+          <div>
+            <label>Fecha</label>
+            <input id="baja-fecha" type="date" />
+          </div>
+        </div>
+
+        <div class="fila-tres">
+          <div>
+            <label>Grupo</label>
+            <input id="baja-grupo" disabled />
+          </div>
+          <div>
+            <label>Sexo</label>
+            <input id="baja-sexo" disabled />
+          </div>
+          <div>
+            <label>Raza / Cruzas</label>
+            <input id="baja-raza" disabled />
+          </div>
+        </div>
+
+        <div class="fila-tres">
+          <div>
+            <label>Monto (si aplica)</label>
+            <input id="baja-monto" type="number" step="0.01" placeholder="0.00" />
+          </div>
+          <div>
+            <label>Cuenta contable (opcional)</label>
+            <select id="baja-cuenta">
+              <option value="">—</option>
+              <option value="RV-01">RV-01 Venta de becerros</option>
+              <option value="RV-02">RV-02 Venta de Vaquillas</option>
+              <option value="RV-03">RV-03 Venta de Novillos</option>
+              <option value="RV-04">RV-04 Venta de Vientres</option>
+              <option value="RV-05">RV-05 Venta de Toretes</option>
+              <option value="RV-06">RV-06 Venta de Toros</option>
+              <option value="RMD-01">RMD-01 Muerte y Desecho</option>
+              <option value="BA-01">BA-01 Inventario de Animales</option>
+            </select>
+          </div>
+          <div>
+            <label>Observaciones</label>
+            <input id="baja-obs" placeholder="Opcional" />
+          </div>
+        </div>
+
+        <div class="acciones">
+          <button type="submit" class="btn-primario">Guardar baja</button>
+          <button type="button" class="btn-secundario" id="btn-baja-limpiar">Limpiar</button>
+        </div>
+      </form>
+
+      <div class="lista" id="lista-animales-bajas"></div>
+    </div>
+
+  </section>
+
+  <!-- POTREROS Y CORRALES -->
+  <section id="mod-potreros" class="modulo">
+    <h2>Potreros y Corrales</h2>
+    <p>Identificación de potreros por <b>letras</b> y corrales por <b>números (2 dígitos)</b>.</p>
+
+    <div class="subtabs" aria-label="Submódulos Potreros">
+      <button type="button" class="activo" data-sub="pot-potreros">Potreros</button>
+      <button type="button" data-sub="pot-corrales">Corrales</button>
+      <button type="button" data-sub="pot-pirnos">Indicadores</button>
+      <button type="button" data-sub="pot-supl">Suplementos</button>
+    </div>
+
+    <!-- Potreros -->
+    <div id="sub-pot-potreros" class="submodulo activo">
+      <form id="form-potreros">
+        <div class="fila-tres">
+          <div>
+            <label>Potrero (letra)</label>
+            <select name="letra" id="selPotreroLetra"></select>
+          </div>
+          <div>
+            <label>Nombre opcional</label>
+            <input name="nombre" placeholder="Ej. La Loma" />
+          </div>
+          <div>
+            <label>Área estimada (m²) — calculada por puntos</label>
+            <input name="areaM2" id="areaM2" readonly />
+          </div>
+        </div>
+
+        <label>Descripción / notas</label>
+        <textarea name="desc" placeholder="Sugerencia: tipo(s) de zacate, disponibilidad de agua (natural/bebederos), comederos portátiles, maleza, etc."></textarea>
+
+        <details>
+          <summary>Ubicación por GPS (para potreros no cercados)</summary>
+          <p class="nota">Oprime <b>Agregar punto GPS</b> varias veces caminando el perímetro. Se dibuja el potrero y se calcula el área aproximada.</p>
+          <div class="acciones">
+            <button type="button" class="btn-terciario" id="btnPuntoGPS">Agregar punto GPS</button>
+            <button type="button" class="btn-secundario" id="btnLimpiarGPS">Borrar puntos</button>
+          </div>
+          <div class="mapa-wrap">
+            <canvas id="canvasPotrero" width="800" height="320"></canvas>
+            <div class="puntos" id="listaPuntos">Sin puntos aún.</div>
+          </div>
+        </details>
+
+        <div class="acciones">
+          <button type="submit" class="btn-primario">Guardar potrero</button>
+          <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-potreros'); limpiarPuntos();">Limpiar</button>
+        </div>
+      </form>
+
+      <div class="lista" id="lista-potreros"></div>
+    </div>
+
+    <!-- Corrales -->
+    <div id="sub-pot-corrales" class="submodulo">
+      <form id="form-corrales">
+        <div class="fila-tres">
+          <div>
+            <label>Corral (2 dígitos)</label>
+            <input name="corralId" required maxlength="2" placeholder="Ej. 01" />
+          </div>
+          <div>
+            <label>Potrero asociado (letra)</label>
+            <select name="potrero" id="selPotreroCorrales"></select>
+          </div>
+          <div>
+            <label>Grupo de animales</label>
+            <select name="grupo" id="selGrupoCorrales"></select>
+          </div>
+        </div>
+
+        
+<div class="fila-tres">
+  <div>
+    <label>Área (m²) — calculada por GPS</label>
+    <input name="areaM2" id="areaCorralM2" readonly />
+  </div>
+  <div>
+    <label>Fecha / hora entrada</label>
+    <input type="datetime-local" name="entrada" />
+  </div>
+  <div>
+    <label>Fecha / hora salida</label>
+    <input type="datetime-local" name="salida" />
+  </div>
+</div>
+
+<details>
+  <summary>Ubicación por GPS (polígono del corral)</summary>
+  <p class="nota">Oprime <b>Agregar punto GPS</b> en las esquinas del corral. Se dibuja el polígono y se calcula el área en m². La imagen se guarda junto con el registro.</p>
+  <div class="acciones">
+    <button type="button" class="btn-terciario" id="btnPuntoGPSCorral">Agregar punto GPS</button>
+    <button type="button" class="btn-secundario" id="btnLimpiarGPSCorral">Borrar puntos</button>
+  </div>
+  <div class="mapa-wrap">
+    <canvas id="canvasCorral" width="800" height="260"></canvas>
+    <div class="puntos" id="listaPuntosCorral">Sin puntos aún.</div>
+  </div>
+</details>
+
+<div class="fila-tres">
+  <div>
+    <label>No. de animales en el corral</label>
+    <input type="number" step="1" name="cabezas" required />
+  </div>
+  <div>
+    <label>m² por animal</label>
+    <input name="m2PorCabeza" readonly />
+  </div>
+  <div>
+    <label>Índice de ocupación (cabezas/ha)</label>
+    <input name="cabezasHa" readonly />
+    <div class="nota">Cálculo: (cabezas × 10,000) / área(m²).</div>
+  </div>
+</div>
+
+
+        <div class="fila-tres">
+          <div>
+            <label>Densidad del corral (cab/ha)</label>
+            <input name="densidadAuto" readonly />
+            <div class="nota">Se calcula automáticamente con el área (GPS) y el número de animales.</div>
+          </div>
+          <div>
+            <label>Acceso a bebederos</label>
+            <select name="bebedero">
+              <option value="">No especificado</option>
+              <option>Sí</option>
+              <option>No</option>
+            </select>
+          </div>
+          <div>
+            <label>Acceso a comederos</label>
+            <select name="comedero">
+              <option value="">No especificado</option>
+              <option>Sí</option>
+              <option>No</option>
+            </select>
+          </div>
+        </div>
+
+        <label>Observaciones</label>
+        <textarea name="obs" placeholder="Tipo de zacate o maleza disponible, condición del suelo, etc."></textarea>
+
+        <div class="acciones">
+          <button type="submit" class="btn-primario">Guardar corral</button>
+          <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-corrales')">Limpiar</button>
+          <button type="button" class="btn-terciario" id="btnAbrirSuplementos">Capturar suplemento</button>
+        </div>
+      </form>
+
+      <div class="lista" id="lista-corrales"></div>
+    </div>
+
+
+    <!-- Indicadores -->
+    <div id="sub-pot-pirnos" class="submodulo">
+      <h3 style="margin-top:0;">Indicadores</h3>
+      <p class="nota">Pastoreo intensivo, regenerativo, no selectivo. Registros <b>por corral</b> con fecha.</p>
+
+      <form id="form-pirnos">
+        <div class="fila-tres">
+          <div>
+            <label>Corral</label>
+            <select name="corralKey" id="selCorralPirnos" required></select>
+          </div>
+          <div>
+            <label>Fecha de registro</label>
+            <input type="date" name="fecha" id="pirnosFecha" required />
+          </div>
+          <div>
+            <label>Recuperación del corral (días)</label>
+            <input type="number" min="0" step="1" name="recuperacionDias" placeholder="Ej. 30" />
+          </div>
+        </div>
+
+        <h4 style="margin:10px 0 6px;">I. Salud del suelo</h4>
+        <div class="fila-tres">
+          <div>
+            <label>Infiltración del agua a 15 cm</label>
+            <select name="infil15" required>
+              <option value="">Selecciona…</option>
+              <option value="Sí">Sí</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+          <div>
+            <label>Infiltración del agua a 30 cm</label>
+            <select name="infil30" required>
+              <option value="">Selecciona…</option>
+              <option value="Sí">Sí</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+          <div>
+            <label>Suelo desnudo (% sin forraje)</label>
+            <input type="number" min="0" max="100" step="0.1" name="sueloDesnudoPct" placeholder="0 - 100" />
+          </div>
+        </div>
+
+        <div class="fila-tres">
+          <div>
+            <label>Presencia de escarabajos</label>
+            <select name="escarabajos" required>
+              <option value="">Selecciona…</option>
+              <option value="Sí">Sí</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+          <div>
+            <label>Heces (1-3)</label>
+            <select name="heces" required>
+              <option value="">Selecciona…</option>
+              <option value="1">1 - Sopa (exceso proteína / humedad)</option>
+              <option value="2">2 - Pastel (ideal, volcán)</option>
+              <option value="3">3 - Piedra (exceso fibra)</option>
+            </select>
+          </div>
+          <div>
+            <label>Actividad biológica (días en desaparecer heces)</label>
+            <input type="number" min="0" step="1" name="actividadDias" placeholder="Ej. 4" />
+          </div>
+        </div>
+
+        <h4 style="margin:10px 0 6px;">I.6 Mantillo</h4>
+        <div class="fila-tres">
+          <div>
+            <label>Aparición de nuevas especies</label>
+            <select name="nuevasEspecies" required>
+              <option value="">Selecciona…</option>
+              <option value="Sí">Sí</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+          <div>
+            <label>% del forraje acostado</label>
+            <input type="number" min="0" max="100" step="0.1" name="forrajeAcostadoPct" placeholder="0 - 100" />
+          </div>
+          <div>
+            <label>&nbsp;</label>
+            <div class="nota" style="padding:10px;">Tip: mide el % del área con forraje “acostado” (cama).</div>
+          </div>
+        </div>
+
+        <h4 style="margin:10px 0 6px;">II. Condición corporal</h4>
+        <div class="fila-tres">
+          <div>
+            <label>Llenado del rumen (1-3)</label>
+            <select name="rumen" required>
+              <option value="">Selecciona…</option>
+              <option value="1">1 - Vacío (triángulo hundido)</option>
+              <option value="2">2 - Medio (triángulo plano)</option>
+              <option value="3">3 - Lleno (abultado)</option>
+            </select>
+          </div>
+          <div>
+            <label>&nbsp;</label>
+            <div class="nota" style="padding:10px;">Evalúa visualmente el llenado del rumen.</div>
+          </div>
+          <div></div>
+        </div>
+
+        <div class="acciones">
+          <button type="submit" class="btn-primario">Guardar indicadores</button>
+          <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-pirnos')">Limpiar</button>
+        </div>
+      </form>
+
+      <div class="acciones" style="margin-top:10px;">
+        <button type="button" class="btn-terciario" id="btnVerTodosPirnos">Ver todos</button>
+      </div>
+
+      <div class="lista" id="lista-pirnos"></div>
+    </div>
+
+    <!-- Suplementos -->
+    <div id="sub-pot-supl" class="submodulo">
+      <h3>Suplementos (recetas por zona / temporada)</h3>
+      <p class="nota">Aquí se registran suplementos con ingredientes, proporciones, preparación y frecuencia, acorde a temporadas y clima.</p>
+
+      <div class="acciones">
+        <button type="button" class="btn-primario" id="btnNuevoSupl">Nuevo suplemento</button>
+        <button type="button" class="btn-secundario" id="btnBorrarSupl">Borrar todos (solo suplementos)</button>
+      </div>
+
+      <div class="lista" id="lista-supl"></div>
+
+      <hr style="margin:16px 0; border:none; border-top:1px solid #e5e7eb;">
+      <h4>Registro de suministro por corral</h4>
+      <form id="form-supl-suministro">
+        <div class="fila-tres">
+          <div>
+            <label>Fecha</label>
+            <input type="date" name="fecha" required />
+          </div>
+          <div>
+            <label>Potrero</label>
+            <select name="potrero" id="selPotreroSupl"></select>
+          </div>
+          <div>
+            <label>Corral</label>
+            <select name="corralId" id="selCorralSupl"></select>
+          </div>
+        </div>
+
+        <div class="fila-tres">
+          <div>
+            <label>No. de cabezas (auto desde el corral)</label>
+            <input name="cabezas" id="suplCabezas" readonly />
+          </div>
+          <div>
+            <label>Suplemento (catálogo)</label>
+            <select name="suplClave" id="selSuplCatalogo" required></select>
+          </div>
+          <div>
+            <label>Uso / objetivo</label>
+            <input name="uso" placeholder="Ej. Engorda, lactancia, mineral, etc." />
+          </div>
+        </div>
+
+        <div class="fila-tres">
+          <div>
+            <label>Cantidad por cabeza</label>
+            <input type="number" step="0.01" name="cantidad" required />
+          </div>
+          <div>
+            <label>Unidad</label>
+            <select name="unidad">
+              <option>kg</option>
+              <option>g</option>
+              <option>ml</option>
+              <option>l</option>
+            </select>
+          </div>
+          <div>
+            <label>Frecuencia</label>
+            <input name="frecuencia" placeholder="Ej. Diario, 3 veces/semana" />
+          </div>
+        </div>
+
+        <label>Observaciones</label>
+        <textarea name="obs" placeholder="Notas de suministro, temporada/clima, etc."></textarea>
+
+        <div class="acciones">
+          <button type="submit" class="btn-primario">Guardar suministro</button>
+          <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-supl-suministro')">Limpiar</button>
+        </div>
+      </form>
+
+      <h4 style="margin-top:16px;">Registros de suministro (por potrero)</h4>
+      <div class="lista" id="lista-supl-suministros"></div>
+
+    </div>
+  </section>
+
+  <!-- REPRODUCCIÓN Y PARTOS -->
+  <section id="mod-repro" class="modulo">
+    <h2>Reproducción y partos</h2>
+    <p>Seguimiento de empadres, gestaciones y partos. Incluye cruza del vientre y del toro (preponderante + cruza 1/2) para estimar cruza de la cría.</p>
+
+    <form id="form-repro">
+      <h3>Hembra (vientre)</h3>
+      <div class="fila-tres">
+        <div>
+          <label>Arete hembra (vientre)</label>
+          <input name="vientre" required />
+        </div>
+        <div>
+          <label>Raza preponderante</label>
+          <select name="razaH" class="selRaza"></select>
+        </div>
+        <div>
+          <label>Cruza 1 / Cruza 2</label>
+          <div class="fila-dos">
+            <select name="cruzaH1" class="selRaza"></select>
+            <select name="cruzaH2" class="selRaza"></select>
+          </div>
+        </div>
+      </div>
+
+      <h3>Macho (toro)</h3>
+      <div class="fila-tres">
+        <div>
+          <label>Arete / nombre del toro</label>
+          <input name="toro" />
+        </div>
+        <div>
+          <label>Raza preponderante</label>
+          <select name="razaM" class="selRaza"></select>
+        </div>
+        <div>
+          <label>Cruza 1 / Cruza 2</label>
+          <div class="fila-dos">
+            <select name="cruzaM1" class="selRaza"></select>
+            <select name="cruzaM2" class="selRaza"></select>
+          </div>
+        </div>
+      </div>
+
+      <div class="fila-tres">
+        <div>
+          <label>Peso estimado vientre (kg)</label>
+          <input type="number" step="0.1" name="pesoVientre" />
+        </div>
+        <div>
+          <label>Peso estimado toro (kg)</label>
+          <input type="number" step="0.1" name="pesoToro" />
+        </div>
+        <div>
+          <label>Cruza estimada de la cría</label>
+          <input name="cruzaCria" readonly />
+        </div>
+      </div>
+
+      <div class="fila-tres">
+        <div>
+          <label>Fecha de empadre</label>
+          <input type="date" name="fechaEmp" />
+        </div>
+        <div>
+          <label>Fecha probable de parición</label>
+          <input type="date" name="fechaProb" />
+          <div class="nota">Se puede calcular automático con gestación típica (283 días).</div>
+        </div>
+        <div style="display:flex; align-items:end; gap:6px;">
+          <button type="button" class="btn-terciario" id="btnCalcularProb">Calcular (283 días)</button>
+        </div>
+      </div>
+
+      <div class="fila-tres">
+        <div>
+          <label>Fecha de parto</label>
+          <input type="date" name="fechaParto" />
+        </div>
+        <div>
+          <label>Sexo de la cría</label>
+          <select name="sexoCria">
+            <option value="">Selecciona…</option>
+            <option>Hembra</option>
+            <option>Macho</option>
+          </select>
+        </div>
+        <div>
+          <label>Peso al nacer (kg)</label>
+          <input type="number" step="0.1" name="pesoCria" />
+        </div>
+      </div>
+
+
+      <div class="fila-dos">
+        <div>
+          <label>Cruza preponderante (hembra)</label>
+          <input name="cruzaPreH" readonly />
+        </div>
+        <div>
+          <label>Cruza preponderante (macho)</label>
+          <input name="cruzaPreM" readonly />
+        </div>
+      </div>
+
+      <div class="fila-tres">
+        <div>
+          <label>Calostro — toma</label>
+          <select name="calostroNivel">
+            <option value="">Selecciona…</option>
+            <option>Normal</option>
+            <option>Regular</option>
+            <option>Baja</option>
+          </select>
+        </div>
+        <div>
+          <label>Calostro complementario</label>
+          <select name="calostroComp">
+            <option value="">Selecciona…</option>
+            <option>Sí</option>
+            <option>No</option>
+          </select>
+        </div>
+        <div>
+          <label>Problema de salud al nacer</label>
+          <select name="saludCat" id="selSaludNac">
+            <option value="">Ninguno</option>
+            <option>Digestivo</option>
+            <option>Respiratorio</option>
+            <option>Infeccioso</option>
+            <option>Motriz</option>
+            <option>Ocular</option>
+            <option>Otro</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="wrapSaludOtro" style="display:none;">
+        <label>Especifica enfermedad</label>
+        <input name="saludOtro" placeholder="Describe la enfermedad" />
+      </div>
+
+      <label>Observaciones (condiciones del parto y estado físico del vientre y de la cría)</label>
+      <textarea name="obs"></textarea>
+
+      <div class="acciones">
+        <button type="submit" class="btn-primario">Guardar evento</button>
+        <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-repro')">Limpiar</button>
+      </div>
+    </form>
+
+    <details>
+      <summary>Actividades sugeridas (Reproducción y partos)</summary>
+      <ul>
+        <li>Vigilancia de vientres en gestación.</li>
+        <li>Atención al parto y a la cría (calostro, primeras horas).</li>
+        <li>Registro de problemas y seguimiento.</li>
+      </ul>
+    </details>
+
+    <div class="lista" id="lista-repro"></div>
+  </section>
+
+  <!-- SANIDAD -->
+  <section id="mod-sanidad" class="modulo">
+    <h2>Sanidad</h2>
+    <p>Eventos sanitarios: enfermedades, tratamientos y vacunación.</p>
+    <form id="form-sanidad">
+      <div class="fila-dos">
+        <div>
+          <label>Arete oficial</label>
+          <input name="arete" />
+        </div>
+        <div>
+          <label>Fecha</label>
+          <input type="date" name="fecha" />
+        </div>
+      </div>
+
+      <div class="fila-tres">
+        <div>
+          <label>Tipo de evento</label>
+          <select name="tipo">
+            <option value="">Selecciona…</option>
+            <option>Preventivo (vacuna)</option>
+            <option>Correctivo (enfermedad)</option>
+          </select>
+        </div>
+        <div>
+          <label>Enfermedad / motivo</label>
+          <select name="enfermedadCat" id="selEnfSan">
+            <option value="">Selecciona…</option>
+            <option>Digestivo</option>
+            <option>Respiratorio</option>
+            <option>Infeccioso</option>
+            <option>Motriz</option>
+            <option>Ocular</option>
+            <option>Otro</option>
+          </select>
+
+          <div id="wrapEnfSanOtro" style="display:none; margin-top:8px;">
+            <label>Especifica enfermedad</label>
+            <input name="enfermedadOtro" placeholder="Ej. Anaplasmosis, Brucelosis…" />
+          </div>
+</div>
+        <div>
+          <label>Temperatura (°C)</label>
+          <input type="number" step="0.1" name="temp" />
+        </div>
+      </div>
+
+      <label>Tratamiento / vacuna aplicada</label>
+      <input name="tratamiento" />
+
+      <label>Observaciones</label>
+      <textarea name="obs"></textarea>
+
+      <div class="acciones">
+        <button type="submit" class="btn-primario">Guardar sanidad</button>
+        <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-sanidad')">Limpiar</button>
+      </div>
+    </form>
+
+    <div class="lista" id="lista-sanidad"></div>
+  </section>
+<!-- CONTABILIDAD -->
+  <section id="mod-conta" class="modulo">
+    <h2>Contabilidad: Resultados y Balance (flujo de efectivo)</h2>
+    <p class="nota">Contabilidad por <b>flujo de efectivo</b> con cuentas de <b>Resultados</b> y <b>Balance</b>. Todas las transacciones se registran contra <b>Caja y Bancos (B-01)</b>. Operaciones a crédito se registran únicamente al <b>cobrar</b> o <b>pagar</b>.</p>
+
+    <div class="conta-bar">
+      <div class="fila-tres">
+        <div>
+          <label>Ejercicio (año)</label>
+          <select id="conta-year"></select>
+        </div>
+        <div>
+          <label>Saldo inicial Caja y Bancos (B-01)</label>
+          <input id="conta-opening" type="number" step="0.01" placeholder="0.00" />
+          <small class="muted">Solo Propietario/Gerente/Supervisor</small>
+        </div>
+        <div>
+          <label>Saldo Caja y Bancos (B-01)</label>
+          <div id="conta-cash" class="conta-cash">$0.00</div>
+          <small id="conta-cash-hint" class="muted"></small>
+        </div>
+      </div>
+
+      <div class="conta-kpis">
+        <div class="conta-kpi">
+          <div class="kpi-t">Ingresos</div>
+          <div class="kpi-v" id="conta-kpi-in">$0.00</div>
+        </div>
+        <div class="conta-kpi">
+          <div class="kpi-t">Egresos</div>
+          <div class="kpi-v" id="conta-kpi-out">$0.00</div>
+        </div>
+        <div class="conta-kpi">
+          <div class="kpi-t">Neto</div>
+          <div class="kpi-v" id="conta-kpi-net">$0.00</div>
+        </div>
+      </div>
+
+      <div id="conta-alert" class="nota"></div>
+
+      <div class="acciones conta-actions">
+        <button type="button" class="btn-secundario" id="btn-conta-export-global">Exportar CSV (año)</button>
+        <button type="button" class="btn-primario" id="btn-conta-cerrar">Cerrar ejercicio</button>
+        <button type="button" class="btn-secundario" id="btn-conta-reabrir">Reabrir ejercicio</button>
+      </div>
+    </div>
+
+    <div id="conta-editor-only" class="nota"></div>
+
+    <form id="form-conta2">
+      <h3>Registrar movimiento</h3>
+
+      <div class="fila-tres">
+        <div>
+          <label>Fecha</label>
+          <input type="date" name="fecha" required />
+        </div>
+        <div>
+          <label>Cuenta</label>
+          <select name="cuentaKey" id="conta-cuenta" required></select>
+        </div>
+        <div>
+          <label>Monto</label>
+          <input type="number" step="0.01" name="monto" required />
+        </div>
+      </div>
+
+      <div class="fila-dos">
+        <div>
+          <label>Proveedor / Cliente</label>
+          <input name="tercero" placeholder="Nombre del proveedor o cliente" />
+        </div>
+        <div>
+          <label>Factura / Folio</label>
+          <input name="factura" placeholder="Número de factura o folio" />
+        </div>
+      </div>
+
+      <div class="fila-dos">
+        <div>
+          <label>Tipo de producto</label>
+          <input name="tipoProducto" placeholder="Ej. Alimento, Medicamento, Ganado, Servicio…" />
+        </div>
+        <div>
+          <label>Referencia de pago</label>
+          <select name="refPago">
+            <option value="">(Selecciona)</option>
+            <option value="Transferencia">Transferencia</option>
+            <option value="Efectivo">Efectivo</option>
+            <option value="Cheque">Cheque</option>
+            <option value="Tarjeta de Credito">Tarjeta de Credito</option>
+            <option value="Tarjeta de Debito">Tarjeta de Debito</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="conta-arete-wrap" style="display:none;">
+        <label>Arete Oficial (Venta RV-01..RV-06 o Baja RMD-01)</label>
+        <input name="areteOficial" placeholder="Ej. MX123456789" />
+      </div>
+
+      <label>Descripción</label>
+      <textarea name="descripcion" placeholder="Detalle del movimiento"></textarea>
+
+      <div class="acciones">
+        <button type="submit" class="btn-primario">Guardar</button>
+        <button type="button" class="btn-secundario" id="btn-conta-limpiar">Limpiar</button>
+      </div>
+    </form>
+
+    <h3>Movimientos del ejercicio</h3>
+    <div class="fila-tres">
+      <div>
+        <label>Filtrar por cuenta</label>
+        <select id="conta-filter-cuenta"></select>
+      </div>
+      <div>
+        <label>Buscar</label>
+        <input id="conta-search" placeholder="Proveedor, factura, descripción…" />
+      </div>
+      <div>
+        <label>Mostrar</label>
+        <select id="conta-filter-estado">
+          <option value="all">Todos</option>
+          <option value="ingreso">Solo ingresos</option>
+          <option value="egreso">Solo egresos</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="conta-table-wrap">
+      <table class="conta-table">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Cuenta</th>
+            <th>Arete oficial</th>
+            <th>Proveedor/Cliente</th>
+            <th>Factura</th>
+            <th>Tipo producto</th>
+            <th>Ref. pago</th>
+            <th style="text-align:right;">Ingreso</th>
+            <th style="text-align:right;">Egreso</th>
+            <th>Descripción</th>
+    
+          </tr>
+        </thead>
+        <tbody id="conta-tbody"></tbody>
+      </table>
+    </div>
+
+    <h3>Acumulado por cuenta (año)</h3>
+    <div class="conta-table-wrap">
+      <table class="conta-table">
+        <thead>
+          <tr>
+            <th>Cuenta</th>
+            <th style="text-align:right;">Ingresos</th>
+            <th style="text-align:right;">Egresos</th>
+            <th style="text-align:right;">Neto</th>
+          </tr>
+        </thead>
+        <tbody id="conta-resumen-tbody"></tbody>
+      </table>
+    </div>
+
+    
+    <h3>Estado de Resultados (acumulado del año)</h3>
+    <div class="conta-table-wrap">
+      <table class="conta-table">
+        <thead>
+          <tr>
+            <th>Cuenta</th>
+            <th style="text-align:right;">Valor</th>
+            <th style="text-align:right;">% del Ing. Result.</th>
+            <th style="text-align:right;">Por Vientre</th>
+          </tr>
+        </thead>
+        <tbody id="conta-er-ing-tbody"></tbody>
+        <tbody id="conta-er-egr-tbody"></tbody>
+        <tfoot>
+          <tr>
+            <th colspan="1">Utilidad / Pérdida</th>
+            <th id="conta-er-util" style="text-align:right;"></th>
+            <th></th>
+            <th id="conta-er-util-v" style="text-align:right;"></th>
+          </tr>
+        </tfoot>
+      </table>
+      <div class="nota" style="margin-top:8px;">
+        * % calculado contra el <b>Total de Ingresos de Resultados</b>. "Por Vientre" usa el número de vientres activos en Inventario.
+      </div>
+    </div>
+
+    <h3>Balance General (al cierre del periodo)</h3>
+    <div class="conta-table-wrap">
+      <table class="conta-table">
+        <thead>
+          <tr>
+            <th>Cuenta</th>
+            <th style="text-align:right;">Saldo</th>
+          </tr>
+        </thead>
+        <tbody id="conta-bg-tbody"></tbody>
+        <tfoot>
+          <tr>
+            <th>Total Activos</th>
+            <th id="conta-bg-total-act" style="text-align:right;"></th>
+          </tr>
+          <tr>
+            <th>Préstamos Bancarios (saldo)</th>
+            <th id="conta-bg-pasivo" style="text-align:right;"></th>
+          </tr>
+          <tr>
+            <th>Patrimonio (calculado)</th>
+            <th id="conta-bg-patrimonio" style="text-align:right;"></th>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <h3>Reporte por cuenta</h3>
+    <div class="fila-dos">
+      <div>
+        <label>Cuenta</label>
+        <select id="conta-rep-cuenta"></select>
+      </div>
+      <div class="acciones" style="align-self:end;">
+        <button type="button" class="btn-secundario" id="btn-conta-export-cuenta">Exportar CSV (cuenta)</button>
+      </div>
+    </div>
+
+    <div class="conta-table-wrap">
+      <table class="conta-table">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Proveedor/Cliente</th>
+            <th>Factura</th>
+            <th>Arete oficial</th>
+            <th>Tipo producto</th>
+            <th>Ref. pago</th>
+            <th style="text-align:right;">Monto</th>
+            <th>Descripción</th>
+          </tr>
+        </thead>
+        <tbody id="conta-rep-tbody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- REGISTROS DEL VELADOR (incluye visitas) -->
+  <section id="mod-seguridad" class="modulo">
+    <h2>Registros del Velador</h2>
+    <p>Registro de visitas, vehículos y bitácora diaria del velador.</p>
+
+    <h3>Registro de visitantes</h3>
+    <form id="form-visitas">
+      <div class="fila-tres">
+        <div>
+          <label>Fecha</label>
+          <input type="date" name="fecha" />
+        </div>
+        <div>
+          <label>Hora llegada</label>
+          <input type="time" name="horaLlegada" />
+        </div>
+        <div>
+          <label>Hora salida</label>
+          <input type="time" name="horaSalida" />
+        </div>
+      </div>
+
+      <div class="fila-dos">
+        <div>
+          <label>Nombre del visitante / grupo</label>
+          <input name="nombre" />
+        </div>
+        <div>
+          <label>Asunto / a quién busca</label>
+          <input name="asunto" />
+        </div>
+      </div>
+
+      <div class="fila-dos">
+        <div>
+          <label>Vehículo</label>
+          <input name="vehiculo" placeholder="Tipo de vehículo" />
+        </div>
+        <div>
+          <label>Placas</label>
+          <input name="placas" />
+        </div>
+      </div>
+
+      <label>Observaciones</label>
+      <textarea name="obs"></textarea>
+
+      <div class="acciones">
+        <button type="submit" class="btn-primario">Guardar visita</button>
+        <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-visitas')">Limpiar</button>
+      </div>
+    </form>
+
+    <h3>Bitácora diaria del velador</h3>
+    <form id="form-bitacora">
+      <div class="fila-dos">
+        <div>
+          <label>Fecha</label>
+          <input type="date" name="fecha" />
+        </div>
+        <div>
+          <label>Hora</label>
+          <input type="time" name="hora" />
+        </div>
+      </div>
+
+      <label>Descripción de hechos / observaciones</label>
+      <textarea name="evento" placeholder="Eventos relevantes del día/noche"></textarea>
+
+      <label>Involucrados (personas, animales, clima, otros)</label>
+      <textarea name="involucrados"></textarea>
+
+      <div class="acciones">
+        <button type="submit" class="btn-primario">Guardar registro</button>
+        <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-bitacora')">Limpiar</button>
+      </div>
+    </form>
+
+    <div class="lista" id="lista-seguridad"></div>
+  </section>
+
+  <!-- MAQUINARIA Y EQUIPO -->
+  <section id="mod-maquinaria" class="modulo">
+    <h2>Maquinaria, equipo y herramientas</h2>
+    <p>Inventario y mantenimiento básico de maquinaria, equipo, instalaciones y herramientas.</p>
+
+    <form id="form-maquinaria">
+      <div class="fila-tres">
+        <div>
+          <label>Tipo de activo</label>
+          <select name="tipo">
+            <option value="">Selecciona…</option>
+            <option>Maquinaria</option>
+            <option>Equipo</option>
+            <option>Herramienta</option>
+            <option>Instalación</option>
+          </select>
+        </div>
+        <div>
+          <label>Cantidad</label>
+          <input type="number" step="1" name="cantidad" />
+        </div>
+        <div>
+          <label>Vida útil (años estimados)</label>
+          <input type="number" step="1" name="vida" />
+        </div>
+      </div>
+
+      <label>Descripción del activo</label>
+      <input name="desc" placeholder="Ej. Tractor 80 HP, Bomba de agua, etc." />
+
+      <div class="fila-dos">
+        <div>
+          <label>Marca / Modelo</label>
+          <input name="marcaModelo" />
+        </div>
+        <div>
+          <label>Número de serie (opcional)</label>
+          <input name="serie" />
+        </div>
+      </div>
+
+      <div class="fila-tres">
+        <div>
+          <label>Fecha de adquisición</label>
+          <input type="date" name="fechaAdq" />
+        </div>
+        <div>
+          <label>Último mantenimiento</label>
+          <input type="date" name="fechaMant" />
+        </div>
+        <div>
+          <label>Costo del último mantenimiento</label>
+          <input type="number" step="0.01" name="costoMant" />
+        </div>
+      </div>
+
+      <label>Descripción del mantenimiento / taller / mecánico</label>
+      <textarea name="detMant"></textarea>
+
+      <div class="acciones">
+        <button type="submit" class="btn-primario">Guardar activo</button>
+        <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-maquinaria')">Limpiar</button>
+      </div>
+    </form>
+
+    <div class="lista" id="lista-maquinaria"></div>
+  </section>
+
+  <!-- ACTIVIDADES -->
+  <section id="mod-actividades" class="modulo">
+    <h2>Responsabilidades y tareas</h2>
+    <p>Asigna tareas y da seguimiento. Vaquero/Auxiliar/Otro solo ven lo que se les asigna y pueden marcarlo como completado.</p>
+
+    
+    <div class="tarjeta" style="background:#fff;border:1px solid #e5e7eb;">
+      <h3 style="margin:0 0 8px;">Personal del Rancho</h3>
+      <form id="form-personal">
+        <div class="fila-tres">
+          <div>
+            <label>Trabajador (usuario)</label>
+            <select id="personal-usuario"></select>
+          </div>
+          <div>
+            <label>Número de identificación</label>
+            <input id="personal-id" />
+          </div>
+          <div>
+            <label>Puesto</label>
+            <input id="personal-puesto" placeholder="Abierto (lo asigna el responsable)" />
+          </div>
+        </div>
+        <div class="acciones">
+          <button type="submit" class="btn-primario">Guardar personal</button>
+          <button type="button" class="btn-secundario" id="btn-personal-limpiar">Limpiar</button>
+        </div>
+      </form>
+      <div class="lista" id="lista-personal"></div>
+    </div>
+
+    <div class="tarjeta" style="background:#fff;border:1px solid #e5e7eb; margin-top:12px;">
+      <h3 style="margin:0 0 8px;">Responsabilidades por Módulo</h3>
+      <form id="form-responsabilidades">
+        <div class="fila-tres">
+          <div>
+            <label>Trabajador</label>
+            <select id="resp-usuario"></select>
+          </div>
+          <div>
+            <label>Módulo</label>
+            <select id="resp-modulo"></select>
+          </div>
+          <div>
+            <label>Periodicidad (si aplica)</label>
+            <select id="resp-periodicidad">
+              <option value="">—</option>
+              <option>Diarias</option>
+              <option>Terciarias</option>
+              <option>Semanales</option>
+              <option>Quincenales</option>
+              <option>Mensuales</option>
+              <option>Trimestrales</option>
+              <option>Semestrales</option>
+              <option>Anuales</option>
+            </select>
+          </div>
+        </div>
+        <label>Descripción de responsabilidades / rol</label>
+        <textarea id="resp-desc" placeholder="Describe lo que debe hacer el trabajador en este módulo"></textarea>
+        <div class="acciones">
+          <button type="submit" class="btn-primario">Guardar responsabilidad</button>
+          <button type="button" class="btn-secundario" id="btn-resp-limpiar">Limpiar</button>
+        </div>
+      </form>
+      <div class="lista" id="lista-responsabilidades"></div>
+    </div>
+
+    <div class="tarjeta" style="background:#fff;border:1px solid #e5e7eb; margin-top:12px;">
+      <h3 style="margin:0 0 8px;">Tareas Especiales</h3>
+      <form id="form-tareas-especiales">
+        <div class="fila-tres">
+          <div>
+            <label>Trabajador</label>
+            <select id="esp-usuario"></select>
+          </div>
+          <div>
+            <label>Fecha inicio</label>
+            <input id="esp-inicio" type="date" />
+          </div>
+          <div>
+            <label>Fecha terminación</label>
+            <input id="esp-fin" type="date" />
+          </div>
+        </div>
+        <div class="fila-dos">
+          <div>
+            <label>Módulo</label>
+            <select id="esp-modulo"></select>
+          </div>
+          <div>
+            <label>Herramientas</label>
+            <input id="esp-herr" placeholder="Opcional" />
+          </div>
+        </div>
+        <label>Descripción</label>
+        <textarea id="esp-desc" placeholder="Describe la tarea especial"></textarea>
+        <div class="acciones">
+          <button type="submit" class="btn-primario">Guardar tarea especial</button>
+          <button type="button" class="btn-secundario" id="btn-esp-limpiar">Limpiar</button>
+        </div>
+      </form>
+      <div class="lista" id="lista-tareas-especiales"></div>
+    </div>
+
+    <div class="tarjeta" style="background:#fff;border:1px solid #e5e7eb; margin-top:12px;">
+      <h3 style="margin:0 0 8px;">Resumen del día</h3>
+      <div class="nota" id="resumen-dia">—</div>
+    </div>
+
+    <div class="tarjeta" id="actAdminBox" style="background:#fff;border:1px solid #e5e7eb;">
+      <div class="nota" style="margin-bottom:10px;"><b>Solo Propietario/Gerente/Supervisor</b> pueden registrar y asignar tareas.</div>
+
+      <form id="form-actividades">
+        <div class="fila-dos">
+          <div>
+            <label>Módulo</label>
+            <select name="modulo">
+              <option value="">Selecciona…</option>
+              <option>Animales</option>
+              <option>Pesajes</option>
+              <option>Potreros</option>
+              <option>Corrales</option>
+              <option>Reproducción y partos</option>
+              <option>Sanidad</option>
+              <option>Contabilidad</option>
+              <option>Registros del Velador</option>
+              <option>Maquinaria y equipo</option>
+              <option>Suplementos</option>
+            </select>
+          </div>
+          <div>
+            <label>Asignado a</label>
+            <select name="asignadoA" id="selAsignadoA">
+              <option value="">Selecciona…</option>
+            </select>
+          </div>
+        </div>
+
+        <label>Descripción de tarea</label>
+        <textarea name="descripcionTarea" placeholder="Describe la tarea. Tip: puedes poner varias líneas (una tarea por línea)."></textarea>
+
+        <div class="fila-dos">
+          <div>
+            <label>Fecha de inicio</label>
+            <input type="date" name="fechaInicio" />
+          </div>
+          <div>
+            <label>Periodicidad</label>
+            <select name="periodicidad">
+              <option value="">Selecciona…</option>
+              <option>Diaria</option>
+              <option>Terciarias</option>
+              <option>Semanal</option>
+              <option>Quincenal</option>
+              <option>Mensual</option>
+              <option>Trimestral</option>
+              <option>Semestral</option>
+              <option>Anual</option>
+              <option>Eventual</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="fila-dos">
+          <div>
+            <label>Herramientas</label>
+            <input name="herramientas" placeholder="Ej. lazo, jeringas, báscula…" />
+          </div>
+          <div>
+            <label>Realizada</label>
+            <select name="realizada">
+              <option value="No">No</option>
+              <option value="Si">Si</option>
+            </select>
+          </div>
+        </div>
+
+        <label>Notas</label>
+        <input name="notas" placeholder="Opcional" />
+
+        <div class="acciones">
+          <button type="submit" class="btn-primario">Guardar tarea</button>
+          <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-actividades')">Limpiar</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="tarjeta" id="actTareasBox" style="background:#fff;border:1px solid #e5e7eb;margin-top:12px;">
+      <h3 style="margin:0 0 8px;">Tareas pendientes</h3>
+      <div id="listaTareasPend" class="nota">Sin tareas.</div>
+
+      <h3 style="margin:14px 0 8px;">Tareas completadas</h3>
+      <div id="listaTareasComp" class="nota">Sin tareas.</div>
+    </div>
+  </section>
+
+  <!-- REPORTES -->
+  <section id="mod-reportes" class="modulo">
+    <h2>Reportes</h2>
+    <p>Haz <b>click</b> en cualquier módulo para ver el reporte detallado y filtrar los registros.</p>
+
+    <table class="tabla-simple" style="width:100%; border-collapse: collapse; font-size: 12px;">
+      <thead>
+        <tr>
+          <th style="text-align:left; border-bottom:1px solid #ddd; padding:6px;">Módulo</th>
+          <th style="text-align:left; border-bottom:1px solid #ddd; padding:6px;">Registros</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr data-rep="animales"><td style="padding:6px;">Animales</td><td style="padding:6px;" id="rep-animales">0</td></tr>
+        <tr data-rep="bajas"><td style="padding:6px;">Bajas (Ventas / Muertes)</td><td style="padding:6px;" id="rep-bajas">0</td></tr>
+        <tr data-rep="pesajes"><td style="padding:6px;">Pesajes</td><td style="padding:6px;" id="rep-pesajes">0</td></tr>
+        <tr data-rep="repro"><td style="padding:6px;">Reproducción y partos</td><td style="padding:6px;" id="rep-repro">0</td></tr>
+        <tr data-rep="sanidad"><td style="padding:6px;">Sanidad</td><td style="padding:6px;" id="rep-sanidad">0</td></tr>
+<tr data-rep="conta"><td style="padding:6px;">Contabilidad</td><td style="padding:6px;" id="rep-conta">0</td></tr>
+        <tr data-rep="seguridad"><td style="padding:6px;">Registros del Velador</td><td style="padding:6px;" id="rep-seguridad">0</td></tr>
+        <tr data-rep="maquinaria"><td style="padding:6px;">Maquinaria y equipo</td><td style="padding:6px;" id="rep-maquinaria">0</td></tr>
+        <tr data-rep="actividades"><td style="padding:6px;">Actividades</td><td style="padding:6px;" id="rep-actividades">0</td></tr>
+        <tr data-rep="potreros"><td style="padding:6px;">Potreros</td><td style="padding:6px;" id="rep-potreros">0</td></tr>
+        <tr data-rep="corrales"><td style="padding:6px;">Corrales</td><td style="padding:6px;" id="rep-corrales">0</td></tr>
+        <tr data-rep="indicadores"><td style="padding:6px;">Indicadores</td><td style="padding:6px;" id="rep-indicadores">0</td></tr>
+        <tr data-rep="supl"><td style="padding:6px;">Suplementos</td><td style="padding:6px;" id="rep-supl">0</td></tr>
+      </tbody>
+    </table>
+
+    
+    <details class="tarjeta" style="margin-top:14px; background:#fff; border:1px solid #e5e7eb;">
+      <summary><b>Permisos de reportes por rol</b></summary>
+      <p class="nota" style="margin:8px 0 10px 0;">Define qué filas aparecen en <b>Reportes</b> según el rol del usuario.</p>
+
+      <div class="fila-dos" style="gap:12px; align-items:end;">
+        <div>
+          <label>Rol</label>
+          <select id="selRolReportes"></select>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <button type="button" class="btn-terciario" id="btnGuardarPermReportes">Guardar permisos</button>
+          <button type="button" class="btn-secundario" id="btnRestaurarPermReportes">Restaurar default</button>
+        </div>
+      </div>
+
+      <div id="chkPermReportes" class="tarjeta" style="margin-top:10px; background:#f9fafb; border:1px solid #e5e7eb;"></div>
+    </details>
+
+    <p class="nota">En futuras versiones se pueden agregar KPI detallados.</p>
+  </section>
+
+  <!-- PERFIL DEL RANCHO -->
+  <section id="mod-config" class="modulo">
+    <h2>Perfil del rancho</h2>
+    <p>Datos generales del rancho y capacidad estimada.</p>
+
+    <form id="form-config">
+      <label>Nombre del rancho</label>
+      <input name="nombreRancho" />
+
+      <label>Propietario</label>
+      <input name="propietario" />
+
+      <label>Tenencia del rancho</label>
+      <select name="tenencia">
+        <option value="">Selecciona…</option>
+        <option>Propiedad</option>
+        <option>En arrendamiento</option>
+        <option>Derechos ejidales</option>
+        <option>Otros</option>
+      </select>
+
+      <div class="fila-tres">
+        <div>
+          <label>Extensión total (ha)</label>
+          <input type="number" step="0.01" name="haTotales" />
+        </div>
+        <div>
+          <label>Ha de agostadero</label>
+          <input type="number" step="0.01" name="haAgostadero" />
+        </div>
+        <div>
+          <label>Ha de pastos</label>
+          <input type="number" step="0.01" name="haPastos" />
+        </div>
+      </div>
+
+      <div class="fila-dos">
+        <div>
+          <label>Capacidad estimada de vientres y crías al año</label>
+          <input type="number" step="1" name="capacidad" />
+        </div>
+        <div>
+          <label>Animales actuales</label>
+          <input type="number" step="1" name="animalesActuales" />
+        </div>
+      </div>
+
+      <div class="acciones">
+        <button type="submit" class="btn-primario">Guardar perfil</button>
+        <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-config')">Limpiar</button>
+      </div>
+    </form>
+
+    <p class="nota">Estos datos se usan como referencia general y pueden ajustarse en cualquier momento.</p>
+
+    <hr style="margin:18px 0; border:none; border-top:1px solid #e5e7eb;">
+    <h3>Usuarios y accesos</h3>
+    <p class="nota">Crea usuarios (vaqueros, supervisores, auxiliares) y asigna qué módulos pueden ver.</p>
+
+    <form id="form-usuarios">
+      <div class="fila-tres">
+        <div>
+          <label>Nombre</label>
+          <input name="nombre" required />
+        </div>
+        <div>
+          <label>Rol</label>
+          <select name="rol" required>
+            <option value="">Selecciona…</option>
+            <option>Propietario</option>
+            <option>Gerente</option>
+            <option>Supervisor</option>
+            <option>Vaquero</option>
+            <option>Auxiliar</option>
+            <option>Otro</option>
+          </select>
+            <div id="rolOtroWrap" style="display:none; margin-top:6px;">
+              <label>Nombre del rol (Otro)</label>
+              <input name="rolOtro" placeholder="Ej. Veterinario, Chofer, Administrativo…" />
+            </div>
+        </div>
+        <div>
+          <label>Estado</label>
+          <select name="activo">
+            <option>Activo</option>
+            <option>Inactivo</option>
+          </select>
+        </div>
+      </div>
+
+      <label>Acceso a módulos</label>
+      <div class="tarjeta" style="background:#fff;border:1px solid #e5e7eb;">
+        <div class="nota">Marca los módulos permitidos para este usuario.</div>
+        <div id="chkPermisos"></div>
+      </div>
+
+      <div class="acciones">
+        <button type="submit" class="btn-primario">Guardar usuario</button>
+        <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-usuarios')">Limpiar</button>
+      </div>
+    </form>
+
+    <div class="lista" id="lista-usuarios"></div>
+
+  </section>
+</main>
+
+<!-- MODAL: Nuevo suplemento -->
+<div class="modal" id="modalSupl">
+  <div class="panel">
+    <header>
+      <h2 style="margin:0;">Suplementos</h2>
+      <p class="nota" style="margin:4px 0 0 0;">Ingredientes, proporciones, preparación y frecuencia.</p>
+    </header>
+
+    <form id="form-supl">
+      <div class="fila-tres">
+        <div>
+          <label>Clave</label>
+          <input name="clave" required placeholder="Ej. SUP-INV-01" />
+        </div>
+        <div>
+          <label>Nombre del suplemento</label>
+          <input name="nombre" required placeholder="Ej. Suplemento de invierno" />
+        </div>
+        <div>
+          <label>Temporada / clima</label>
+          <input name="temporada" placeholder="Ej. Frío, Sequía, Lluvias…" />
+        </div>
+      </div>
+
+      <label>Uso / objetivo del suplemento</label>
+      <input name="uso" placeholder="Ej. Engorda, mineralización, lactancia, recuperación…" />
+
+      <label>Ingredientes + %</label>
+      <div class="nota">Agrega los ingredientes y su porcentaje de participación. (Sugerencia: que sumen 100%).</div>
+      <div id="ingWrap"></div>
+      <div class="acciones">
+        <button type="button" class="btn-terciario" id="btnAddIng">Agregar ingrediente</button>
+        <button type="button" class="btn-secundario" id="btnClearIng">Borrar ingredientes</button>
+      </div>
+      <input type="hidden" name="ingredientesJSON" id="ingredientesJSON" />
+
+      <label>Forma de preparación</label>
+      <textarea name="preparacion" placeholder="Pasos para preparar"></textarea>
+
+      <label>Frecuencia de suministro</label>
+      <input name="frecuencia" placeholder="Ej. Diario, 3 veces/semana, etc." />
+
+      <div class="acciones">
+        <button type="submit" class="btn-primario">Guardar suplemento</button>
+        <button type="button" class="btn-secundario" id="btnCerrarSupl">Cerrar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<!-- MODAL: Reporte detallado -->
+<div class="modal" id="modalReportes" aria-hidden="true">
+  <div class="panel">
+    <header>
+      <h2 style="margin:0;" id="repModalTitle">Reporte</h2>
+      <p class="nota" style="margin:4px 0 0 0;" id="repModalSub">Filtra y revisa todos los registros del módulo.</p>
+    </header>
+
+    <div class="fila-tres" style="margin-top:12px;">
+      <div id="repF1Wrap">
+        <label id="repF1Lbl">Filtrar por</label>
+        <select id="repF1"></select>
+      </div>
+      <div id="repF2Wrap">
+        <label id="repF2Lbl">Filtrar por</label>
+        <select id="repF2"></select>
+      </div>
+      <div id="repF3Wrap">
+        <label id="repF3Lbl">Filtrar por</label>
+        <select id="repF3"></select>
+      </div>
+    </div>
+
+    <div class="fila-dos" style="margin-top:10px; align-items:end;">
+      <div>
+        <label>Búsqueda rápida</label>
+        <input id="repSearch" placeholder="Buscar en la tabla…" />
+      </div>
+      <div class="acciones" style="justify-content:flex-end;">
+        <button type="button" class="btn-secundario" id="btnRepCSV">Exportar CSV (filtrado)</button>
+        <button type="button" class="btn-terciario" id="btnRepCerrar">Cerrar</button>
+      </div>
+    </div>
+
+    <div style="margin-top:12px; max-height: 55vh; overflow:auto; border:1px solid #e5e7eb; border-radius:12px;">
+      <table class="tabla-simple" style="width:100%; border-collapse:collapse; font-size:12px;">
+        <thead><tr id="repTblHead"></tr></thead>
+        <tbody id="repTblBody"></tbody>
+      </table>
+    </div>
+
+    <div class="nota" id="repTblNota" style="margin-top:10px;"></div>
+  </div>
+</div>
+
+
+<script src="js/00_shared.js"></script>
+<script src="js/01_ui.js"></script>
+
+<!-- Módulos -->
+<script src="js/modules/ganado.js"></script>
+<script src="js/modules/ganado_pesaje.js"></script>
+<script src="js/modules/reproduccion.js"></script>
+<script src="js/modules/potreros.js"></script>
+
+<!-- Resto de módulos + panel/reportes/clima/etc -->
+<script src="js/modules/otros.js"></script>
+
+<!-- Inicialización -->
+<script src="js/99_init.js"></script>
+</body>
+</html>
