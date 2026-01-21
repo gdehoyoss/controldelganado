@@ -518,8 +518,10 @@ renderTareasUI();
     }
   );
 
-  // UI wiring
-  document.addEventListener('DOMContentLoaded', () => {
+  // UI wiring (robusto con DOMHelpers)
+  // Nota: algunos dropdowns se creaban antes de que existieran funciones de refresco
+  // (por orden de carga). DOMHelpers.ready evita que queden vacíos.
+  (window.DOMHelpers?.ready || ((cb)=>document.addEventListener('DOMContentLoaded', cb)))(() => {
     const f = document.getElementById('pirnosFecha');
     if (f && !f.value) f.value = hoyISODate();
     refrescarCorralesPirnos();
@@ -533,6 +535,33 @@ renderTareasUI();
     }
     // render initial
     renderPirnosList('');
+  });
+
+
+  // ----------------------
+  // FIX: Dropdowns vacíos (ubicaciones/corrales) por orden de carga
+  // ----------------------
+  // refrescarPotrerosEnUI() se ejecutaba antes de que existieran
+  // refrescarUbicacionesEnUI/refrescarCorralesEnUI (definidas aquí),
+  // dejando selects como #selUbicInd sin opciones.
+  // Re-ejecutamos refrescos una vez que este módulo ya está cargado.
+  (window.DOMHelpers?.ready || ((cb)=>document.addEventListener('DOMContentLoaded', cb)))(() => {
+    // Espera a que existan los selects clave
+    const wait = window.DOMHelpers?.waitForElement
+      ? (sel)=>window.DOMHelpers.waitForElement(sel, 4000).catch(()=>null)
+      : async (sel)=>document.querySelector(sel);
+
+    Promise.all([
+      wait('#selUbicInd'),
+      wait('#selPotreroSupl'),
+      wait('#selCorralSupl'),
+      wait('#selCorralPirnos')
+    ]).finally(() => {
+      try { refrescarUbicacionesEnUI(); } catch(e) {}
+      try { refrescarCorralesEnUI(); } catch(e) {}
+      try { refrescarCorralesPirnos(); } catch(e) {}
+      try { if (typeof refrescarPotrerosEnUI === 'function') refrescarPotrerosEnUI(); } catch(e) {}
+    });
   });
 
 
