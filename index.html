@@ -398,14 +398,9 @@
             <label>Cuenta contable (opcional)</label>
             <select id="baja-cuenta">
               <option value="">—</option>
-              <option value="RV-01">RV-01 Venta de becerros</option>
-              <option value="RV-02">RV-02 Venta de Vaquillas</option>
-              <option value="RV-03">RV-03 Venta de Novillos</option>
-              <option value="RV-04">RV-04 Venta de Vientres</option>
-              <option value="RV-05">RV-05 Venta de Toretes</option>
-              <option value="RV-06">RV-06 Venta de Toros</option>
+              <option value="BGR-01">BGR-01 Venta Ganado Reproducción</option>
+              <option value="BGC-01">BGC-01 Venta Ganado Comercial</option>
               <option value="RMD-01">RMD-01 Muerte y Desecho</option>
-              <option value="BA-01">BA-01 Inventario de Animales</option>
             </select>
           </div>
           <div>
@@ -1009,8 +1004,18 @@
   </section>
 <!-- CONTABILIDAD -->
   <section id="mod-conta" class="modulo">
-    <h2>Contabilidad: Resultados y Balance (flujo de efectivo)</h2>
-    <p class="nota">Contabilidad por <b>flujo de efectivo</b> con cuentas de <b>Resultados</b> y <b>Balance</b>. Todas las transacciones se registran contra <b>Caja y Bancos (B-01)</b>. Operaciones a crédito se registran únicamente al <b>cobrar</b> o <b>pagar</b>.</p>
+    <h2>Contabilidad: Ingresos y Egresos (flujo de efectivo)</h2>
+    <p class="nota">Contabilidad por <b>flujo de efectivo</b> con cuentas de <b>Resultados</b> y <b>Balance</b>. Las transacciones con efectivo se registran contra <b>Caja y Bancos (B-01)</b>; los movimientos sin efectivo se capturan en cuentas de balance para reflejar aportaciones o revaluaciones. Operaciones a crédito se registran únicamente al <b>cobrar</b> o <b>pagar</b>.</p>
+
+    <div class="conta-guidelines">
+      <h3>Guía rápida del registro</h3>
+      <ul>
+        <li><b>Ingresos con efectivo</b>: cuentas de Resultados y Balance que incrementan Caja y Bancos.</li>
+        <li><b>Egresos con efectivo</b>: cuentas de Resultados y Balance que disminuyen Caja y Bancos.</li>
+        <li><b>Movimientos sin efectivo</b>: cuentas de Balance para aportaciones en especie y revaluaciones de activos.</li>
+      </ul>
+      <p class="nota">El primer registro recomendado es el asiento de apertura: captura el saldo inicial en <b>B-01</b> y registra aportaciones en especie en las cuentas de balance correspondientes.</p>
+    </div>
 
     <div class="conta-bar">
       <div class="fila-tres">
@@ -1104,7 +1109,7 @@
       </div>
 
       <div id="conta-arete-wrap" style="display:none;">
-        <label>Arete Oficial (Venta RV-01..RV-06 o Baja RMD-01)</label>
+        <label>Arete Oficial (Venta BGR-01/BGC-01 o Baja RMD-01)</label>
         <input name="areteOficial" placeholder="Ej. MX123456789" />
       </div>
 
@@ -1133,6 +1138,7 @@
           <option value="all">Todos</option>
           <option value="ingreso">Solo ingresos</option>
           <option value="egreso">Solo egresos</option>
+          <option value="sin-efectivo">Solo sin efectivo</option>
         </select>
       </div>
     </div>
@@ -1143,6 +1149,7 @@
           <tr>
             <th>Fecha</th>
             <th>Cuenta</th>
+            <th>Tipo</th>
             <th>Arete oficial</th>
             <th>Proveedor/Cliente</th>
             <th>Factura</th>
@@ -1866,10 +1873,16 @@
 <script src="js/modules/ganado.js"></script>
 <script src="js/modules/ganado_pesaje.js"></script>
 <script src="js/modules/reproduccion.js"></script>
+<script src="js/modules/reproduccion_extra.js"></script>
 <script src="js/modules/potreros.js"></script>
-
-<!-- Resto de módulos + panel/reportes/clima/etc -->
 <script src="js/modules/otros.js"></script>
+<script src="js/modules/sanidad.js"></script>
+<script src="js/modules/contabilidad.js"></script>
+<script src="js/modules/seguridad.js"></script>
+<script src="js/modules/maquinaria.js"></script>
+<script src="js/modules/actividades.js"></script>
+<script src="js/modules/clima.js"></script>
+<script src="js/modules/panel_reportes.js"></script>
 
 <!-- Inicialización -->
 <script src="js/99_init.js"></script>
