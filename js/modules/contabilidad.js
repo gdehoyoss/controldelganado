@@ -72,6 +72,11 @@ const CONTA_ACCOUNTS = [
   { tipo:'Sin efectivo', grupo:'Balance', code:'BOA-01', name:'Otros Activos (aportación sin efectivo)', balanceClass:'Asset', balanceEffect: 1, impactoCaja:false },
 ].map(a => ({ ...a, key: `${a.code}||${a.name}||${a.tipo}||${a.grupo}` }));
 
+const CONTA_CONTRA_CUENTAS = {
+  Deudor: { value: 'Caja y Banco (Deudor)', label: 'Caja y Banco (Deudor)' },
+  Acreedor: { value: 'Caja y Banco (Acredor)', label: 'Caja y Banco (Acredor)' }
+};
+
 function fmtMXN(n){
   const v = Number(n||0);
   try { return v.toLocaleString('es-MX', { style:'currency', currency:'MXN' }); }
@@ -142,6 +147,62 @@ function contaGetAccountByKey(key){
   // Legacy / desconocida
   const parts = String(key||'').split('||');
   return { key, code: parts[0] || '', name: parts[1] || 'Cuenta', tipo: parts[2] || 'Egreso', grupo: parts[3] || '' };
+}
+
+function contaUpdateContraSelect(selectEl, cuentaKey, currentValue){
+  if (!selectEl) return;
+  selectEl.innerHTML = '';
+
+  const placeholder = document.createElement('option');
+  placeholder.value = '';
+  placeholder.textContent = '(Selecciona)';
+  selectEl.appendChild(placeholder);
+
+  let options = [];
+  if (cuentaKey){
+    const acc = contaGetAccountByKey(cuentaKey);
+    if (acc.grupo === 'Resultados'){
+      if (acc.tipo === 'Ingreso') options = [CONTA_CONTRA_CUENTAS.Deudor];
+      if (acc.tipo === 'Egreso') options = [CONTA_CONTRA_CUENTAS.Acreedor];
+    } else if (acc.grupo === 'Balance'){
+      options = [CONTA_CONTRA_CUENTAS.Deudor, CONTA_CONTRA_CUENTAS.Acreedor];
+    }
+  }
+
+  if (!options.length){
+    if (cuentaKey){
+      const noAplica = document.createElement('option');
+      noAplica.value = '';
+      noAplica.textContent = '(No aplica)';
+      selectEl.appendChild(noAplica);
+    }
+    selectEl.value = '';
+    selectEl.required = false;
+    return;
+  }
+
+  options.forEach(opt => {
+    const o = document.createElement('option');
+    o.value = opt.value;
+    o.textContent = opt.label;
+    selectEl.appendChild(o);
+  });
+
+  const isValid = options.some(opt => opt.value === currentValue);
+  if (isValid){
+    selectEl.value = currentValue;
+  } else if (options.length === 1){
+    selectEl.value = options[0].value;
+  } else {
+    selectEl.value = '';
+  }
+  selectEl.required = true;
+}
+
+function contaContraRequired(acc){
+  if (!acc) return false;
+  if (acc.grupo === 'Balance') return true;
+  return acc.grupo === 'Resultados' && (acc.tipo === 'Ingreso' || acc.tipo === 'Egreso');
 }
 
 function contaYears(){
@@ -369,7 +430,7 @@ function contaRender(){
   if (q){
     rows = rows.filter(m=>{
       const s = [
-        m.tercero, m.factura, m.tipoProducto, m.areteOficial, m.refPago, m.descripcion,
+        m.tercero, m.factura, m.tipoProducto, m.areteOficial, m.refPago, m.descripcion, m.contraCuenta,
         contaGetAccountByKey(m.cuentaKey).name,
         contaGetAccountByKey(m.cuentaKey).code
       ].join(' ').toLowerCase();
@@ -393,6 +454,7 @@ function contaRender(){
         <td>${escapeHtml(m.fecha||'')}</td>
         <td>${escapeHtml((a.code? a.code+' — ':'') + a.name)}</td>
         <td>${escapeHtml(a.tipo||'')}</td>
+        <td>${escapeHtml(m.contraCuenta||'')}</td>
         <td>${escapeHtml(m.areteOficial||'')}</td>
         <td>${escapeHtml(m.tercero||'')}</td>
         <td>${escapeHtml(m.factura||'')}</td>
@@ -403,7 +465,7 @@ function contaRender(){
         <td>${escapeHtml(m.descripcion||'')}</td>
         <td>${actionBtn}</td>
       </tr>`;
-    }).join('') || `<tr><td colspan="12" class="muted">Sin movimientos en este ejercicio.</td></tr>`;
+    }).join('') || `<tr><td colspan="13" class="muted">Sin movimientos en este ejercicio.</td></tr>`;
   }
 
   // Resumen por cuenta
@@ -606,9 +668,11 @@ function initContabilidad(){
   const tbody = document.getElementById('conta-tbody');
 
   const selCuenta = document.getElementById('conta-cuenta');
+  const selContra = document.getElementById('conta-contra');
   const editModal = document.getElementById('modalContaEdit');
   const editForm = document.getElementById('form-conta-edit');
   const editCuenta = document.getElementById('conta-edit-cuenta');
+  const editContra = document.getElementById('conta-edit-contra');
   const editCerrar = document.getElementById('btn-conta-edit-cerrar');
   const editDelete = document.getElementById('btn-conta-edit-delete');
   const editAreteWrap = document.getElementById('conta-edit-arete-wrap');
@@ -661,10 +725,17 @@ function initContabilidad(){
 
   // cuentas
   contaFillAccountSelect(selCuenta, { includeAll:false, includeLegacy:true });
-  if (selCuenta) selCuenta.addEventListener('change', contaToggleArete);
+  if (selCuenta) selCuenta.addEventListener('change', ()=>{
+    contaToggleArete();
+    contaUpdateContraSelect(selContra, selCuenta.value, selContra?.value || '');
+  });
   contaToggleArete();
+  contaUpdateContraSelect(selContra, selCuenta?.value || '', selContra?.value || '');
   contaFillAccountSelect(editCuenta, { includeAll:false, includeLegacy:true });
-  if (editCuenta) editCuenta.addEventListener('change', contaToggleAreteEdit);
+  if (editCuenta) editCuenta.addEventListener('change', ()=>{
+    contaToggleAreteEdit();
+    contaUpdateContraSelect(editContra, editCuenta.value, editContra?.value || '');
+  });
   contaToggleAreteEdit();
   contaFillAccountSelect(selFiltro, { includeAll:true, includeLegacy:true });
   contaFillAccountSelect(selRep, { includeAll:true, includeLegacy:true });
@@ -698,6 +769,7 @@ function initContabilidad(){
     editForm.querySelector('input[name="id"]').value = mov.id || '';
     editForm.querySelector('input[name="fecha"]').value = mov.fecha || '';
     editForm.querySelector('select[name="cuentaKey"]').value = mov.cuentaKey || '';
+    contaUpdateContraSelect(editContra, mov.cuentaKey || '', mov.contraCuenta || '');
     editForm.querySelector('input[name="monto"]').value = String(mov.monto ?? '');
     editForm.querySelector('input[name="tercero"]').value = mov.tercero || '';
     editForm.querySelector('input[name="factura"]').value = mov.factura || '';
@@ -780,6 +852,7 @@ function initContabilidad(){
       const fd = new FormData(form);
       const fechaVal = String(fd.get('fecha')||'').trim();
       const cuentaKey = String(fd.get('cuentaKey')||'').trim();
+      const contraCuenta = String(fd.get('contraCuenta')||'').trim();
       const monto = Number(fd.get('monto')||0);
 
       if (!fechaVal || !cuentaKey || !Number.isFinite(monto)){
@@ -788,6 +861,11 @@ function initContabilidad(){
       }
 
       const acc = contaGetAccountByKey(cuentaKey);
+      const contraEsRequerida = contaContraRequired(acc);
+      if (contraEsRequerida && !contraCuenta){
+        alert('Selecciona la contra cuenta.');
+        return;
+      }
 
       const mov = {
         id: 'C-' + Date.now() + '-' + Math.random().toString(16).slice(2),
@@ -796,6 +874,7 @@ function initContabilidad(){
         cuentaCode: acc.code || '',
         cuentaName: acc.name || '',
         tipo: acc.tipo || 'Egreso',
+        contraCuenta,
         tercero: String(fd.get('tercero')||'').trim(),
         factura: String(fd.get('factura')||'').trim(),
         tipoProducto: String(fd.get('tipoProducto')||'').trim(),
@@ -836,6 +915,7 @@ function initContabilidad(){
       contaFillAccountSelect(document.getElementById('conta-rep-cuenta'), { includeAll:true, includeLegacy:true });
 
       form.reset();
+      contaUpdateContraSelect(selContra, selCuenta?.value || '', '');
       // set date again
       const f2 = form.querySelector('input[name="fecha"]');
       if (f2){
@@ -863,6 +943,7 @@ function initContabilidad(){
       const id = String(fd.get('id')||'').trim();
       const fechaVal = String(fd.get('fecha')||'').trim();
       const cuentaKey = String(fd.get('cuentaKey')||'').trim();
+      const contraCuenta = String(fd.get('contraCuenta')||'').trim();
       const monto = Number(fd.get('monto')||0);
 
       if (!id || !fechaVal || !cuentaKey || !Number.isFinite(monto)){
@@ -874,6 +955,11 @@ function initContabilidad(){
       if (idx < 0) return;
 
       const acc = contaGetAccountByKey(cuentaKey);
+      const contraEsRequerida = contaContraRequired(acc);
+      if (contraEsRequerida && !contraCuenta){
+        alert('Selecciona la contra cuenta.');
+        return;
+      }
       ledger[idx] = {
         ...ledger[idx],
         fecha: fechaVal,
@@ -881,6 +967,7 @@ function initContabilidad(){
         cuentaCode: acc.code || '',
         cuentaName: acc.name || '',
         tipo: acc.tipo || 'Egreso',
+        contraCuenta,
         tercero: String(fd.get('tercero')||'').trim(),
         factura: String(fd.get('factura')||'').trim(),
         tipoProducto: String(fd.get('tipoProducto')||'').trim(),
@@ -945,7 +1032,7 @@ function initContabilidad(){
       const year = Number(yearSel?.value || new Date().getFullYear());
       const t = contaTotalsForYear(year);
       const rows = [
-        ['Fecha','Tipo','Cuenta','Proveedor/Cliente','Factura','Arete Oficial','Tipo producto','Ref pago','Monto','Descripción','Usuario'],
+        ['Fecha','Tipo','Cuenta','Contra Cuenta','Proveedor/Cliente','Factura','Arete Oficial','Tipo producto','Ref pago','Monto','Descripción','Usuario'],
         ...t.ledger
           .slice().sort((a,b)=> (a.fecha||'').localeCompare(b.fecha||''))
           .map(m=>{
@@ -954,6 +1041,7 @@ function initContabilidad(){
               m.fecha||'',
               a.tipo||'',
               (a.code? a.code+' — ':'') + a.name,
+              m.contraCuenta||'',
               m.tercero||'',
               m.factura||'',
               m.areteOficial||'',
@@ -978,13 +1066,14 @@ function initContabilidad(){
       const acc = contaGetAccountByKey(key);
       const t = contaTotalsForYear(year);
       const rows = [
-        ['Fecha','Cuenta','Proveedor/Cliente','Factura','Arete Oficial','Tipo producto','Ref pago','Monto','Descripción','Usuario'],
+        ['Fecha','Cuenta','Contra Cuenta','Proveedor/Cliente','Factura','Arete Oficial','Tipo producto','Ref pago','Monto','Descripción','Usuario'],
         ...t.ledger
           .filter(m=>m.cuentaKey===key)
           .slice().sort((a,b)=> (a.fecha||'').localeCompare(b.fecha||''))
           .map(m=>[
             m.fecha||'',
             (acc.code? acc.code+' — ':'') + acc.name,
+            m.contraCuenta||'',
             m.tercero||'',
             m.factura||'',
             m.areteOficial||'',
