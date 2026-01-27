@@ -399,6 +399,9 @@ header small {
 .conta-kpi .kpi-t{ font-size: 12px; opacity:.75; margin-bottom: 4px; }
 .conta-kpi .kpi-v{ font-size: 18px; font-weight: 700; }
 .conta-cash{ font-size: 18px; font-weight: 800; padding: 8px 10px; border:1px solid #eee; border-radius: 12px; background:#fafafa; }
+.conta-guidelines{ margin: 12px 0 16px; padding: 12px; border: 1px dashed #d1d5db; border-radius: 12px; background: #f9fafb; }
+.conta-guidelines h3{ margin: 0 0 6px; font-size: 16px; }
+.conta-guidelines ul{ margin: 0 0 6px 18px; padding: 0; }
 .conta-table-wrap{ overflow:auto; border:1px solid #eee; border-radius: 12px; background:#fff; }
 .conta-table{ width:100%; border-collapse: collapse; min-width: 900px; }
 .conta-table th, .conta-table td{ border-bottom:1px solid #f0f0f0; padding: 8px; vertical-align: top; }
