@@ -1089,7 +1089,7 @@
     <form id="form-conta2">
       <h3>Registrar movimiento</h3>
 
-      <div class="fila-tres">
+      <div class="fila-cuatro">
         <div>
           <label>Fecha</label>
           <input type="date" name="fecha" required />
@@ -1097,6 +1097,10 @@
         <div>
           <label>Cuenta</label>
           <select name="cuentaKey" id="conta-cuenta" required></select>
+        </div>
+        <div>
+          <label>Contra Cuenta</label>
+          <select name="contraCuenta" id="conta-contra"></select>
         </div>
         <div>
           <label>Monto</label>
@@ -1175,6 +1179,7 @@
             <th>Fecha</th>
             <th>Cuenta</th>
             <th>Tipo</th>
+            <th>Contra Cuenta</th>
             <th>Arete oficial</th>
             <th>Proveedor/Cliente</th>
             <th>Factura</th>
@@ -1856,7 +1861,7 @@
     <form id="form-conta-edit">
       <input type="hidden" name="id" />
 
-      <div class="fila-tres">
+      <div class="fila-cuatro">
         <div>
           <label>Fecha</label>
           <input type="date" name="fecha" required />
@@ -1864,6 +1869,10 @@
         <div>
           <label>Cuenta</label>
           <select name="cuentaKey" id="conta-edit-cuenta" required></select>
+        </div>
+        <div>
+          <label>Contra Cuenta</label>
+          <select name="contraCuenta" id="conta-edit-contra"></select>
         </div>
         <div>
           <label>Monto</label>
