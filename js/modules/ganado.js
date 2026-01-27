@@ -8,7 +8,8 @@
   const ANIMALES_BAJAS_KEY = 'pecuario_animales_bajas';
 
   function fmtAnimalLinea(a){
-    return `Arete ${a.areteOficial || '-'} | Sexo: ${a.sexo || '-'} | Raza: ${a.razaPre || '-'} | Cruza: ${[a.cruza1,a.cruza2].filter(Boolean).join(' / ') || '-'} | Grupo: ${a.grupo || '-'}`;
+    const inv = (typeof resolverInventarioTipo === 'function') ? resolverInventarioTipo(a.inventarioTipo, '', a.grupo) : (a.inventarioTipo || '');
+    return `Arete ${a.areteOficial || '-'} | Inventario: ${inv || '-'} | Sexo: ${a.sexo || '-'} | Raza: ${a.razaPre || '-'} | Cruza: ${[a.cruza1,a.cruza2].filter(Boolean).join(' / ') || '-'} | Grupo: ${a.grupo || '-'}`;
   }
 
   function fmtAnimalBajaLinea(a){
@@ -80,7 +81,8 @@
       cruza2: cab.cruza2 || '',
       fechaNac: cab.fechaNac || '',
       grupo: cab.grupo || '',
-      obs: cab.obs || ''
+      obs: cab.obs || '',
+      inventarioTipo: cab.inventarioTipo || ''
     } : { areteOficial: a };
 
     const rec = {
@@ -116,15 +118,21 @@
   let _cabezaEditando = null;
 
   function renderCabezasUI(){
+    const obtenerTipoInventario = (c) => {
+      if (typeof resolverInventarioTipo === 'function') return resolverInventarioTipo(c.inventarioTipo, '', c.grupo);
+      return c.inventarioTipo || '';
+    };
     // Inventario activo
     const cont = document.getElementById('lista-animales');
     if (cont){
-      const arr = cabezasArray({includeBajas:false}).slice().sort((a,b)=> (a.areteOficial||'').localeCompare(b.areteOficial||''));
+      const filtro = (document.getElementById('selInventarioCabezas')?.value || 'Todos').trim();
+      const arr = cabezasArray({includeBajas:false}).map(c=>({ ...c, inventarioTipo: obtenerTipoInventario(c) }))
+        .slice().sort((a,b)=> (a.areteOficial||'').localeCompare(b.areteOficial||''));
       cont.innerHTML = '';
-      if (!arr.length){
-        cont.innerHTML = '<div>Sin registros.</div>';
-      } else {
-        arr.forEach(c=>{
+      const inventariosOrden = ['Ganado Reproducción','Ganado Comercial',''];
+      const filtrar = (lista, tipo) => lista.filter(c => (obtenerTipoInventario(c) || '') === tipo);
+      const renderLista = (lista) => {
+        lista.forEach(c=>{
           const div = document.createElement('div');
           div.style.display='flex';
           div.style.justifyContent='space-between';
@@ -133,7 +141,8 @@
 
           const left = document.createElement('div');
           const raz = [c.razaPre, c.cruza1, c.cruza2].filter(Boolean).join(' / ') || '-';
-          left.textContent = `Arete ${c.areteOficial} | Sexo: ${c.sexo||'-'} | Raza: ${raz} | Grupo: ${c.grupo||'-'}`;
+          const inv = obtenerTipoInventario(c);
+          left.textContent = `Arete ${c.areteOficial} | Inventario: ${inv || '-'} | Sexo: ${c.sexo||'-'} | Raza: ${raz} | Grupo: ${c.grupo||'-'}`;
 
           const right = document.createElement('div');
           right.style.display='flex';
@@ -160,26 +169,91 @@
           div.appendChild(right);
           cont.appendChild(div);
         });
+      };
+      if (!arr.length){
+        cont.innerHTML = '<div>Sin registros.</div>';
+      } else {
+        if (filtro !== 'Todos') {
+          const lista = filtrar(arr, filtro);
+          if (!lista.length) cont.innerHTML = '<div>Sin registros.</div>';
+          else renderLista(lista);
+        } else {
+          inventariosOrden.forEach(tipo=>{
+            const lista = filtrar(arr, tipo);
+            if (!lista.length) return;
+            const titulo = document.createElement('div');
+            titulo.style.marginTop = '6px';
+            titulo.style.fontWeight = '600';
+            titulo.textContent = tipo || 'Sin tipo';
+            cont.appendChild(titulo);
+            renderLista(lista);
+          });
+        }
       }
     }
 
     // Bajas
     const contB = document.getElementById('lista-animales-bajas');
     if (contB){
-      const bajas = getAnimalesBajas() || [];
+      const bajas = (getAnimalesBajas() || []).filter(b => String(b.areteOficial||'').trim());
       contB.innerHTML='';
       if (!bajas.length){
         contB.innerHTML = '<div>Sin registros.</div>';
       } else {
+        const grupos = {
+          'Ventas': [],
+          'Muertes y desechos': [],
+          'Extraviados': [],
+          'Otros': []
+        };
         bajas.slice().reverse().forEach(b=>{
-          const div = document.createElement('div');
           const info = b._baja || {};
-          const motivo = info.motivo || b.motivo || '-';
-          const fecha = info.fecha || b.fecha || '';
-          const monto = (info.monto !== undefined && info.monto !== null && String(info.monto).trim()!=='') ? ` | Monto: ${fmtMXN(Number(info.monto)||0)}` : '';
-          div.textContent = `Arete ${b.areteOficial||'-'} | Motivo: ${motivo} | Fecha: ${fecha||'-'}${monto}`;
-          contB.appendChild(div);
+          const motivoRaw = info.motivo || b.motivo || '';
+          const categoria = (typeof normalizarMotivoBaja === 'function') ? normalizarMotivoBaja(motivoRaw) : 'Otros';
+          grupos[categoria] = grupos[categoria] || [];
+          grupos[categoria].push({ b, info, motivoRaw });
         });
+        Object.keys(grupos).forEach(cat=>{
+          const items = grupos[cat];
+          if (!items || !items.length) return;
+          const head = document.createElement('div');
+          head.style.marginTop = '6px';
+          head.style.fontWeight = '600';
+          head.textContent = cat;
+          contB.appendChild(head);
+          items.forEach(({b, info, motivoRaw})=>{
+            const div = document.createElement('div');
+            const motivo = motivoRaw || '-';
+            const fecha = info.fecha || b.fecha || '';
+            const monto = (info.monto !== undefined && info.monto !== null && String(info.monto).trim()!=='') ? ` | Monto: ${fmtMXN(Number(info.monto)||0)}` : '';
+            div.textContent = `Arete ${b.areteOficial||'-'} | Motivo: ${motivo} | Fecha: ${fecha||'-'}${monto}`;
+            contB.appendChild(div);
+          });
+        });
+      }
+    }
+
+    // Editados
+    const contE = document.getElementById('lista-animales-editados');
+    if (contE){
+      const map = getCabezasMap();
+      const editados = Object.values(map || {}).filter(c => Array.isArray(c._hist) && c._hist.some(h=>h.tipo === 'Edición'));
+      contE.innerHTML = '';
+      if (!editados.length){
+        contE.innerHTML = '<div>Sin registros.</div>';
+      } else {
+        editados
+          .slice()
+          .sort((a,b)=> (a.areteOficial||'').localeCompare(b.areteOficial||''))
+          .forEach(c=>{
+            const edits = (c._hist||[]).filter(h=>h.tipo === 'Edición');
+            const last = edits[edits.length - 1] || {};
+            const fecha = (last.fecha||'').slice(0,10);
+            const cambios = last.cambios ? Object.keys(last.cambios).filter(k=>k!=='_nuevo') : [];
+            const div = document.createElement('div');
+            div.textContent = `Arete ${c.areteOficial||'-'} | Última edición: ${fecha||'-'} | Cambios: ${cambios.join(', ') || '-'}`;
+            contE.appendChild(div);
+          });
       }
     }
 
@@ -194,7 +268,7 @@
         cg.forEach(x=>{
           const d = (x.fecha||'').slice(0,10);
           const div = document.createElement('div');
-          div.textContent = `${d} | Arete ${x.areteOficial} | ${x.de||'-'} → ${x.a||'-'}${x.usuario?(' | '+x.usuario):''}`;
+          div.textContent = `${d} | Arete ${x.areteOficial} | De Grupo ${x.de||'-'} al Grupo ${x.a||'-'}${x.usuario?(' | '+x.usuario):''}`;
           contC.appendChild(div);
         });
       }
@@ -213,6 +287,8 @@
 
     form.querySelector('[name="areteOficial"]').value = cab.areteOficial || '';
     form.querySelector('[name="areteRancho"]').value = cab.areteRancho || '';
+    const invSel = form.querySelector('[name="inventarioTipo"]');
+    if (invSel) invSel.value = (typeof resolverInventarioTipo === 'function') ? resolverInventarioTipo(cab.inventarioTipo, '', cab.grupo) : (cab.inventarioTipo || '');
     form.querySelector('[name="sexo"]').value = cab.sexo || '';
     const selPre = form.querySelector('[name="razaPre"]') || document.getElementById('selRazaPre');
     if (selPre) selPre.value = cab.razaPre || '';
@@ -330,6 +406,10 @@ migrarCabezasLegacy();
           alert('Selecciona un grupo (obligatorio). Puedes usar "En espera" si aún no defines el grupo.');
           return;
         }
+        if (!obj.inventarioTipo){
+          alert('Selecciona el tipo de inventario.');
+          return;
+        }
         const arete = String(obj.areteOficial||'').trim();
         if (!arete){
           alert('Arete oficial requerido.');
@@ -343,6 +423,12 @@ migrarCabezasLegacy();
         }
         _cabezaEditando = null;
         form.reset();
+        const notaUlt = document.getElementById('notaUltimoArete');
+        if (notaUlt) {
+          const txt = `Último arete registrado: ${arete}`;
+          notaUlt.textContent = txt;
+          localStorage.setItem('pecuario_ultimo_arete', arete);
+        }
         renderCabezasUI();
         actualizarPanel();
         actualizarReportes();
@@ -393,6 +479,15 @@ migrarCabezasLegacy();
         actualizarReportes();
         alert('Cambio de grupo guardado.');
       });
+    }
+
+    const selInv = document.getElementById('selInventarioCabezas');
+    if (selInv) selInv.addEventListener('change', renderCabezasUI);
+
+    const notaUlt = document.getElementById('notaUltimoArete');
+    if (notaUlt) {
+      const ultimo = localStorage.getItem('pecuario_ultimo_arete') || '';
+      notaUlt.textContent = ultimo ? `Último arete registrado: ${ultimo}` : '';
     }
 
     initBajasForm();

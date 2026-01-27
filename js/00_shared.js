@@ -79,6 +79,7 @@
     base.fechaNac = clean(rec.fechaNac);
     base.grupo = clean(rec.grupo);
     base.obs = clean(rec.obs);
+    base.inventarioTipo = resolverInventarioTipo(rec.inventarioTipo, base.inventarioTipo, base.grupo);
     base._updatedAt = now;
 
     // reactivar si estaba en baja y se vuelve a registrar
@@ -90,7 +91,7 @@
     // bitácora de cambios
     const diff = {};
     if (prev){
-      ['areteRancho','sexo','razaPre','cruza1','cruza2','fechaNac','grupo','obs','status'].forEach(k=>{
+      ['areteRancho','sexo','razaPre','cruza1','cruza2','fechaNac','grupo','obs','inventarioTipo','status'].forEach(k=>{
         if ((prev[k]||'') !== (base[k]||'')) diff[k] = {de: prev[k]||'', a: base[k]||''};
       });
     } else {
@@ -130,6 +131,7 @@
       areteOficial: a,
       de: antes,
       a: ahora,
+      inventarioTipo: resolverInventarioTipo(cab.inventarioTipo, '', cab.grupo),
       fecha: new Date().toISOString(),
       usuario: localStorage.getItem('pecuario_usuario_actual')||''
     });
@@ -156,6 +158,7 @@
         fechaNac: String(r.fechaNac||'').trim(),
         grupo: String(r.grupo||'').trim(),
         obs: String(r.obs||'').trim(),
+        inventarioTipo: resolverInventarioTipo(r.inventarioTipo, '', r.grupo),
         status:'Activa',
         _createdAt: r._fechaRegistro || new Date().toISOString(),
         _updatedAt: new Date().toISOString(),
@@ -170,8 +173,9 @@
         const a = String(b.areteOficial||'').trim();
         if (!a) return;
         if (!map[a]) {
-          map[a] = { areteOficial:a, status:'Baja', grupo:'', sexo:'', razaPre:'', cruza1:'', cruza2:'', fechaNac:'', areteRancho:'', obs:'', _createdAt: new Date().toISOString(), _updatedAt: new Date().toISOString(), _hist: [] };
+          map[a] = { areteOficial:a, status:'Baja', grupo:'', sexo:'', razaPre:'', cruza1:'', cruza2:'', fechaNac:'', areteRancho:'', obs:'', inventarioTipo:'', _createdAt: new Date().toISOString(), _updatedAt: new Date().toISOString(), _hist: [] };
         }
+        map[a].inventarioTipo = resolverInventarioTipo(b.inventarioTipo, map[a].inventarioTipo, map[a].grupo);
         map[a].status = 'Baja';
         map[a].baja = { ...(b._baja||{}), motivo: b.motivo||'', fecha: b.fecha||'', obs: b.obs||'', monto: b.monto||'' };
       });
@@ -189,6 +193,32 @@
     if (g.includes('bgc-01') || g.includes('comercial')) return 'BGC-01';
     if (g.startsWith('vientre') || g.startsWith('cría') || g.includes('toro')) return 'BGR-01';
     return 'BGC-01';
+  }
+
+  function normalizarInventarioTipo(tipo){
+    const t = String(tipo||'').trim();
+    if (!t) return '';
+    const low = t.toLowerCase();
+    if (low.includes('reprodu')) return 'Ganado Reproducción';
+    if (low.includes('comercial')) return 'Ganado Comercial';
+    return t;
+  }
+
+  function resolverInventarioTipo(nuevoTipo, tipoPrevio, grupo){
+    const limpio = normalizarInventarioTipo(nuevoTipo || tipoPrevio);
+    if (limpio) return limpio;
+    const code = clasificarGrupoCodigo(grupo);
+    return code === 'BGR-01' ? 'Ganado Reproducción' : 'Ganado Comercial';
+  }
+
+  function normalizarMotivoBaja(motivo){
+    const m = String(motivo||'').trim();
+    const low = m.toLowerCase();
+    if (!m) return 'Otros';
+    if (low.includes('venta')) return 'Ventas';
+    if (low.includes('muerte') || low.includes('desecho')) return 'Muertes y desechos';
+    if (low.includes('extravi')) return 'Extraviados';
+    return 'Otros';
   }
 
 function escapeHtml(s){
@@ -481,8 +511,17 @@ const renderChecks = ()=>{
   const REPORT_MODAL_CFG = {
     animales: {
       title: "Animales (Inventario activo)",
-      keys: ["pecuario_animales"],
+      keys: ["pecuario_cabezas"],
+      normalize: (dataByKey) => {
+        const raw = dataByKey["pecuario_cabezas"];
+        const arr = Array.isArray(raw) ? raw : Object.values(raw || {});
+        return (arr||[]).filter(x => x && x.status !== 'Baja').map(x=>({
+          ...x,
+          inventarioTipo: resolverInventarioTipo(x.inventarioTipo, '', x.grupo)
+        }));
+      },
       filters: [
+        {label:"Inventario", field:"inventarioTipo", values: ()=> ["Ganado Reproducción","Ganado Comercial"]},
         {label:"Grupo", field:"grupo", values: ()=> gruposBase},
         {label:"Sexo", field:"sexo", values: ()=> ["Hembra","Macho"]},
         {label:"Raza preponderante", field:"razaPre", values: ()=> getRazas()}
@@ -490,6 +529,7 @@ const renderChecks = ()=>{
       columns: [
         {label:"Arete", field:"areteOficial"},
         {label:"Arete rancho", field:"areteRancho"},
+        {label:"Inventario", field:"inventarioTipo"},
         {label:"Grupo", field:"grupo"},
         {label:"Sexo", field:"sexo"},
         {label:"Raza", field:"razaPre"},
@@ -511,9 +551,12 @@ const renderChecks = ()=>{
           const found = code ? CONTA_ACCOUNTS.find(a=>a.code===code) : null;
           const nm = name || (found ? (found.name||'') : '');
           const cuentaLabel = code ? (nm ? `${code} — ${nm}` : code) : '';
+          const motivoRaw = x._motivoBaja || x.motivo || '';
+          const motivo = normalizarMotivoBaja(motivoRaw);
           return {
             fecha: x._fechaBaja || x.fecha || '',
-            motivo: x._motivoBaja || x.motivo || '',
+            motivo,
+            motivoDetalle: motivoRaw,
             cuentaCodigo: code,
             cuentaNombre: nm,
             cuentaLabel,
@@ -522,13 +565,15 @@ const renderChecks = ()=>{
             grupo: x.grupo || '',
             sexo: x.sexo || '',
             razaPre: x.razaPre || '',
+            inventarioTipo: resolverInventarioTipo(x.inventarioTipo, '', x.grupo),
             detalle: x._contaMovId ? `Mov: ${x._contaMovId}` : (x.detalle || x.obs || x.observaciones || ''),
             usuario: x._usuarioBaja || x.usuario || x.usuarioCapturo || ''
           };
         });
       },
       filters: [
-        {label:"Motivo", field:"motivo", values: ()=> ["Venta","Muerte/Desecho"]},
+        {label:"Motivo", field:"motivo", values: ()=> ["Ventas","Muertes y desechos","Extraviados","Otros"]},
+        {label:"Inventario", field:"inventarioTipo", values: ()=> ["Ganado Reproducción","Ganado Comercial"]},
         {label:"Cuenta", field:"cuentaLabel", values: ()=> CONTA_ACCOUNTS.filter(a=>a.code && (['BGR-01','BGC-01','RMD-01'].includes(a.code))).map(a=>`${a.code} — ${a.name}`)},
         {label:"Grupo", field:"grupo", values: ()=> gruposBase},
         {label:"Sexo", field:"sexo", values: ()=> ["Hembra","Macho"]},
@@ -538,6 +583,7 @@ const renderChecks = ()=>{
       columns: [
         {label:"Fecha", field:"fecha"},
         {label:"Motivo", field:"motivo"},
+        {label:"Inventario", field:"inventarioTipo"},
         {label:"Cuenta", field:"cuentaLabel"},
         {label:"Monto", field:"monto"},
         {label:"Arete", field:"areteOficial"},
