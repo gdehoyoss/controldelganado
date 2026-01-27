@@ -701,6 +701,7 @@
         cont.appendChild(d);
       });
       refrescarCatalogo();
+      if (typeof refrescarSuplementosCorrales === 'function') refrescarSuplementosCorrales();
     };
 
     // inicial

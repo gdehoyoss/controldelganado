@@ -508,7 +508,15 @@
           </div>
         </div>
 
-        
+        <div class="fila-tres">
+          <div>
+            <label>Suplemento asignado</label>
+            <select name="suplemento" id="selSuplCorral"></select>
+          </div>
+          <div></div>
+          <div></div>
+        </div>
+
 <div class="fila-tres">
   <div>
     <label>Área (m²) — calculada por GPS</label>
@@ -584,7 +592,6 @@
         <div class="acciones">
           <button type="submit" class="btn-primario">Guardar corral</button>
           <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-corrales')">Limpiar</button>
-          <button type="button" class="btn-terciario" id="btnAbrirSuplementos">Capturar suplemento</button>
         </div>
       </form>
 
@@ -790,6 +797,9 @@
       <div class="lista" id="lista-supl-suministros"></div>
 
     </div>
+
+    <h3 style="margin:20px 0 10px;">Desglose de potreros y corrales</h3>
+    <div class="lista" id="lista-desglose-potreros-corrales"></div>
   </section>
 
   <!-- REPRODUCCIÓN Y PARTOS -->
