@@ -408,3 +408,4 @@ header small {
 .conta-table th{ position: sticky; top: 0; background: #fff; z-index: 1; text-align: left; }
 .muted{ font-size: 12px; opacity:.75; }
 .conta-actions{ gap: 8px; flex-wrap: wrap; }
+.conta-row-action{ padding: 4px 8px; font-size: 12px; line-height: 1; }

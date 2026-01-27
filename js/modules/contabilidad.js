@@ -99,6 +99,12 @@ function contaCanEdit(){
   return ['Propietario','Gerente','Supervisor'].includes(r);
 }
 
+function contaFindLedgerIndex(id){
+  const ledger = getContaLedger();
+  const idx = ledger.findIndex(m=>m.id===id);
+  return { ledger, idx };
+}
+
 function contaMigrateLegacy(){
   const existing = getContaLedger();
   if (existing && existing.length) return;
@@ -379,6 +385,10 @@ function contaRender(){
       const amt = Number(m.monto||0);
       const inCol = (a.tipo==='Ingreso') ? fmtMXN(amt) : '';
       const outCol = (a.tipo==='Egreso') ? fmtMXN(amt) : '';
+      const canActions = canEdit && !isClosed;
+      const actionBtn = canActions
+        ? `<button type="button" class="btn-terciario conta-row-action conta-edit-btn" data-id="${escapeHtml(m.id||'')}">⋮</button>`
+        : '';
       return `<tr>
         <td>${escapeHtml(m.fecha||'')}</td>
         <td>${escapeHtml((a.code? a.code+' — ':'') + a.name)}</td>
@@ -391,8 +401,9 @@ function contaRender(){
         <td style="text-align:right;">${escapeHtml(inCol)}</td>
         <td style="text-align:right;">${escapeHtml(outCol)}</td>
         <td>${escapeHtml(m.descripcion||'')}</td>
+        <td>${actionBtn}</td>
       </tr>`;
-    }).join('') || `<tr><td colspan="11" class="muted">Sin movimientos en este ejercicio.</td></tr>`;
+    }).join('') || `<tr><td colspan="12" class="muted">Sin movimientos en este ejercicio.</td></tr>`;
   }
 
   // Resumen por cuenta
@@ -592,8 +603,16 @@ function initContabilidad(){
   const openingInp = document.getElementById('conta-opening');
   const form = document.getElementById('form-conta2');
   const btnLimpiar = document.getElementById('btn-conta-limpiar');
+  const tbody = document.getElementById('conta-tbody');
 
   const selCuenta = document.getElementById('conta-cuenta');
+  const editModal = document.getElementById('modalContaEdit');
+  const editForm = document.getElementById('form-conta-edit');
+  const editCuenta = document.getElementById('conta-edit-cuenta');
+  const editCerrar = document.getElementById('btn-conta-edit-cerrar');
+  const editDelete = document.getElementById('btn-conta-edit-delete');
+  const editAreteWrap = document.getElementById('conta-edit-arete-wrap');
+  const editAreteInp = editAreteWrap ? editAreteWrap.querySelector('input[name="areteOficial"]') : null;
 
   // Arete oficial (solo ventas de animal)
   const areteWrap = document.getElementById('conta-arete-wrap');
@@ -610,6 +629,14 @@ function initContabilidad(){
     const show = !!acc && (contaIsVentaAnimal(acc) || code === 'RMD-01');
     areteWrap.style.display = show ? '' : 'none';
     if (!show && areteInp) areteInp.value = '';
+  }
+  function contaToggleAreteEdit(){
+    if (!editAreteWrap || !editCuenta) return;
+    const acc = contaGetAccountByKey(editCuenta.value || '');
+    const code = String(acc?.code || '').trim();
+    const show = !!acc && (contaIsVentaAnimal(acc) || code === 'RMD-01');
+    editAreteWrap.style.display = show ? '' : 'none';
+    if (!show && editAreteInp) editAreteInp.value = '';
   }
   const selFiltro = document.getElementById('conta-filter-cuenta');
   const selRep = document.getElementById('conta-rep-cuenta');
@@ -636,6 +663,9 @@ function initContabilidad(){
   contaFillAccountSelect(selCuenta, { includeAll:false, includeLegacy:true });
   if (selCuenta) selCuenta.addEventListener('change', contaToggleArete);
   contaToggleArete();
+  contaFillAccountSelect(editCuenta, { includeAll:false, includeLegacy:true });
+  if (editCuenta) editCuenta.addEventListener('change', contaToggleAreteEdit);
+  contaToggleAreteEdit();
   contaFillAccountSelect(selFiltro, { includeAll:true, includeLegacy:true });
   contaFillAccountSelect(selRep, { includeAll:true, includeLegacy:true });
 
@@ -660,6 +690,72 @@ function initContabilidad(){
   // limpiar
   if (btnLimpiar && form){
     btnLimpiar.addEventListener('click', ()=> form.reset());
+  }
+
+  function contaOpenEditModal(mov){
+    if (!editModal || !editForm || !mov) return;
+    editForm.reset();
+    editForm.querySelector('input[name="id"]').value = mov.id || '';
+    editForm.querySelector('input[name="fecha"]').value = mov.fecha || '';
+    editForm.querySelector('select[name="cuentaKey"]').value = mov.cuentaKey || '';
+    editForm.querySelector('input[name="monto"]').value = String(mov.monto ?? '');
+    editForm.querySelector('input[name="tercero"]').value = mov.tercero || '';
+    editForm.querySelector('input[name="factura"]').value = mov.factura || '';
+    editForm.querySelector('input[name="tipoProducto"]').value = mov.tipoProducto || '';
+    editForm.querySelector('select[name="refPago"]').value = mov.refPago || '';
+    editForm.querySelector('textarea[name="descripcion"]').value = mov.descripcion || '';
+    if (editAreteInp) editAreteInp.value = mov.areteOficial || '';
+    contaToggleAreteEdit();
+    editModal.classList.add('activo');
+  }
+  function contaCloseEditModal(){
+    if (!editModal) return;
+    editModal.classList.remove('activo');
+  }
+
+  if (tbody){
+    tbody.addEventListener('click', (e)=>{
+      const btn = e.target?.closest('.conta-edit-btn');
+      if (!btn) return;
+      if (!contaCanEdit()) return;
+      const year = Number(yearSel?.value || new Date().getFullYear());
+      if (contaIsClosed(year)){
+        alert('Este ejercicio está cerrado. Reabre para editar.');
+        return;
+      }
+      const id = btn.dataset.id || '';
+      const { ledger, idx } = contaFindLedgerIndex(id);
+      if (idx < 0) return;
+      contaOpenEditModal(ledger[idx]);
+    });
+  }
+
+  if (editCerrar) editCerrar.addEventListener('click', contaCloseEditModal);
+  if (editModal){
+    editModal.addEventListener('click', (e)=>{
+      if (e.target === editModal) contaCloseEditModal();
+    });
+  }
+  if (editDelete){
+    editDelete.addEventListener('click', ()=>{
+      if (!contaCanEdit()) return;
+      const year = Number(yearSel?.value || new Date().getFullYear());
+      if (contaIsClosed(year)){
+        alert('Este ejercicio está cerrado. Reabre para eliminar.');
+        return;
+      }
+      const id = editForm?.querySelector('input[name="id"]')?.value || '';
+      if (!id) return;
+      if (!confirm('¿Eliminar este movimiento?')) return;
+      const { ledger, idx } = contaFindLedgerIndex(id);
+      if (idx < 0) return;
+      ledger.splice(idx, 1);
+      setContaLedger(ledger);
+      contaCloseEditModal();
+      contaRender();
+      actualizarPanel();
+      actualizarReportes();
+    });
   }
 
   // submit
@@ -747,6 +843,55 @@ function initContabilidad(){
         f2.value = d.toISOString().slice(0,10);
       }
 
+      contaRender();
+      actualizarPanel();
+      actualizarReportes();
+    });
+  }
+
+  if (editForm){
+    editForm.addEventListener('submit', (ev)=>{
+      ev.preventDefault();
+      if (!contaCanEdit()) return;
+      const year = Number(yearSel?.value || new Date().getFullYear());
+      if (contaIsClosed(year)){
+        alert('Este ejercicio está cerrado. Reabre para editar movimientos.');
+        return;
+      }
+
+      const fd = new FormData(editForm);
+      const id = String(fd.get('id')||'').trim();
+      const fechaVal = String(fd.get('fecha')||'').trim();
+      const cuentaKey = String(fd.get('cuentaKey')||'').trim();
+      const monto = Number(fd.get('monto')||0);
+
+      if (!id || !fechaVal || !cuentaKey || !Number.isFinite(monto)){
+        alert('Completa fecha, cuenta y monto.');
+        return;
+      }
+
+      const { ledger, idx } = contaFindLedgerIndex(id);
+      if (idx < 0) return;
+
+      const acc = contaGetAccountByKey(cuentaKey);
+      ledger[idx] = {
+        ...ledger[idx],
+        fecha: fechaVal,
+        cuentaKey,
+        cuentaCode: acc.code || '',
+        cuentaName: acc.name || '',
+        tipo: acc.tipo || 'Egreso',
+        tercero: String(fd.get('tercero')||'').trim(),
+        factura: String(fd.get('factura')||'').trim(),
+        tipoProducto: String(fd.get('tipoProducto')||'').trim(),
+        areteOficial: String(fd.get('areteOficial')||'').trim(),
+        refPago: String(fd.get('refPago')||'').trim(),
+        descripcion: String(fd.get('descripcion')||'').trim(),
+        monto: monto
+      };
+
+      setContaLedger(ledger);
+      contaCloseEditModal();
       contaRender();
       actualizarPanel();
       actualizarReportes();
