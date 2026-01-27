@@ -120,8 +120,6 @@
   <!-- ANIMALES (incluye PESAJES) -->
   <section id="mod-animales" class="modulo">
     <h2>Cabezas</h2>
-    <p>Altas, bajas y movimientos de animales. Incluye el sub-módulo de <b>Pesajes</b>.</p>
-
     
     <div class="subtabs" aria-label="Submódulos Cabezas">
       <button type="button" class="activo" data-sub="anim-altas">Altas</button>
@@ -134,7 +132,7 @@
     <!-- Altas -->
     <div id="sub-anim-altas" class="submodulo activo">
       <form id="form-animales">
-        <div class="fila-dos">
+        <div class="fila-tres">
           <div>
             <label>Arete oficial</label>
             <input name="areteOficial" required />
@@ -143,9 +141,18 @@
             <label>Arete rancho</label>
             <input name="areteRancho" />
           </div>
+          <div>
+            <label>Tipo de inventario</label>
+            <select name="inventarioTipo" required>
+              <option value="">Selecciona…</option>
+              <option>Ganado Reproducción</option>
+              <option>Ganado Comercial</option>
+            </select>
+          </div>
         </div>
+        <div class="nota" id="notaUltimoArete"></div>
 
-        <div class="fila-tres">
+        <div class="fila-cuatro">
           <div>
             <label>Sexo</label>
             <select name="sexo">
@@ -163,33 +170,32 @@
             <div class="fila-dos">
               <select name="cruza1" id="selCruza1"></select>
               <select name="cruza2" id="selCruza2"></select>
-              <div class="nota">Se llena automáticamente al capturar el arete (puedes corregirlo si hiciera falta).</div>
+            </div>
+            <div class="nota">Se llena automáticamente al capturar el arete (puedes corregirlo si hiciera falta).</div>
+          </div>
+          <div>
+            <label>Agregar raza</label>
+            <div class="fila-dos">
+              <input id="txtNuevaRaza" placeholder="Ej. Simmental" />
+              <button type="button" class="btn-terciario" id="btnAgregarRaza">Añadir</button>
             </div>
           </div>
         </div>
-
-        
-<div class="fila-tres">
-  <div>
-    <label>Fecha de nacimiento</label>
-    <input type="date" name="fechaNac" />
-  </div>
-  <div>
-    <label>Grupo</label>
-    <select name="grupo" id="selGrupoAnimales" required></select>
-  </div>
-  <div>
-    <label>Agregar raza</label>
-    <div class="fila-dos">
-      <input id="txtNuevaRaza" placeholder="Ej. Simmental" />
-      <button type="button" class="btn-terciario" id="btnAgregarRaza">Añadir</button>
-    </div>
-  </div>
-</div>
-
-<label>Observaciones</label>
-<input name="obs" />
-<div class="nota">La raza agregada se suma a los desplegables de raza y cruzas.</div>
+        <div class="fila-tres">
+          <div>
+            <label>Fecha de nacimiento</label>
+            <input type="date" name="fechaNac" />
+          </div>
+          <div>
+            <label>Grupo</label>
+            <select name="grupo" id="selGrupoAnimales" required></select>
+          </div>
+          <div>
+            <label>Observaciones</label>
+            <input name="obs" />
+          </div>
+        </div>
+        <div class="nota">La raza agregada se suma a los desplegables de raza y cruzas.</div>
 
 
         <div class="acciones">
@@ -198,21 +204,22 @@
         </div>
       </form>
 
-      <h3 style="margin-top:18px;">Inventario de Cabezas (en existencia)</h3>
-      <p class="nota">Aquí se muestran todas las cabezas registradas.</p>
-      
-<div>
-            <label>Nuevo grupo</label>
-            <select id="selNuevoGrupoAnimal"></select>
-          </div>
-          <div style="display:flex; gap:10px; align-items:end;">
-            <button type="button" class="btn-terciario" id="btnCambiarGrupoAnimal">Guardar cambio</button>
-          </div>
-        </form>
+      <h3 style="margin-top:18px;">Inventario de Cabezas</h3>
+      <div class="fila-dos" style="align-items:end; gap:12px;">
+        <div>
+          <label>Inventario a mostrar</label>
+          <select id="selInventarioCabezas">
+            <option value="Todos">Consolidado (Todos)</option>
+            <option>Ganado Reproducción</option>
+            <option>Ganado Comercial</option>
+          </select>
+        </div>
+        <div class="nota">Selecciona el tipo de inventario para reportar por separado o ver el consolidado.</div>
       </div>
 
-
       <div class="lista" id="lista-animales"></div>
+      <h4 style="margin-top:14px;">Editados</h4>
+      <div class="lista" id="lista-animales-editados"></div>
     </div>
 
 
@@ -223,12 +230,20 @@
       <div class="tarjeta" style="margin:12px 0; background:#fff; border:1px solid #e5e7eb;">
         <h4 style="margin:0 0 8px 0;">Cambiar grupo</h4>
         <p class="nota" style="margin:0 0 10px 0;">Selecciona un animal y asígnalo a un nuevo grupo. Se guardará la fecha del cambio.</p>
-        <form id="form-cambiar-grupo" class="fila-dos" style="gap:12px; align-items:end;">
+        <form id="form-cambiar-grupo" class="fila-tres" style="gap:12px; align-items:end;">
           <div>
             <label>Animal (arete oficial)</label>
             <select id="selAnimalCambioGrupo"></select>
           </div>
-          
+          <div>
+            <label>Nuevo grupo</label>
+            <select id="selNuevoGrupoAnimal"></select>
+          </div>
+          <div style="display:flex; gap:10px; align-items:end;">
+            <button type="button" class="btn-terciario" id="btnCambiarGrupoAnimal">Guardar cambio</button>
+          </div>
+        </form>
+      </div>
       <h4 style="margin-top:14px;">Historial</h4>
       <div class="lista" id="lista-cambios-grupo"></div>
     </div>
@@ -363,8 +378,8 @@
             <select id="baja-causa" required>
               <option value="">Selecciona…</option>
               <option>Venta</option>
-              <option>Muerte</option>
-              <option>Desecho</option>
+              <option>Muerte/Desecho</option>
+              <option>Extraviado</option>
               <option>Otros</option>
             </select>
           </div>

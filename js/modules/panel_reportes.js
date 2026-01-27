@@ -72,7 +72,7 @@ function actualizarReportes() {
     if (el) el.textContent = String(n);
   };
 
-  setCount('rep-animales',    getData('pecuario_animales').length);
+  setCount('rep-animales',    cabezasArray({includeBajas:false}).length);
   setCount('rep-bajas',       getData('pecuario_animales_bajas').length);
   setCount('rep-pesajes',     getData('pecuario_pesaje_ind').length + getData('pecuario_pesaje_grupo').length);
   setCount('rep-repro',       getData('pecuario_repro').length);
