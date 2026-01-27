@@ -34,30 +34,19 @@
   const CONTA_CLOSED_KEY  = 'pecuario_conta_closed';
 
   const CONTA_ACCOUNTS = [
-    // ===================== CUENTAS DE RESULTADOS — INGRESOS
-    { tipo:'Ingreso', grupo:'Resultados', code:'RV-01', name:'Venta de becerros' },
-    { tipo:'Ingreso', grupo:'Resultados', code:'RV-02', name:'Venta de Vaquillas' },
-    { tipo:'Ingreso', grupo:'Resultados', code:'RV-03', name:'Venta de Novillos' },
-    { tipo:'Ingreso', grupo:'Resultados', code:'RV-04', name:'Venta de Vientres' },
-    { tipo:'Ingreso', grupo:'Resultados', code:'RV-05', name:'Venta de Toretes' },
-    { tipo:'Ingreso', grupo:'Resultados', code:'RV-06', name:'Venta de Toros' },
-    { tipo:'Ingreso', grupo:'Resultados', code:'RV-07', name:'Venta de insumos' },
-    { tipo:'Ingreso', grupo:'Resultados', code:'RV-10', name:'Ingresos Varios' },
-    { tipo:'Ingreso', grupo:'Resultados', code:'RV-12', name:'Ingresos por intereses' },
-    { tipo:'Ingreso', grupo:'Resultados', code:'RV-13', name:'Apoyos y subsidios' },
+    // ===================== CUENTAS DE RESULTADOS — INGRESOS (con efectivo)
+    { tipo:'Ingreso', grupo:'Resultados', code:'RI-01',  name:'Insumos' },
+    { tipo:'Ingreso', grupo:'Resultados', code:'RIG-01', name:'Intereses ganados' },
+    { tipo:'Ingreso', grupo:'Resultados', code:'RAS-01', name:'Apoyos y subsidios' },
+    { tipo:'Ingreso', grupo:'Resultados', code:'RIV-01', name:'Ingresos varios' },
 
-    // ===================== CUENTAS DE BALANCE — INGRESOS (entradas de efectivo)
-    { tipo:'Ingreso', grupo:'Balance', code:'BP-01',  name:'Patrimonio', balanceClass:'Equity' },
-    { tipo:'Ingreso', grupo:'Balance', code:'BPB-02', name:'Préstamos Bancarios', balanceClass:'Liability' },
+    // ===================== CUENTAS DE BALANCE — INGRESOS (con efectivo)
+    { tipo:'Ingreso', grupo:'Balance', code:'BP-01',  name:'Patrimonio (aportaciones en efectivo)', balanceClass:'Equity' },
+    { tipo:'Ingreso', grupo:'Balance', code:'BPB-01', name:'Préstamos Bancarios', balanceClass:'Liability' },
+    { tipo:'Ingreso', grupo:'Balance', code:'BGR-01', name:'Ganado Reproducción (venta)', balanceClass:'Asset' },
+    { tipo:'Ingreso', grupo:'Balance', code:'BGC-01', name:'Ganado Comercial (venta)', balanceClass:'Asset' },
 
-    // (Opcional) Entradas por recuperación/venta de activos: si se usan, disminuyen el saldo del activo
-    { tipo:'Ingreso', grupo:'Balance', code:'BA-01',  name:'Inventario de Animales', balanceClass:'Asset' },
-    { tipo:'Ingreso', grupo:'Balance', code:'BME-01', name:'Maquinaria y Equipo', balanceClass:'Asset' },
-    { tipo:'Ingreso', grupo:'Balance', code:'BCI-01', name:'Corrales e Instalaciones', balanceClass:'Asset' },
-    { tipo:'Ingreso', grupo:'Balance', code:'BTE-01', name:'Terrenos y Edificios', balanceClass:'Asset' },
-    { tipo:'Ingreso', grupo:'Balance', code:'BV-03',  name:'Otros Activos', balanceClass:'Asset' },
-
-    // ===================== CUENTAS DE RESULTADOS — EGRESOS
+    // ===================== CUENTAS DE RESULTADOS — EGRESOS (con efectivo)
     { tipo:'Egreso', grupo:'Resultados', code:'RGP-01', name:'Gastos Nóminas' },
     { tipo:'Egreso', grupo:'Resultados', code:'RGP-02', name:'Prestaciones a Trabajadores' },
     { tipo:'Egreso', grupo:'Resultados', code:'RGP-03', name:'Gastos de traslado personal' },
@@ -83,22 +72,31 @@
     { tipo:'Egreso', grupo:'Resultados', code:'RE-02',   name:'Electricidad general' },
     { tipo:'Egreso', grupo:'Resultados', code:'RS-01',   name:'Servicios en general' },
     { tipo:'Egreso', grupo:'Resultados', code:'RDI-01',  name:'Derechos e impuestos' },
+    { tipo:'Egreso', grupo:'Resultados', code:'RGI-01',  name:'Gastos por intereses' },
     { tipo:'Egreso', grupo:'Resultados', code:'RFG-01',  name:'Fletes Ganado' },
     { tipo:'Egreso', grupo:'Resultados', code:'RFA-01',  name:'Fletes Alimento' },
+    { tipo:'Egreso', grupo:'Resultados', code:'ROG-01',  name:'Otros Gastos' },
 
-    // ===================== CUENTAS DE BALANCE — EGRESOS (salidas de efectivo)
+    // ===================== CUENTAS DE BALANCE — EGRESOS (con efectivo)
     { tipo:'Egreso', grupo:'Balance', code:'BP-01',  name:'Devoluciones Patrimonio', balanceClass:'Equity' },
     { tipo:'Egreso', grupo:'Balance', code:'BPB-02', name:'Pagos préstamos Bancarios', balanceClass:'Liability' },
-    { tipo:'Egreso', grupo:'Balance', code:'BGI-01', name:'Pago de intereses', balanceClass:'Expense' },
-    { tipo:'Egreso', grupo:'Balance', code:'BOG-02', name:'Otros Pagos', balanceClass:'Expense' },
+    { tipo:'Egreso', grupo:'Balance', code:'BOG-01', name:'Otros Pagos', balanceClass:'Liability' },
 
     // Adquisición de Activos (erogación de efectivo, incrementa activos)
     { tipo:'Egreso', grupo:'Balance', code:'BME-01', name:'Maquinaria y Equipo (adquisición)', balanceClass:'Asset' },
     { tipo:'Egreso', grupo:'Balance', code:'BCI-01', name:'Corrales e Instalaciones (adquisición)', balanceClass:'Asset' },
     { tipo:'Egreso', grupo:'Balance', code:'BTE-01', name:'Terrenos y Edificios (adquisición)', balanceClass:'Asset' },
-    { tipo:'Egreso', grupo:'Balance', code:'BVT-01', name:'Vientres y Toros (adquisición)', balanceClass:'Asset' },
-    { tipo:'Egreso', grupo:'Balance', code:'BA-01',  name:'Inventario de Animales (adquisición)', balanceClass:'Asset' },
-    { tipo:'Egreso', grupo:'Balance', code:'BV-03',  name:'Otros Activos (adquisición)', balanceClass:'Asset' },
+    { tipo:'Egreso', grupo:'Balance', code:'BGR-01', name:'Ganado Reproducción (adquisición)', balanceClass:'Asset' },
+
+    // ===================== CUENTAS DE BALANCE — SIN EFECTIVO
+    { tipo:'Sin efectivo', grupo:'Balance', code:'BGR-01', name:'Ganado Reproducción (ajuste + sin efectivo)', balanceClass:'Asset', balanceEffect: 1, impactoCaja:false },
+    { tipo:'Sin efectivo', grupo:'Balance', code:'BGR-01', name:'Ganado Reproducción (ajuste - sin efectivo)', balanceClass:'Asset', balanceEffect:-1, impactoCaja:false },
+    { tipo:'Sin efectivo', grupo:'Balance', code:'BGC-01', name:'Ganado Comercial (ajuste + sin efectivo)', balanceClass:'Asset', balanceEffect: 1, impactoCaja:false },
+    { tipo:'Sin efectivo', grupo:'Balance', code:'BGC-01', name:'Ganado Comercial (ajuste - sin efectivo)', balanceClass:'Asset', balanceEffect:-1, impactoCaja:false },
+    { tipo:'Sin efectivo', grupo:'Balance', code:'BME-01', name:'Maquinaria y Equipo (aportación sin efectivo)', balanceClass:'Asset', balanceEffect: 1, impactoCaja:false },
+    { tipo:'Sin efectivo', grupo:'Balance', code:'BCI-01', name:'Corrales e Instalaciones (aportación sin efectivo)', balanceClass:'Asset', balanceEffect: 1, impactoCaja:false },
+    { tipo:'Sin efectivo', grupo:'Balance', code:'BTE-01', name:'Terrenos y Edificios (aportación sin efectivo)', balanceClass:'Asset', balanceEffect: 1, impactoCaja:false },
+    { tipo:'Sin efectivo', grupo:'Balance', code:'BOA-01', name:'Otros Activos (aportación sin efectivo)', balanceClass:'Asset', balanceEffect: 1, impactoCaja:false },
   ].map(a => ({ ...a, key: `${a.code}||${a.name}||${a.tipo}||${a.grupo}` }));
 
   function fmtMXN(n){
@@ -205,12 +203,30 @@
     ledger.forEach(m=>{
       const acc = contaGetAccountByKey(m.cuentaKey);
       const amt = Number(m.monto||0);
+      const impactaCaja = acc && acc.impactoCaja !== false && (acc.tipo === 'Ingreso' || acc.tipo === 'Egreso');
+      if (!impactaCaja) return;
       if (acc.tipo === 'Ingreso') tin += amt;
       else tout += amt;
     });
     const opening = contaGetOpening(year);
     const cash = opening + tin - tout;
     return { ledger, opening, tin, tout, cash, net: tin - tout };
+  }
+
+  function contaAssetEffect(acc){
+    if (!acc) return 0;
+    if (typeof acc.balanceEffect === 'number') return acc.balanceEffect;
+    if (acc.tipo === 'Egreso') return 1;
+    if (acc.tipo === 'Ingreso') return -1;
+    return 0;
+  }
+
+  function contaLiabilityEffect(acc){
+    if (!acc) return 0;
+    if (typeof acc.balanceEffect === 'number') return acc.balanceEffect;
+    if (acc.tipo === 'Ingreso') return 1;
+    if (acc.tipo === 'Egreso') return -1;
+    return 0;
   }
 
   function contaFillAccountSelect(sel, opts){
@@ -232,6 +248,7 @@
       { tipo:'Ingreso', grupo:'Balance',    label:'Ingresos — Balance' },
       { tipo:'Egreso',  grupo:'Resultados', label:'Egresos — Resultados' },
       { tipo:'Egreso',  grupo:'Balance',    label:'Egresos — Balance' },
+      { tipo:'Sin efectivo', grupo:'Balance', label:'Sin efectivo — Balance' },
     ];
 
     groups.forEach(g=>{
@@ -369,6 +386,7 @@
     if (cuentaKey) rows = rows.filter(m=>m.cuentaKey===cuentaKey);
     if (estado==='ingreso') rows = rows.filter(m=>contaGetAccountByKey(m.cuentaKey).tipo==='Ingreso');
     if (estado==='egreso') rows = rows.filter(m=>contaGetAccountByKey(m.cuentaKey).tipo==='Egreso');
+    if (estado==='sin-efectivo') rows = rows.filter(m=>contaGetAccountByKey(m.cuentaKey).tipo==='Sin efectivo');
     if (q){
       rows = rows.filter(m=>{
         const s = [
@@ -391,6 +409,7 @@
         return `<tr>
           <td>${escapeHtml(m.fecha||'')}</td>
           <td>${escapeHtml((a.code? a.code+' — ':'') + a.name)}</td>
+          <td>${escapeHtml(a.tipo||'')}</td>
           <td>${escapeHtml(m.areteOficial||'')}</td>
           <td>${escapeHtml(m.tercero||'')}</td>
           <td>${escapeHtml(m.factura||'')}</td>
@@ -400,25 +419,27 @@
           <td style="text-align:right;">${escapeHtml(outCol)}</td>
           <td>${escapeHtml(m.descripcion||'')}</td>
         </tr>`;
-      }).join('') || `<tr><td colspan="10" class="muted">Sin movimientos en este ejercicio.</td></tr>`;
+      }).join('') || `<tr><td colspan="11" class="muted">Sin movimientos en este ejercicio.</td></tr>`;
     }
 
     // Resumen por cuenta
     const resumenBody = document.getElementById('conta-resumen-tbody');
     if (resumenBody){
-      const map = new Map(); // key -> {in,out}
+      const map = new Map(); // key -> {in,out,adj}
       t.ledger.forEach(m=>{
         const a = contaGetAccountByKey(m.cuentaKey);
         const k = m.cuentaKey;
-        if (!map.has(k)) map.set(k, { a, in:0, out:0 });
+        if (!map.has(k)) map.set(k, { a, in:0, out:0, adj:0 });
         const obj = map.get(k);
         const amt = Number(m.monto||0);
-        if (a.tipo==='Ingreso') obj.in += amt; else obj.out += amt;
+        if (a.tipo==='Ingreso') obj.in += amt;
+        else if (a.tipo==='Egreso') obj.out += amt;
+        else obj.adj += (typeof a.balanceEffect === 'number' ? a.balanceEffect * amt : amt);
       });
 
       const arr = Array.from(map.values()).sort((x,y)=> (x.a.tipo + x.a.code + x.a.name).localeCompare(y.a.tipo + y.a.code + y.a.name));
       resumenBody.innerHTML = arr.map(x=>{
-        const net = x.in - x.out;
+        const net = x.in - x.out + x.adj;
         return `<tr>
           <td>${escapeHtml((x.a.code? x.a.code+' — ':'') + x.a.name)}</td>
           <td style="text-align:right;">${escapeHtml(fmtMXN(x.in))}</td>
@@ -513,7 +534,7 @@
 
     // Saldos de cuentas de Balance por clase
     const bal = {
-      assets: {'BA-01':0,'BVT-01':0,'BME-01':0,'BCI-01':0,'BTE-01':0,'BV-03':0},
+      assets: {'BGR-01':0,'BGC-01':0,'BME-01':0,'BCI-01':0,'BTE-01':0,'BOA-01':0},
       loan: 0,
       equity: 0
     };
@@ -521,7 +542,8 @@
     const nameByCode = {};
     CONTA_ACCOUNTS.forEach(a=>{
       if (a.grupo==='Balance'){
-        nameByCode[a.code] = nameByCode[a.code] || a.name;
+        const baseName = String(a.name || '').replace(/\s*\(.*\)$/, '').trim() || a.name;
+        nameByCode[a.code] = nameByCode[a.code] || baseName;
       }
     });
 
@@ -534,16 +556,15 @@
       const cls = acc.balanceClass || '';
       if (cls==='Asset'){
         if (bal.assets.hasOwnProperty(code)){
-          // Egreso = compra (sube activo). Ingreso = venta/recuperación (baja activo)
-          bal.assets[code] += (acc.tipo==='Egreso' ? amt : -amt);
+          bal.assets[code] += contaAssetEffect(acc) * amt;
         }
       } else if (cls==='Liability'){
-        if (code==='BPB-02'){
-          bal.loan += (acc.tipo==='Ingreso' ? amt : -amt);
+        if (code === 'BPB-01' || code === 'BPB-02'){
+          bal.loan += contaLiabilityEffect(acc) * amt;
         }
       } else if (cls==='Equity'){
         if (code==='BP-01'){
-          bal.equity += (acc.tipo==='Ingreso' ? amt : -amt);
+          bal.equity += contaLiabilityEffect(acc) * amt;
         }
       }
     });
@@ -556,7 +577,7 @@
       const rows = [];
       rows.push(`<tr><td><b>Activos</b></td><td></td></tr>`);
       rows.push(`<tr><td>B-01 — Caja y Bancos</td><td style="text-align:right;">${escapeHtml(fmtMXN(cash))}</td></tr>`);
-      const order = ['BA-01','BVT-01','BME-01','BCI-01','BTE-01','BV-03'];
+      const order = ['BGR-01','BGC-01','BME-01','BCI-01','BTE-01','BOA-01'];
       order.forEach(code=>{
         const nm = nameByCode[code] || code;
         rows.push(`<tr><td>${escapeHtml(code+' — '+nm)}</td><td style="text-align:right;">${escapeHtml(fmtMXN(bal.assets[code]||0))}</td></tr>`);
@@ -605,14 +626,15 @@
     const areteWrap = document.getElementById('conta-arete-wrap');
     const areteInp = areteWrap ? areteWrap.querySelector('input[name="areteOficial"]') : null;
 
-    function contaIsVentaAnimal(code){
-      return ['RV-01','RV-02','RV-03','RV-04','RV-05','RV-06'].includes(String(code||'').trim());
+    function contaIsVentaAnimal(acc){
+      const code = String(acc?.code || '').trim();
+      return acc?.tipo === 'Ingreso' && ['BGR-01','BGC-01'].includes(code);
     }
     function contaToggleArete(){
       if (!areteWrap || !selCuenta) return;
       const acc = contaGetAccountByKey(selCuenta.value || '');
       const code = String(acc?.code || '').trim();
-      const show = !!acc && (contaIsVentaAnimal(code) || code === 'RMD-01');
+      const show = !!acc && (contaIsVentaAnimal(acc) || code === 'RMD-01');
       areteWrap.style.display = show ? '' : 'none';
       if (!show && areteInp) areteInp.value = '';
     }
@@ -719,9 +741,9 @@
         ledger.push(mov);
         setContaLedger(ledger);
 
-        // Si es venta de animal (RV-01..RV-06) o baja por RMD-01, y el arete existe en inventario, muévelo a Bajas
+        // Si es venta de animal (BGR-01/BGC-01) o baja por RMD-01, y el arete existe en inventario, muévelo a Bajas
         const accCode = String(acc.code||'').trim();
-        const esVentaAnimal = ['RV-01','RV-02','RV-03','RV-04','RV-05','RV-06'].includes(accCode);
+        const esVentaAnimal = contaIsVentaAnimal(acc);
         const esBajaMD = (accCode === 'RMD-01');
         if ((esVentaAnimal || esBajaMD) && mov.areteOficial){
           const moved = moverAnimalABajas(mov.areteOficial, {

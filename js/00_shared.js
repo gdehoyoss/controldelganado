@@ -529,7 +529,7 @@ const renderChecks = ()=>{
       },
       filters: [
         {label:"Motivo", field:"motivo", values: ()=> ["Venta","Muerte/Desecho"]},
-        {label:"Cuenta", field:"cuentaLabel", values: ()=> CONTA_ACCOUNTS.filter(a=>a.code && (a.code.startsWith('RV-') || a.code==='RMD-01')).map(a=>`${a.code} — ${a.name}`)},
+        {label:"Cuenta", field:"cuentaLabel", values: ()=> CONTA_ACCOUNTS.filter(a=>a.code && (['BGR-01','BGC-01','RMD-01'].includes(a.code))).map(a=>`${a.code} — ${a.name}`)},
         {label:"Grupo", field:"grupo", values: ()=> gruposBase},
         {label:"Sexo", field:"sexo", values: ()=> ["Hembra","Macho"]},
         {label:"Raza", field:"razaPre", values: ()=> getRazas()},
