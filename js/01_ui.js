@@ -74,7 +74,14 @@
       e.preventDefault();
       const datos = new FormData(form);
       const obj = {};
-      datos.forEach((val, key) => { obj[key] = val; });
+      datos.forEach((val, key) => {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+          if (!Array.isArray(obj[key])) obj[key] = [obj[key]];
+          obj[key].push(val);
+          return;
+        }
+        obj[key] = val;
+      });
       if (typeof validateCallback === 'function') { if (validateCallback(obj, form) === false) return; }
 
       const lista = getData(storageKey);

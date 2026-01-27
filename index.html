@@ -1456,7 +1456,7 @@
         </div>
       </div>
 
-      <div class="fila-dos">
+      <div class="fila-tres">
         <div>
           <label>Nombre del visitante / grupo</label>
           <input name="nombre" />
@@ -1464,6 +1464,10 @@
         <div>
           <label>Asunto / a quién busca</label>
           <input name="asunto" />
+        </div>
+        <div>
+          <label>Número de acompañantes</label>
+          <input type="number" min="0" step="1" name="acompanantes" />
         </div>
       </div>
 
@@ -1500,11 +1504,43 @@
         </div>
       </div>
 
+      <div class="fila-dos">
+        <div>
+          <label>Fecha del hecho</label>
+          <input type="date" name="fechaHecho" />
+        </div>
+        <div>
+          <label>Hora del hecho</label>
+          <input type="time" name="horaHecho" />
+        </div>
+      </div>
+
       <label>Descripción de hechos / observaciones</label>
       <textarea name="evento" placeholder="Eventos relevantes del día/noche"></textarea>
 
-      <label>Involucrados (personas, animales, clima, otros)</label>
-      <textarea name="involucrados"></textarea>
+      <label>Involucrados</label>
+      <div class="opciones-grid">
+        <label class="opcion">
+          <input type="checkbox" name="involucrados" value="Personal del rancho" />
+          Personal del rancho
+        </label>
+        <label class="opcion">
+          <input type="checkbox" name="involucrados" value="Ganado" />
+          Ganado
+        </label>
+        <label class="opcion">
+          <input type="checkbox" name="involucrados" value="Visitantes" />
+          Visitantes
+        </label>
+        <label class="opcion">
+          <input type="checkbox" name="involucrados" value="Fauna" />
+          Fauna
+        </label>
+        <label class="opcion">
+          <input type="checkbox" name="involucrados" value="Otros" />
+          Otros
+        </label>
+      </div>
 
       <div class="acciones">
         <button type="submit" class="btn-primario">Guardar registro</button>
