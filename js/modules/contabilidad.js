@@ -73,12 +73,8 @@ const CONTA_ACCOUNTS = [
 ].map(a => ({ ...a, key: `${a.code}||${a.name}||${a.tipo}||${a.grupo}` }));
 
 const CONTA_CONTRA_CUENTAS = {
-  Ingreso: [
-    { value: 'Caja y Banco (Deudor)', label: 'Caja y Banco (Deudor)' }
-  ],
-  Egreso: [
-    { value: 'Caja y Banco (Acredor)', label: 'Caja y Banco (Acredor)' }
-  ]
+  Deudor: { value: 'Caja y Banco (Deudor)', label: 'Caja y Banco (Deudor)' },
+  Acreedor: { value: 'Caja y Banco (Acredor)', label: 'Caja y Banco (Acredor)' }
 };
 
 function fmtMXN(n){
@@ -165,8 +161,12 @@ function contaUpdateContraSelect(selectEl, cuentaKey, currentValue){
   let options = [];
   if (cuentaKey){
     const acc = contaGetAccountByKey(cuentaKey);
-    if (acc.tipo === 'Ingreso') options = CONTA_CONTRA_CUENTAS.Ingreso.slice();
-    if (acc.tipo === 'Egreso') options = CONTA_CONTRA_CUENTAS.Egreso.slice();
+    if (acc.grupo === 'Resultados'){
+      if (acc.tipo === 'Ingreso') options = [CONTA_CONTRA_CUENTAS.Deudor];
+      if (acc.tipo === 'Egreso') options = [CONTA_CONTRA_CUENTAS.Acreedor];
+    } else if (acc.grupo === 'Balance'){
+      options = [CONTA_CONTRA_CUENTAS.Deudor, CONTA_CONTRA_CUENTAS.Acreedor];
+    }
   }
 
   if (!options.length){
@@ -189,8 +189,20 @@ function contaUpdateContraSelect(selectEl, cuentaKey, currentValue){
   });
 
   const isValid = options.some(opt => opt.value === currentValue);
-  selectEl.value = isValid ? currentValue : options[0].value;
+  if (isValid){
+    selectEl.value = currentValue;
+  } else if (options.length === 1){
+    selectEl.value = options[0].value;
+  } else {
+    selectEl.value = '';
+  }
   selectEl.required = true;
+}
+
+function contaContraRequired(acc){
+  if (!acc) return false;
+  if (acc.grupo === 'Balance') return true;
+  return acc.grupo === 'Resultados' && (acc.tipo === 'Ingreso' || acc.tipo === 'Egreso');
 }
 
 function contaYears(){
@@ -849,7 +861,7 @@ function initContabilidad(){
       }
 
       const acc = contaGetAccountByKey(cuentaKey);
-      const contraEsRequerida = acc.tipo === 'Ingreso' || acc.tipo === 'Egreso';
+      const contraEsRequerida = contaContraRequired(acc);
       if (contraEsRequerida && !contraCuenta){
         alert('Selecciona la contra cuenta.');
         return;
@@ -943,7 +955,7 @@ function initContabilidad(){
       if (idx < 0) return;
 
       const acc = contaGetAccountByKey(cuentaKey);
-      const contraEsRequerida = acc.tipo === 'Ingreso' || acc.tipo === 'Egreso';
+      const contraEsRequerida = contaContraRequired(acc);
       if (contraEsRequerida && !contraCuenta){
         alert('Selecciona la contra cuenta.');
         return;
