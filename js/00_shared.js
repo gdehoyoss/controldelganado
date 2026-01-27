@@ -60,6 +60,16 @@
     const map = getCabezasMap();
     return map[a] || null;
   }
+  function findCabezaPorArete(arete){
+    const a = String(arete||'').trim();
+    if (!a) return null;
+    const directa = getCabeza(a);
+    if (directa) return { cabeza: directa, matchedBy: 'oficial' };
+    const map = getCabezasMap();
+    const found = Object.values(map || {}).find(c => (c.areteRancho||'').trim() === a);
+    if (found) return { cabeza: found, matchedBy: 'rancho' };
+    return null;
+  }
   function upsertCabeza(rec, {mode='upsert', reason=''} = {}){
     const a = String(rec.areteOficial||'').trim();
     if (!a) return {ok:false, msg:'Arete oficial requerido'};
@@ -292,6 +302,7 @@ function escapeHtml(s){
     llenarSelect(document.getElementById('selGrupoAnimales'), gruposBase);
     llenarSelect(document.getElementById('selGrupoPesajes'), gruposBase);
     llenarSelect(document.getElementById('selGrupoCorrales'), gruposBase);
+    llenarSelect(document.getElementById('selGrupoCria'), gruposBase);
   }
 
     // ======================

@@ -805,13 +805,13 @@
   <!-- REPRODUCCIÓN Y PARTOS -->
   <section id="mod-repro" class="modulo">
     <h2>Reproducción y partos</h2>
-    <p>Seguimiento de empadres, gestaciones y partos. Incluye cruza del vientre y del toro (preponderante + cruza 1/2) para estimar cruza de la cría.</p>
+    <p>Seguimiento de empadres, gestaciones y partos. Incluye cruza de la madre y del padre (preponderante + cruza 1/2) para estimar cruza de la cría.</p>
 
     <form id="form-repro">
-      <h3>Hembra (vientre)</h3>
+      <h3>Madre</h3>
       <div class="fila-tres">
         <div>
-          <label>Arete hembra (vientre)</label>
+          <label>Arete madre (oficial o rancho)</label>
           <input name="vientre" required />
         </div>
         <div>
@@ -827,10 +827,10 @@
         </div>
       </div>
 
-      <h3>Macho (toro)</h3>
+      <h3>Padre</h3>
       <div class="fila-tres">
         <div>
-          <label>Arete / nombre del toro</label>
+          <label>Arete padre (oficial o rancho)</label>
           <input name="toro" />
         </div>
         <div>
@@ -848,11 +848,11 @@
 
       <div class="fila-tres">
         <div>
-          <label>Peso estimado vientre (kg)</label>
+          <label>Peso estimado madre (kg)</label>
           <input type="number" step="0.1" name="pesoVientre" />
         </div>
         <div>
-          <label>Peso estimado toro (kg)</label>
+          <label>Peso estimado padre (kg)</label>
           <input type="number" step="0.1" name="pesoToro" />
         </div>
         <div>
@@ -882,6 +882,17 @@
           <input type="date" name="fechaParto" />
         </div>
         <div>
+          <label>Fecha de destete</label>
+          <input type="date" name="fechaDestete" />
+          <div class="nota">Se puede calcular con destete típico (210 días).</div>
+        </div>
+        <div style="display:flex; align-items:end; gap:6px;">
+          <button type="button" class="btn-terciario" id="btnCalcularDestete">Calcular destete</button>
+        </div>
+      </div>
+
+      <div class="fila-tres">
+        <div>
           <label>Sexo de la cría</label>
           <select name="sexoCria">
             <option value="">Selecciona…</option>
@@ -898,11 +909,11 @@
 
       <div class="fila-dos">
         <div>
-          <label>Cruza preponderante (hembra)</label>
+          <label>Cruza preponderante (madre)</label>
           <input name="cruzaPreH" readonly />
         </div>
         <div>
-          <label>Cruza preponderante (macho)</label>
+          <label>Cruza preponderante (padre)</label>
           <input name="cruzaPreM" readonly />
         </div>
       </div>
@@ -944,7 +955,7 @@
         <input name="saludOtro" placeholder="Describe la enfermedad" />
       </div>
 
-      <label>Observaciones (condiciones del parto y estado físico del vientre y de la cría)</label>
+      <label>Observaciones (condiciones del parto y estado físico de la madre y de la cría)</label>
       <textarea name="obs"></textarea>
 
       <div class="acciones">
@@ -956,10 +967,137 @@
     <details>
       <summary>Actividades sugeridas (Reproducción y partos)</summary>
       <ul>
-        <li>Vigilancia de vientres en gestación.</li>
+        <li>Vigilancia de madres en gestación.</li>
         <li>Atención al parto y a la cría (calostro, primeras horas).</li>
         <li>Registro de problemas y seguimiento.</li>
       </ul>
+    </details>
+
+    <details style="margin-top:14px;">
+      <summary>Altas y bajas de crías</summary>
+      <p class="nota">Este registro se refleja en el módulo de Ganado para mantener un solo inventario.</p>
+
+      <h4 style="margin:10px 0 6px;">Alta de cría</h4>
+      <form id="form-repro-cria-alta" class="tarjeta" style="background:#fff;border:1px solid #e5e7eb; margin-bottom:12px;">
+        <div class="fila-tres">
+          <div>
+            <label>Arete oficial</label>
+            <input name="areteOficial" required />
+          </div>
+          <div>
+            <label>Arete rancho</label>
+            <input name="areteRancho" />
+          </div>
+          <div>
+            <label>Tipo de inventario</label>
+            <select name="inventarioTipo" required>
+              <option value="">Selecciona…</option>
+              <option>Ganado Reproducción</option>
+              <option>Ganado Comercial</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="fila-cuatro">
+          <div>
+            <label>Sexo</label>
+            <select name="sexo">
+              <option value="">Selecciona…</option>
+              <option>Hembra</option>
+              <option>Macho</option>
+            </select>
+          </div>
+          <div>
+            <label>Raza preponderante</label>
+            <select name="razaPre" class="selRaza"></select>
+          </div>
+          <div>
+            <label>Cruza 1 / Cruza 2</label>
+            <div class="fila-dos">
+              <select name="cruza1" class="selRaza"></select>
+              <select name="cruza2" class="selRaza"></select>
+            </div>
+          </div>
+          <div style="display:flex; align-items:end; gap:6px;">
+            <button type="button" class="btn-terciario" id="btnCopiarCruzaCria">Copiar cruza estimada</button>
+          </div>
+        </div>
+
+        <div class="fila-tres">
+          <div>
+            <label>Fecha de nacimiento</label>
+            <input type="date" name="fechaNac" />
+          </div>
+          <div>
+            <label>Grupo</label>
+            <select name="grupo" id="selGrupoCria"></select>
+          </div>
+          <div>
+            <label>Observaciones</label>
+            <input name="obs" />
+          </div>
+        </div>
+
+        <div class="acciones">
+          <button type="submit" class="btn-primario">Guardar alta</button>
+          <button type="button" class="btn-secundario" id="btnReproCriaAltaLimpiar">Limpiar</button>
+        </div>
+      </form>
+
+      <div class="lista" id="lista-repro-crias"></div>
+
+      <h4 style="margin:16px 0 6px;">Baja de cría</h4>
+      <form id="form-repro-cria-baja" class="tarjeta" style="background:#fff;border:1px solid #e5e7eb; margin-bottom:12px;">
+        <div class="fila-tres">
+          <div>
+            <label>Arete oficial</label>
+            <input id="repro-baja-arete" required />
+          </div>
+          <div>
+            <label>Causa</label>
+            <select id="repro-baja-causa" required>
+              <option value="">Selecciona…</option>
+              <option>Venta</option>
+              <option>Muerte/Desecho</option>
+              <option>Extraviado</option>
+              <option>Otros</option>
+            </select>
+          </div>
+          <div>
+            <label>Fecha</label>
+            <input id="repro-baja-fecha" type="date" />
+          </div>
+        </div>
+
+        <div class="fila-tres">
+          <div>
+            <label>Grupo</label>
+            <input id="repro-baja-grupo" disabled />
+          </div>
+          <div>
+            <label>Sexo</label>
+            <input id="repro-baja-sexo" disabled />
+          </div>
+          <div>
+            <label>Raza / Cruzas</label>
+            <input id="repro-baja-raza" disabled />
+          </div>
+        </div>
+
+        <div class="fila-tres">
+          <div>
+            <label>Observaciones</label>
+            <input id="repro-baja-obs" placeholder="Opcional" />
+          </div>
+        </div>
+
+        <div class="acciones">
+          <button type="submit" class="btn-primario">Guardar baja</button>
+          <button type="button" class="btn-secundario" id="btnReproCriaBajaLimpiar">Limpiar</button>
+        </div>
+      </form>
+
+      <div class="lista" id="lista-repro-crias-bajas"></div>
     </details>
 
     <div class="lista" id="lista-repro"></div>
