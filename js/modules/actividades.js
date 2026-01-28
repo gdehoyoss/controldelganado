@@ -4,6 +4,16 @@
 
 function getTareas(){ return getData('pecuario_actividades') || []; }
 function setTareas(t){ setData('pecuario_actividades', t || []); }
+const PUESTOS_KEY = 'pecuario_puestos_personal';
+const DEFAULT_PUESTOS = ['Propietario','Gerente','Supervisor','Vaquero','Regador','Operador','Auxiliar'];
+
+function getPuestosPersonal(){ return getData(PUESTOS_KEY) || []; }
+function setPuestosPersonal(v){ setData(PUESTOS_KEY, v || []); }
+function puestosDisponibles(){
+  const extra = getPuestosPersonal();
+  const combo = DEFAULT_PUESTOS.concat(extra);
+  return Array.from(new Set(combo.map(p=>String(p||'').trim()).filter(Boolean)));
+}
 
 function usuarioActualObj(){
   const nombre = localStorage.getItem('pecuario_usuario_actual') || '';
@@ -39,6 +49,7 @@ function migrarActividadesATareas(){
       modulo: (a.modulo || '').trim(),
       descripcion: desc || 'Tarea',
       asignadoA: asign,
+      tipo: 'Continua',
       periodicidad: (a.periodicidad || '').trim(),
       semaforo: (a.semaforo || '').trim(),
       notas: (a.notas || '').trim(),
@@ -82,10 +93,15 @@ function renderTareasUI(){
 
     const inicio = (t.fechaInicio||'').trim();
     const fin = (t.fechaTermino||'').trim();
+    const tipo = (t.tipoTarea || t.tipo || 'Continua').trim();
+    const estado = (t.estado || 'Pendiente').trim();
     const meta = [
       t.modulo ? `Módulo: ${t.modulo}` : '',
+      tipo ? `Tipo: ${tipo}` : '',
       inicio ? `Inicio: ${inicio}` : '',
-      t.periodicidad ? `Periodicidad: ${t.periodicidad}` : '',
+      (tipo === 'Eventual' && fin) ? `Fin: ${fin}` : '',
+      (tipo !== 'Eventual' && t.periodicidad) ? `Periodicidad: ${t.periodicidad}` : '',
+      (tipo === 'Eventual') ? `Estado: ${estado}` : '',
       (t.estado === 'Completada' && t.semaforo) ? `Semáforo: ${t.semaforo}` : '',
       (esAdministrador() && t.asignadoA) ? `Asignado a: ${t.asignadoA}` : ''
     ].filter(Boolean).join(' | ');
@@ -133,6 +149,27 @@ function renderTareasUI(){
         d.style.marginTop='6px';
         d.textContent = `Terminada: ${fin}`;
         wrap.appendChild(d);
+      }
+
+      if (tipo === 'Eventual' && estado !== 'Completada'){
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn-terciario';
+        btn.style.marginTop = '8px';
+        btn.textContent = (estado === 'En Proceso') ? 'En Proceso' : 'Marcar En Proceso';
+        btn.disabled = (estado === 'En Proceso');
+        btn.addEventListener('click', ()=>{
+          const all = getTareas();
+          const idx = all.findIndex(x=>x.id===t.id);
+          if (idx>=0){
+            all[idx].estado = 'En Proceso';
+            setTareas(all);
+            renderTareasUI();
+            actualizarPanel();
+            actualizarReportes();
+          }
+        });
+        wrap.appendChild(btn);
       }
       return wrap;
     }
@@ -218,8 +255,29 @@ function renderTareasUI(){
       const p = document.createElement('div');
       p.className='nota';
       p.style.marginTop='6px';
-      p.innerHTML = '<b>Pendiente</b>';
+      p.innerHTML = `<b>${escapeHtml(estado || 'Pendiente')}</b>`;
       wrap.appendChild(p);
+
+      if (tipo === 'Eventual'){
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn-terciario';
+        btn.style.marginTop = '8px';
+        btn.textContent = (estado === 'En Proceso') ? 'En Proceso' : 'Marcar En Proceso';
+        btn.disabled = (estado === 'En Proceso');
+        btn.addEventListener('click', ()=>{
+          const all = getTareas();
+          const idx = all.findIndex(x=>x.id===t.id);
+          if (idx>=0){
+            all[idx].estado = 'En Proceso';
+            setTareas(all);
+            renderTareasUI();
+            actualizarPanel();
+            actualizarReportes();
+          }
+        });
+        wrap.appendChild(btn);
+      }
     }
 
     return wrap;
@@ -243,14 +301,20 @@ function renderTareasUI(){
 function poblarSelectUsuariosAsignacion(){
   const sel = document.getElementById('selAsignadoA');
   if (!sel) return;
-  const usuarios = getUsuarios().filter(u=> (u.activo==='Activo' || u.activo==='Sí'));
+  const personas = getPersonasDisponibles();
   sel.innerHTML = '<option value="">Selecciona…</option>';
-  usuarios.forEach(u=>{
+  personas.forEach(nombre=>{
     const o = document.createElement('option');
-    o.value = u.nombre;
-    o.textContent = u.nombre;
+    o.value = nombre;
+    o.textContent = nombre;
     sel.appendChild(o);
   });
+}
+
+function getPersonasDisponibles(){
+  const usuarios = getUsuarios().filter(u=> (u.activo==='Activo' || u.activo==='Sí')).map(u=>u.nombre);
+  const personal = getPersonalRancho().map(p=>p.nombre || p.usuario).filter(Boolean);
+  return Array.from(new Set([...usuarios, ...personal].map(n=>String(n||'').trim()).filter(Boolean)));
 }
 
 function initTareasActividades(){
@@ -262,6 +326,24 @@ function initTareasActividades(){
   if (form){
     const fi = form.querySelector('input[name="fechaInicio"]');
     if (fi && !fi.value) fi.value = ymd(new Date());
+    const tipoSel = form.querySelector('#act-tipo');
+    const periodicidadWrap = form.querySelector('.act-periodicidad-wrap');
+    const fechaFinWrap = form.querySelector('.act-fecha-fin');
+
+    const toggleTipo = ()=>{
+      const tipo = (tipoSel && tipoSel.value) ? tipoSel.value : 'Continua';
+      if (tipo === 'Eventual'){
+        if (fechaFinWrap) fechaFinWrap.style.display = '';
+        if (periodicidadWrap) periodicidadWrap.style.display = 'none';
+      } else {
+        if (fechaFinWrap) fechaFinWrap.style.display = 'none';
+        if (periodicidadWrap) periodicidadWrap.style.display = '';
+      }
+    };
+    if (tipoSel){
+      tipoSel.addEventListener('change', toggleTipo);
+      toggleTipo();
+    }
 
     // Guardar tareas (solo admin)
     form.addEventListener('submit', (e)=>{
@@ -276,6 +358,10 @@ function initTareasActividades(){
 
       const inicio = (obj.fechaInicio||'').trim() || ymd(new Date());
       const modulo = (obj.modulo||'').trim();
+      const tipoTarea = (obj.tipoTarea||'Continua').trim();
+      const periodicidad = (obj.periodicidad||'').trim();
+      const fechaTermino = (obj.fechaTermino||'').trim();
+      const estadoInicial = (obj.estadoInicial||'Pendiente').trim();
 
       // Descripción (puede contener varias líneas = varias tareas)
       const descLibre = (obj.descripcionTarea||'').trim();
@@ -285,24 +371,35 @@ function initTareasActividades(){
         alert('Escribe la descripción de la tarea.');
         return;
       }
+      if (tipoTarea === 'Eventual' && (!inicio || !fechaTermino)){
+        alert('Completa fecha de inicio y terminación para tareas eventuales.');
+        return;
+      }
+      if (tipoTarea !== 'Eventual' && !periodicidad){
+        alert('Selecciona la periodicidad para tareas continuas.');
+        return;
+      }
 
       const tareas = getTareas();
       const creador = (usuarioActualObj() && usuarioActualObj().nombre) ? usuarioActualObj().nombre : '';
 
       nuevos.forEach((desc, i)=>{
+        const realizada = (obj.realizada||'No').trim();
+        const estadoFinal = (realizada === 'Si') ? 'Completada' : (estadoInicial || 'Pendiente');
         tareas.push({
           id: `t_${Date.now()}_${Math.random().toString(16).slice(2)}_${i}`,
           modulo,
           descripcion: desc,
           asignadoA,
-          periodicidad: (obj.periodicidad||'').trim(),
+          tipo: tipoTarea,
+          periodicidad: (tipoTarea === 'Eventual' ? '' : periodicidad),
           semaforo: '',
           notas: (obj.notas||'').trim(),
           herramientas: (obj.herramientas||'').trim(),
-          realizada: (obj.realizada||'No').trim(),
+          realizada,
           fechaInicio: inicio,
-          fechaTermino: ((obj.realizada||'No')==='Si' ? inicio : ''),
-          estado: ((obj.realizada||'No')==='Si' ? 'Completada' : 'Pendiente'),
+          fechaTermino: (realizada==='Si' ? (fechaTermino || inicio) : fechaTermino),
+          estado: estadoFinal,
           creadoPor: creador,
           creadoEn: new Date().toISOString()
         });
@@ -314,6 +411,10 @@ function initTareasActividades(){
       poblarSelectUsuariosAsignacion();
       const fi2 = form.querySelector('input[name="fechaInicio"]');
       if (fi2) fi2.value = ymd(new Date());
+      if (tipoSel){
+        tipoSel.value = 'Continua';
+        toggleTipo();
+      }
       renderTareasUI();
       actualizarReportes();
       actualizarPanel();
@@ -335,6 +436,59 @@ const ESPECIALES_KEY = 'pecuario_tareas_especiales';
 
 function getPersonalRancho(){ return getData(PERSONAL_KEY) || []; }
 function setPersonalRancho(v){ setData(PERSONAL_KEY, v||[]); }
+
+function actualizarPuestosSelect(selected){
+  const sel = document.getElementById('personal-puesto');
+  if (!sel) return;
+  const puestos = puestosDisponibles();
+  sel.innerHTML = '<option value="">Selecciona…</option>';
+  puestos.forEach(p=>{
+    const o = document.createElement('option');
+    o.value = p;
+    o.textContent = p;
+    sel.appendChild(o);
+  });
+  if (selected) sel.value = selected;
+}
+
+function limpiarHijosUI(){
+  const cont = document.getElementById('personal-hijos');
+  if (cont) cont.innerHTML = '';
+}
+
+function agregarHijoUI(data){
+  const cont = document.getElementById('personal-hijos');
+  if (!cont) return;
+  const row = document.createElement('div');
+  row.className = 'fila-cuatro hijo-row';
+
+  const nombre = document.createElement('input');
+  nombre.placeholder = 'Nombre';
+  nombre.value = data && data.nombre ? data.nombre : '';
+  nombre.dataset.field = 'nombre';
+
+  const sexo = document.createElement('select');
+  sexo.dataset.field = 'sexo';
+  sexo.innerHTML = '<option value="">Sexo</option><option>Femenino</option><option>Masculino</option>';
+  sexo.value = data && data.sexo ? data.sexo : '';
+
+  const fecha = document.createElement('input');
+  fecha.type = 'date';
+  fecha.dataset.field = 'fecha';
+  fecha.value = data && data.fecha ? data.fecha : '';
+
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'btn-secundario';
+  btn.textContent = 'Quitar';
+  btn.addEventListener('click', ()=> row.remove());
+
+  row.appendChild(nombre);
+  row.appendChild(sexo);
+  row.appendChild(fecha);
+  row.appendChild(btn);
+  cont.appendChild(row);
+}
 
 function getRespons(){ return getData(RESPONS_KEY) || []; }
 function setRespons(v){ setData(RESPONS_KEY, v||[]); }
@@ -363,15 +517,15 @@ function listaModulosParaRoles(){
 }
 
 function poblarSelectUsuariosMulti(ids){
-  const usuarios = getData('pecuario_usuarios') || [];
+  const usuarios = getPersonasDisponibles();
   ids.forEach(id=>{
     const sel = document.getElementById(id);
     if (!sel) return;
     sel.innerHTML = '<option value="">Selecciona…</option>';
-    usuarios.forEach(u=>{
+    usuarios.forEach(nombre=>{
       const o = document.createElement('option');
-      o.value = u.nombre;
-      o.textContent = u.nombre;
+      o.value = nombre;
+      o.textContent = nombre;
       sel.appendChild(o);
     });
   });
@@ -392,10 +546,34 @@ function poblarSelectModulos(ids){
   });
 }
 
+function renderResponsModulos(){
+  const cont = document.getElementById('resp-modulos');
+  if (!cont) return;
+  const mods = listaModulosParaRoles();
+  cont.innerHTML = '';
+  mods.forEach(m=>{
+    const lbl = document.createElement('label');
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.value = m.id;
+    cb.dataset.name = m.name;
+    lbl.appendChild(cb);
+    lbl.appendChild(document.createTextNode(` ${m.name}`));
+    cont.appendChild(lbl);
+  });
+}
+
 function renderPersonalUI(){
   const cont = document.getElementById('lista-personal');
   if (!cont) return;
-  const p = getPersonalRancho();
+  const pRaw = getPersonalRancho();
+  let actualiza = false;
+  const p = pRaw.map((item, idx)=>{
+    if (item.id) return item;
+    actualiza = true;
+    return {...item, id: `per_${Date.now()}_${idx}`};
+  });
+  if (actualiza) setPersonalRancho(p);
   cont.innerHTML = '';
   if (!p.length){ cont.innerHTML = '<div>Sin personal registrado.</div>'; return; }
   p.forEach(x=>{
@@ -404,11 +582,12 @@ function renderPersonalUI(){
     div.style.justifyContent='space-between';
     div.style.gap='10px';
     div.style.alignItems='center';
-    div.textContent = `${x.usuario} | ID: ${x.identificacion||'-'} | Puesto: ${x.puesto||'-'}`;
+    const nombre = x.nombre || x.usuario || 'Sin nombre';
+    div.textContent = `${nombre} | ${x.movimiento || 'Alta'} | No. ${x.numeroTrabajador || x.identificacion || '-'} | Puesto: ${x.puesto || '-'}`;
     const acciones = document.createElement('div');
     acciones.style.display='flex'; acciones.style.gap='8px';
-    const bE = document.createElement('button'); bE.type='button'; bE.className='btn-terciario'; bE.textContent='Editar'; bE.dataset.action='edit'; bE.dataset.usuario=x.usuario;
-    const bD = document.createElement('button'); bD.type='button'; bD.className='btn-secundario'; bD.textContent='Borrar'; bD.dataset.action='del'; bD.dataset.usuario=x.usuario;
+    const bE = document.createElement('button'); bE.type='button'; bE.className='btn-terciario'; bE.textContent='Editar'; bE.dataset.action='edit'; bE.dataset.id=x.id;
+    const bD = document.createElement('button'); bD.type='button'; bD.className='btn-secundario'; bD.textContent='Borrar'; bD.dataset.action='del'; bD.dataset.id=x.id;
     acciones.appendChild(bE); acciones.appendChild(bD);
     const wrap = document.createElement('div');
     wrap.style.display='flex';
@@ -433,7 +612,8 @@ function renderResponsUI(){
     div.style.justifyContent='space-between';
     div.style.gap='10px';
     div.style.alignItems='center';
-    div.textContent = `${x.usuario} | ${x.moduloNombre||x.moduloId} | ${x.periodicidad||''} | ${x.descripcion}`;
+    const mods = (x.modulosNombres && x.modulosNombres.length) ? x.modulosNombres.join(', ') : (x.moduloNombre||x.moduloId||'');
+    div.textContent = `${x.usuario} | ${mods} | ${x.periodicidad||''} | ${x.descripcion}`;
     const acciones = document.createElement('div');
     acciones.style.display='flex'; acciones.style.gap='8px';
     const bD = document.createElement('button'); bD.type='button'; bD.className='btn-secundario'; bD.textContent='Borrar'; bD.dataset.action='del'; bD.dataset.id=x.id;
@@ -488,52 +668,184 @@ function actualizarResumenDia(){
 }
 
 function initActividadesExtras(){
-  poblarSelectUsuariosMulti(['personal-usuario','resp-usuario','esp-usuario']);
-  poblarSelectModulos(['resp-modulo','esp-modulo']);
+  poblarSelectUsuariosMulti(['resp-usuario','esp-usuario']);
+  poblarSelectModulos(['esp-modulo']);
+  renderResponsModulos();
+  actualizarPuestosSelect();
 
   // Personal
   const fP = document.getElementById('form-personal');
+  const movBtns = document.getElementById('personal-movimiento-btns');
+  const movInput = document.getElementById('personal-movimiento');
+  const estadoCivilSel = document.getElementById('personal-estado-civil');
+  const solteroWrap = document.getElementById('personal-soltero');
+  const parejaWrap = document.getElementById('personal-pareja');
+
+  const toggleEstadoCivil = ()=>{
+    const estado = (estadoCivilSel && estadoCivilSel.value) ? estadoCivilSel.value : '';
+    if (solteroWrap) solteroWrap.style.display = (estado === 'Soltero') ? '' : 'none';
+    if (parejaWrap) parejaWrap.style.display = (estado === 'Casado' || estado === 'Concubinato') ? '' : 'none';
+  };
+  if (estadoCivilSel) estadoCivilSel.addEventListener('change', toggleEstadoCivil);
+  toggleEstadoCivil();
+
+  const setMovimiento = (mov)=>{
+    if (movInput) movInput.value = mov;
+    if (!movBtns) return;
+    movBtns.querySelectorAll('button').forEach(btn=>{
+      btn.classList.toggle('activo', btn.dataset.mov === mov);
+      btn.classList.toggle('btn-terciario', btn.dataset.mov === mov);
+      btn.classList.toggle('btn-secundario', btn.dataset.mov !== mov);
+    });
+  };
+  if (movBtns){
+    movBtns.addEventListener('click', (ev)=>{
+      const btn = ev.target.closest('button');
+      if (!btn || !btn.dataset.mov) return;
+      setMovimiento(btn.dataset.mov);
+    });
+  }
+  setMovimiento((movInput && movInput.value) ? movInput.value : 'Alta');
+
+  const btnAddHijo = document.getElementById('btn-personal-add-hijo');
+  if (btnAddHijo) btnAddHijo.addEventListener('click', ()=> agregarHijoUI());
+
+  const btnAddPuesto = document.getElementById('btn-personal-puesto-add');
+  if (btnAddPuesto){
+    btnAddPuesto.addEventListener('click', ()=>{
+      const input = document.getElementById('personal-puesto-nuevo');
+      const nuevo = (input && input.value) ? input.value.trim() : '';
+      if (!nuevo){ alert('Escribe el nuevo puesto.'); return; }
+      const actuales = puestosDisponibles();
+      if (!actuales.includes(nuevo)){
+        const extra = getPuestosPersonal();
+        extra.push(nuevo);
+        setPuestosPersonal(extra);
+      }
+      actualizarPuestosSelect(nuevo);
+      if (input) input.value = '';
+    });
+  }
+
   if (fP){
     fP.addEventListener('submit', (ev)=>{
       ev.preventDefault();
-      const usuario = (document.getElementById('personal-usuario').value||'').trim();
-      if (!usuario){ alert('Selecciona un trabajador.'); return; }
-      const identificacion = (document.getElementById('personal-id').value||'').trim();
+      const nombre = (document.getElementById('personal-nombre').value||'').trim();
+      if (!nombre){ alert('Ingresa el nombre del trabajador.'); return; }
+      const recId = (document.getElementById('personal-reg-id').value||'').trim();
+      const movimiento = (movInput && movInput.value) ? movInput.value : 'Alta';
+      const numeroTrabajador = (document.getElementById('personal-numero').value||'').trim();
+      const celular = (document.getElementById('personal-celular').value||'').trim();
+      const domicilio = (document.getElementById('personal-domicilio').value||'').trim();
+      const sexo = (document.getElementById('personal-sexo').value||'').trim();
+      const fechaNacimiento = (document.getElementById('personal-fecha-nac').value||'').trim();
+      const estadoCivil = (document.getElementById('personal-estado-civil').value||'').trim();
+      const padreNombre = (document.getElementById('personal-padre').value||'').trim();
+      const madreNombre = (document.getElementById('personal-madre').value||'').trim();
+      const parejaNombre = (document.getElementById('personal-pareja-nombre').value||'').trim();
+      const parejaNacimiento = (document.getElementById('personal-pareja-nac').value||'').trim();
+      const escuela = (document.getElementById('personal-escuela').value||'').trim();
+      const escuelaUbicacion = (document.getElementById('personal-escuela-ubicacion').value||'').trim();
       const puesto = (document.getElementById('personal-puesto').value||'').trim();
+      const existentes = recId ? getPersonalRancho().find(x=>x.id===recId) : null;
+      const ineFrente = (document.getElementById('personal-ine-frente').files[0] || {}).name || (existentes ? (existentes.ineFrente || '') : '');
+      const ineReverso = (document.getElementById('personal-ine-reverso').files[0] || {}).name || (existentes ? (existentes.ineReverso || '') : '');
+      const hijos = Array.from(document.querySelectorAll('#personal-hijos .hijo-row')).map(row=>{
+        const nombreH = (row.querySelector('[data-field="nombre"]').value||'').trim();
+        const sexoH = (row.querySelector('[data-field="sexo"]').value||'').trim();
+        const fechaH = (row.querySelector('[data-field="fecha"]').value||'').trim();
+        if (!nombreH && !sexoH && !fechaH) return null;
+        return {nombre: nombreH, sexo: sexoH, fecha: fechaH};
+      }).filter(Boolean);
+
+      const rec = {
+        id: recId || `per_${Date.now()}_${Math.random().toString(16).slice(2)}`,
+        movimiento,
+        nombre,
+        numeroTrabajador,
+        celular,
+        domicilio,
+        sexo,
+        fechaNacimiento,
+        estadoCivil,
+        padreNombre,
+        madreNombre,
+        parejaNombre,
+        parejaNacimiento,
+        hijos,
+        escuela,
+        escuelaUbicacion,
+        ineFrente,
+        ineReverso,
+        puesto,
+        updatedAt: new Date().toISOString()
+      };
 
       const p = getPersonalRancho();
-      const i = p.findIndex(x=>x.usuario===usuario);
-      const rec = {usuario, identificacion, puesto, updatedAt: new Date().toISOString()};
+      const i = p.findIndex(x=>x.id===rec.id);
       if (i>=0) p[i]=rec; else p.push(rec);
       setPersonalRancho(p);
       renderPersonalUI();
       actualizarResumenDia();
+      poblarSelectUsuariosMulti(['resp-usuario','esp-usuario']);
+      poblarSelectUsuariosAsignacion();
       fP.reset();
-      poblarSelectUsuariosMulti(['personal-usuario','resp-usuario','esp-usuario']);
+      document.getElementById('personal-reg-id').value = '';
+      setMovimiento('Alta');
+      limpiarHijosUI();
+      actualizarPuestosSelect();
+      toggleEstadoCivil();
       alert('Personal guardado.');
     });
     const btnL = document.getElementById('btn-personal-limpiar');
-    if (btnL) btnL.addEventListener('click', ()=> fP.reset());
+    if (btnL) btnL.addEventListener('click', ()=>{
+      fP.reset();
+      document.getElementById('personal-reg-id').value = '';
+      setMovimiento('Alta');
+      limpiarHijosUI();
+      actualizarPuestosSelect();
+      toggleEstadoCivil();
+    });
   }
   const lp = document.getElementById('lista-personal');
   if (lp){
     lp.addEventListener('click', (ev)=>{
       const btn = ev.target.closest('button');
       if (!btn) return;
-      const usuario = btn.dataset.usuario;
+      const id = btn.dataset.id;
       const action = btn.dataset.action;
-      if (!usuario) return;
+      if (!id) return;
       if (action==='del'){
         if (!confirm('¿Borrar este trabajador del Personal?')) return;
-        const p = getPersonalRancho().filter(x=>x.usuario!==usuario);
+        const p = getPersonalRancho().filter(x=>x.id!==id);
         setPersonalRancho(p);
         renderPersonalUI();
+        poblarSelectUsuariosMulti(['resp-usuario','esp-usuario']);
+        poblarSelectUsuariosAsignacion();
       } else if (action==='edit'){
-        const rec = getPersonalRancho().find(x=>x.usuario===usuario);
+        const rec = getPersonalRancho().find(x=>x.id===id);
         if (!rec) return;
-        document.getElementById('personal-usuario').value = rec.usuario;
-        document.getElementById('personal-id').value = rec.identificacion||'';
-        document.getElementById('personal-puesto').value = rec.puesto||'';
+        document.getElementById('personal-reg-id').value = rec.id;
+        document.getElementById('personal-nombre').value = rec.nombre || rec.usuario || '';
+        document.getElementById('personal-numero').value = rec.numeroTrabajador || '';
+        document.getElementById('personal-celular').value = rec.celular || '';
+        document.getElementById('personal-domicilio').value = rec.domicilio || '';
+        document.getElementById('personal-sexo').value = rec.sexo || '';
+        document.getElementById('personal-fecha-nac').value = rec.fechaNacimiento || '';
+        document.getElementById('personal-estado-civil').value = rec.estadoCivil || '';
+        document.getElementById('personal-padre').value = rec.padreNombre || '';
+        document.getElementById('personal-madre').value = rec.madreNombre || '';
+        document.getElementById('personal-pareja-nombre').value = rec.parejaNombre || '';
+        document.getElementById('personal-pareja-nac').value = rec.parejaNacimiento || '';
+        document.getElementById('personal-escuela').value = rec.escuela || '';
+        document.getElementById('personal-escuela-ubicacion').value = rec.escuelaUbicacion || '';
+        actualizarPuestosSelect(rec.puesto || '');
+        limpiarHijosUI();
+        if (rec.hijos && rec.hijos.length){
+          rec.hijos.forEach(h=> agregarHijoUI(h));
+        }
+        setMovimiento(rec.movimiento || 'Alta');
+        toggleEstadoCivil();
       }
     });
   }
@@ -544,21 +856,21 @@ function initActividadesExtras(){
     fR.addEventListener('submit', (ev)=>{
       ev.preventDefault();
       const usuario = (document.getElementById('resp-usuario').value||'').trim();
-      const moduloId = (document.getElementById('resp-modulo').value||'').trim();
       const periodicidad = (document.getElementById('resp-periodicidad').value||'').trim();
       const descripcion = (document.getElementById('resp-desc').value||'').trim();
-      if (!usuario || !moduloId || !descripcion){
-        alert('Completa trabajador, módulo y descripción.');
+      const checks = Array.from(document.querySelectorAll('#resp-modulos input[type="checkbox"]:checked'));
+      const modulosIds = checks.map(c=>c.value);
+      const modulosNombres = checks.map(c=>c.dataset.name || c.value);
+      if (!usuario || !modulosIds.length || !descripcion){
+        alert('Completa trabajador, módulos y descripción.');
         return;
       }
-      const mods = listaModulosParaRoles();
-      const mod = mods.find(m=>m.id===moduloId);
       const r = getRespons();
       r.push({
         id: 'resp_' + Date.now() + '_' + Math.random().toString(16).slice(2),
         usuario,
-        moduloId,
-        moduloNombre: mod ? mod.name : moduloId,
+        modulosIds,
+        modulosNombres,
         periodicidad,
         descripcion,
         createdAt: new Date().toISOString()
@@ -567,10 +879,14 @@ function initActividadesExtras(){
       renderResponsUI();
       actualizarResumenDia();
       fR.reset();
+      renderResponsModulos();
       alert('Responsabilidad guardada.');
     });
     const btn = document.getElementById('btn-resp-limpiar');
-    if (btn) btn.addEventListener('click', ()=> fR.reset());
+    if (btn) btn.addEventListener('click', ()=>{
+      fR.reset();
+      renderResponsModulos();
+    });
   }
   const lr = document.getElementById('lista-responsabilidades');
   if (lr){
