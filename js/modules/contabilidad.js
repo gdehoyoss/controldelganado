@@ -74,7 +74,7 @@ const CONTA_ACCOUNTS = [
 
 const CONTA_CONTRA_CUENTAS = {
   Deudor: { value: 'Caja y Banco (Deudor)', label: 'Caja y Banco (Deudor)' },
-  Acreedor: { value: 'Caja y Banco (Acredor)', label: 'Caja y Banco (Acredor)' }
+  Acreedor: { value: 'Caja y Banco (Acreedor)', label: 'Caja y Banco (Acreedor)' }
 };
 
 function fmtMXN(n){
