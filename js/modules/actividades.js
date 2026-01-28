@@ -312,8 +312,30 @@ function poblarSelectUsuariosAsignacion(){
 }
 
 function getPersonasDisponibles(){
-  const usuarios = getUsuarios().filter(u=> (u.activo==='Activo' || u.activo==='Sí')).map(u=>u.nombre);
-  const personal = getPersonalRancho().map(p=>p.nombre || p.usuario).filter(Boolean);
+  const toArray = (val)=>{
+    if (Array.isArray(val)) return val;
+    if (val && typeof val === 'object') return Object.values(val);
+    return [];
+  };
+  let usuariosRaw = [];
+  try {
+    usuariosRaw = (typeof getUsuarios === 'function') ? getUsuarios() : getData('pecuario_usuarios');
+  } catch (e) {
+    usuariosRaw = getData('pecuario_usuarios');
+  }
+  const usuarios = toArray(usuariosRaw)
+    .filter(u=> !u || u.activo === undefined || u.activo === 'Activo' || u.activo === 'Sí')
+    .map(u=>u && u.nombre)
+    .filter(Boolean);
+
+  let personalRaw = [];
+  try {
+    personalRaw = (typeof getPersonalRancho === 'function') ? getPersonalRancho() : getData('pecuario_personal_rancho');
+  } catch (e) {
+    personalRaw = getData('pecuario_personal_rancho');
+  }
+  const personal = toArray(personalRaw).map(p=> (p && (p.nombre || p.usuario)) || '').filter(Boolean);
+
   return Array.from(new Set([...usuarios, ...personal].map(n=>String(n||'').trim()).filter(Boolean)));
 }
 
@@ -434,7 +456,12 @@ const PERSONAL_KEY = 'pecuario_personal_rancho';
 const RESPONS_KEY = 'pecuario_responsabilidades';
 const ESPECIALES_KEY = 'pecuario_tareas_especiales';
 
-function getPersonalRancho(){ return getData(PERSONAL_KEY) || []; }
+function getPersonalRancho(){
+  const raw = getData(PERSONAL_KEY);
+  if (Array.isArray(raw)) return raw;
+  if (raw && typeof raw === 'object') return Object.values(raw);
+  return [];
+}
 function setPersonalRancho(v){ setData(PERSONAL_KEY, v||[]); }
 
 function actualizarPuestosSelect(selected){
