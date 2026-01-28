@@ -750,8 +750,11 @@
     });
   }
 
+  const PERSONAL_KEY = 'pecuario_personal_rancho';
+
   function getUsuarios(){ return normalizeUsuarios(getData('pecuario_usuarios') || []); }
   function setUsuarios(u){ setData('pecuario_usuarios', normalizeUsuarios(u)); }
+  function getPersonalRancho(){ return getData(PERSONAL_KEY) || []; }
 
   function renderPermisosCheckboxes(){
     const cont = document.getElementById('chkPermisos');
@@ -777,9 +780,42 @@
     usuarios.slice().reverse().forEach(u=>{
       const d = document.createElement('div');
       const perms = (u.permisos||[]).join(', ');
-      d.textContent = `${u.nombre} | ${u.rol} | Estado: ${u.activo} | Permisos: ${perms}`;
+      const idTxt = u.personalId ? ` | ID: ${u.personalId}` : '';
+      const puestoTxt = u.puesto ? ` | Puesto: ${u.puesto}` : '';
+      const estadoTxt = (u.activo === 'Activo') ? 'Alta autorizada' : 'Baja autorizada';
+      d.textContent = `${u.nombre} | ${u.rol}${idTxt}${puestoTxt} | Estado: ${estadoTxt} | Permisos: ${perms}`;
       cont.appendChild(d);
     });
+  }
+
+  function renderPersonalUsuariosSelect(){
+    const sel = document.getElementById('usuario-personal');
+    const info = document.getElementById('usuarioPersonalInfo');
+    if (!sel) return;
+    const personal = getPersonalRancho();
+    sel.innerHTML = '<option value="">Selecciona…</option>';
+    personal.forEach(p=>{
+      const o = document.createElement('option');
+      o.value = p.usuario;
+      o.textContent = p.usuario;
+      sel.appendChild(o);
+    });
+    if (!personal.length && info){
+      info.textContent = 'No hay personal registrado. Captúralo en Responsabilidades y tareas > Personal del Rancho.';
+    }
+    const actualizarInfo = ()=>{
+      if (!info) return;
+      const rec = personal.find(p=>p.usuario===sel.value);
+      if (!rec){
+        info.textContent = personal.length
+          ? 'ID: — | Puesto: —'
+          : 'No hay personal registrado. Captúralo en Responsabilidades y tareas > Personal del Rancho.';
+        return;
+      }
+      info.textContent = `ID: ${rec.identificacion||'—'} | Puesto: ${rec.puesto||'—'}`;
+    };
+    sel.onchange = actualizarInfo;
+    actualizarInfo();
   }
 
   function asegurarUsuarioDefault(){
@@ -845,6 +881,7 @@
     asegurarUsuarioDefault();
     renderPermisosCheckboxes();
     renderListaUsuarios();
+    renderPersonalUsuariosSelect();
     llenarUsuariosHeader();
     aplicarPermisos();
 
@@ -872,6 +909,14 @@
       const datos = new FormData(form);
       const obj = {};
       datos.forEach((v,k)=>obj[k]=String(v||''));
+      const personal = getPersonalRancho();
+      const rec = personal.find(p=>p.usuario===obj.nombre);
+      if (!rec){
+        alert('Selecciona un trabajador capturado en Personal del Rancho.');
+        return;
+      }
+      obj.personalId = rec.identificacion || '';
+      obj.puesto = rec.puesto || '';
       // Normalizar rol (con 'Otro' editable)
       const rolSel = (obj.rol||'').trim();
       const rolOtro = (obj.rolOtro||'').trim();
@@ -892,12 +937,18 @@
       });
       obj.permisos = perms;
       const usuarios = getUsuarios();
-      usuarios.push(obj);
+      const idx = usuarios.findIndex(u=>u.nombre===obj.nombre);
+      if (idx >= 0){
+        usuarios[idx] = Object.assign({}, usuarios[idx], obj);
+      } else {
+        usuarios.push(obj);
+      }
       setUsuarios(usuarios);
       pintarToast('Usuario guardado');
       form.reset();
       renderPermisosCheckboxes();
       renderListaUsuarios();
+      renderPersonalUsuariosSelect();
       llenarUsuariosHeader();
       aplicarPermisos();
       if (typeof poblarSelectUsuariosAsignacion === 'function') poblarSelectUsuariosAsignacion();

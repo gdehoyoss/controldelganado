@@ -1888,13 +1888,14 @@
 
     <hr style="margin:18px 0; border:none; border-top:1px solid #e5e7eb;">
     <h3>Usuarios y accesos</h3>
-    <p class="nota">Crea usuarios (vaqueros, supervisores, auxiliares) y asigna qué módulos pueden ver.</p>
+    <p class="nota">Uso exclusivo del Propietario y/o Gerente. Aquí se autorizan las altas y bajas del personal capturado en el apartado de Personal del Rancho, así como los módulos a los que cada empleado puede acceder.</p>
 
     <form id="form-usuarios">
       <div class="fila-tres">
         <div>
-          <label>Nombre</label>
-          <input name="nombre" required />
+          <label>Personal del rancho</label>
+          <select name="nombre" id="usuario-personal" required></select>
+          <div class="nota" id="usuarioPersonalInfo">ID: — | Puesto: —</div>
         </div>
         <div>
           <label>Rol</label>
@@ -1913,10 +1914,10 @@
             </div>
         </div>
         <div>
-          <label>Estado</label>
+          <label>Estado (Alta/Baja)</label>
           <select name="activo">
-            <option>Activo</option>
-            <option>Inactivo</option>
+            <option value="Activo">Alta autorizada</option>
+            <option value="Inactivo">Baja autorizada</option>
           </select>
         </div>
       </div>
