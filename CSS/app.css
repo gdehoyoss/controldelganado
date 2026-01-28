@@ -192,6 +192,13 @@ header small {
     }
     .tarjeta strong { display: block; margin-bottom: 4px; }
 
+    #mod-reportes tr[data-rep] {
+      cursor: pointer;
+    }
+    #mod-reportes tr[data-rep]:hover {
+      background: #f8fafc;
+    }
+
     
     /* Pronóstico 7 días (Panel) */
     .wx-wrap{ margin-top: 6px; }

@@ -1266,13 +1266,17 @@ function getFiltered(){
   }
 
   function setupReportesModal(){
-    // click rows
-    document.querySelectorAll('#mod-reportes tr[data-rep]').forEach(tr=>{
-      tr.addEventListener('click', ()=>{
+    // click rows (delegated for estabilidad)
+    const reportesTable = document.querySelector('#mod-reportes table');
+    if (reportesTable && !reportesTable.dataset.repBound){
+      reportesTable.addEventListener('click', (event)=>{
+        const tr = event.target.closest('tr[data-rep]');
+        if (!tr || !reportesTable.contains(tr)) return;
         const k = tr.getAttribute('data-rep');
         if (k) openReporteModal(k);
       });
-    });
+      reportesTable.dataset.repBound = 'true';
+    }
 
     const btnCerrar = document.getElementById('btnRepCerrar');
     if (btnCerrar) btnCerrar.addEventListener('click', closeReporteModal);

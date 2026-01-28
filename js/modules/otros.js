@@ -727,7 +727,12 @@
 
   function normalizeUsuarios(arr){
     const baseRoles = new Set(["Propietario","Gerente","Supervisor","Vaquero","Auxiliar","Otro"]);
-    return (arr||[]).map((u)=>{
+    const list = Array.isArray(arr)
+      ? arr
+      : (arr && typeof arr === 'object')
+        ? Object.values(arr)
+        : [];
+    return list.map((u)=>{
       const uu = Object.assign({}, u||{});
       let r = String(uu.rol||'').trim();
       // Migración: "Consulta" se trata como "Otro"
