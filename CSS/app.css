@@ -137,6 +137,26 @@ header small {
     .btn-secundario { background: #95a5a6; color: #fff; }
     .btn-alerta     { background: #c0392b; color: #fff; }
     .btn-terciario  { background: #8b4513; color: #fff; }
+    .toggle-group button.activo {
+      box-shadow: inset 0 0 0 2px #4b3b2d;
+    }
+
+    .check-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 6px 12px;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 8px;
+    }
+    .check-grid label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      margin: 0;
+    }
 
     .nota {
       font-size: 11px;
