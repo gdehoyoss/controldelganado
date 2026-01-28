@@ -817,24 +817,42 @@ const renderChecks = ()=>{
     maquinaria: {
       title: "Maquinaria y equipo",
       keys: ["pecuario_maquinaria"],
+      normalize: (dataByKey) => {
+        const base = dataByKey["pecuario_maquinaria"] || [];
+        return (base || []).map((r) => {
+          const fechaRegistro = r._fechaRegistro ? String(r._fechaRegistro).slice(0, 10) : '';
+          return {
+            ...r,
+            fechaRegistro
+          };
+        }).sort((a, b) => {
+          const ta = String(a.tipo || '').localeCompare(String(b.tipo || ''), 'es');
+          if (ta !== 0) return ta;
+          return String(a.fechaRegistro || '').localeCompare(String(b.fechaRegistro || ''), 'es');
+        });
+      },
       filters: [
         {label:"Tipo de activo", field:"tipo", values: ()=> ["Maquinaria","Equipo","Herramienta","Instalación"]},
         {label:"Cantidad", field:"cantidad"},
         {label:"Vida útil", field:"vida"},
         {label:"Descripción", field:"desc", type:"text"},
+        {label:"Valor del activo", field:"valor"},
         {label:"Fecha de adquisición", field:"fechaAdq"},
-        {label:"Último mantenimiento", field:"fechaMant"}
+        {label:"Último mantenimiento", field:"fechaMant"},
+        {label:"Fecha de registro", field:"fechaRegistro"}
       ],
       columns: [
         {label:"Tipo", field:"tipo"},
         {label:"Cantidad", field:"cantidad"},
         {label:"Vida útil", field:"vida"},
         {label:"Descripción", field:"desc"},
+        {label:"Valor", field:"valor"},
         {label:"Marca/Modelo", field:"marcaModelo"},
         {label:"Fecha adq.", field:"fechaAdq"},
         {label:"Último mant.", field:"fechaMant"},
         {label:"Costo mant.", field:"costoMant"},
-        {label:"Detalle mant.", field:"detMant"}
+        {label:"Detalle mant.", field:"detMant"},
+        {label:"Fecha reg.", field:"fechaRegistro"}
       ]
     },
 
