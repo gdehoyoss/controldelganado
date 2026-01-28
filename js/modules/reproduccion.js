@@ -31,10 +31,23 @@
     });
     return best;
   }
+  function numToCommonProp(n, den = 16){
+    if (!den) return '0/1';
+    const num = Math.max(0, Math.round(n * den));
+    return `${num}/${den}`;
+  }
+  function denFromProp(prop){
+    const t = String(prop||'').trim();
+    if (!t || !t.includes('/')) return 1;
+    const parts = t.split('/');
+    const den = Number(parts[1]);
+    return Number.isFinite(den) && den > 0 ? den : 1;
+  }
   function ensurePropSelect(afterEl, name){
     if (!afterEl || afterEl.parentElement?.querySelector('select[data-prop="'+name+'"]')) return null;
     const sel = document.createElement('select');
     sel.dataset.prop = name;
+    sel.name = name;
     sel.className = 'selProp';
     sel.style.marginTop = '6px';
     sel.innerHTML = '<option value="">Proporción…</option>' + PROPS.map(p=>`<option>${p}</option>`).join('');
@@ -185,9 +198,14 @@
     const inpV = form.querySelector('input[name="vientre"]');
     const inpT = form.querySelector('input[name="toro"]');
     function fillFromArete(which){
-      const a = which==='H' ? (inpV?.value||'').trim() : (inpT?.value||'').trim();
-      const cab = getCabeza(a);
+      const input = which==='H' ? inpV : inpT;
+      const a = (input?.value||'').trim();
+      const res = (typeof findCabezaPorArete === 'function') ? findCabezaPorArete(a) : null;
+      const cab = res ? res.cabeza : getCabeza(a);
       if (!cab) return;
+      if (res && res.matchedBy === 'rancho' && input && cab.areteOficial && input.value !== cab.areteOficial){
+        input.value = cab.areteOficial;
+      }
       if (which==='H'){
         if (razaH) razaH.value = cab.razaPre || '';
         if (cruzaH1) cruzaH1.value = cab.cruza1 || '';
@@ -227,7 +245,7 @@
     };
     const takeProp = (name) => {
       // selects inyectados por initReproProporciones: pHpre, pH1, pH2, pMpre, pM1, pM2
-      const el = form.querySelector(`[name="${name}"]`);
+      const el = form.querySelector(`[name="${name}"]`) || form.querySelector(`[data-prop="${name}"]`);
       return el ? (el.value||'').trim() : '';
     };
 
@@ -290,12 +308,14 @@
     addHalf(H); addHalf(M);
 
     const cTop = top3(C);
-    const parts = cTop.map(([k,v])=> `${k} ${numToBestProp(v)}`);
+    const dens = cTop.map(([,v])=> denFromProp(numToBestProp(v)));
+    const commonDen = Math.max(1, ...dens);
+    const parts = cTop.map(([k,v])=> `${k} ${numToCommonProp(v, commonDen)}`);
     // añade "Otras" si quedó residual y no entra en top3
     const sumTop = cTop.reduce((a,[,v])=>a+v,0);
     if (sumTop < 0.999){
       const other = 1 - sumTop;
-      if (other > 0.02) parts.push(`Otras ${numToBestProp(other)}`);
+      if (other > 0.02) parts.push(`Otras ${numToCommonProp(other, commonDen)}`);
     }
 
     // salida principal
@@ -327,12 +347,177 @@
     });
   }
 
+  const btnCalcularDestete = document.getElementById('btnCalcularDestete');
+  if (btnCalcularDestete && formRepro) {
+    btnCalcularDestete.addEventListener('click', ()=> {
+      const fe = formRepro.fechaParto.value;
+      if (!fe) return alert('Primero captura la fecha de parto.');
+      const d = new Date(fe + 'T00:00:00');
+      d.setDate(d.getDate() + 210);
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth()+1).padStart(2,'0');
+      const dd = String(d.getDate()).padStart(2,'0');
+      formRepro.fechaDestete.value = `${yyyy}-${mm}-${dd}`;
+    });
+  }
+
+  function syncCabezaFromRepro(areteInput, data){
+    const a = String(areteInput||'').trim();
+    if (!a) return;
+    const res = (typeof findCabezaPorArete === 'function') ? findCabezaPorArete(a) : null;
+    const cab = res ? res.cabeza : getCabeza(a);
+    const areteOficial = cab ? cab.areteOficial : a;
+    const rec = {
+      areteOficial,
+      areteRancho: cab ? (cab.areteRancho||'') : '',
+      inventarioTipo: cab ? (cab.inventarioTipo||'') : 'Ganado Reproducción',
+      grupo: cab ? (cab.grupo||'') : 'En espera',
+      sexo: data.sexo || (cab ? cab.sexo : ''),
+      razaPre: data.razaPre || (cab ? cab.razaPre : ''),
+      cruza1: data.cruza1 || (cab ? cab.cruza1 : ''),
+      cruza2: data.cruza2 || (cab ? cab.cruza2 : ''),
+      fechaNac: cab ? (cab.fechaNac||'') : '',
+      obs: cab ? (cab.obs||'') : ''
+    };
+    upsertCabeza(rec, {mode:'upsert', reason:'Actualización desde Reproducción'});
+    if (typeof renderCabezasUI === 'function') renderCabezasUI();
+  }
+
   manejarFormulario(
     'form-repro',
     'pecuario_repro',
     'lista-repro',
-    (r) => `Hembra ${r.vientre || '-'} (${r.razaH || '-'}) | Toro: ${r.toro || '-'} (${r.razaM || '-'}) | Empadre: ${r.fechaEmp || '-'} | Prob: ${r.fechaProb || '-'} | Parto: ${r.fechaParto || '-'} | Cría: ${r.sexoCria || '-'} ${r.pesoCria || ''} kg`,
-    null
+    (r) => `Madre ${r.vientre || '-'} (${r.razaH || '-'}) | Padre: ${r.toro || '-'} (${r.razaM || '-'}) | Empadre: ${r.fechaEmp || '-'} | Prob: ${r.fechaProb || '-'} | Parto: ${r.fechaParto || '-'} | Destete: ${r.fechaDestete || '-'} | Cría: ${r.sexoCria || '-'} ${r.pesoCria || ''} kg`,
+    (r) => {
+      syncCabezaFromRepro(r.vientre, { sexo: 'Hembra', razaPre: r.razaH, cruza1: r.cruzaH1, cruza2: r.cruzaH2 });
+      syncCabezaFromRepro(r.toro, { sexo: 'Macho', razaPre: r.razaM, cruza1: r.cruzaM1, cruza2: r.cruzaM2 });
+    }
   );
+
+  // ======================
+  // Reproducción: Altas/Bajas de crías
+  // ======================
+  const CRIAS_KEY = 'pecuario_repro_crias';
+  const CRIAS_BAJAS_KEY = 'pecuario_repro_crias_bajas';
+
+  function fmtCriaAltaLinea(r){
+    const raz = [r.razaPre, r.cruza1, r.cruza2].filter(Boolean).join(' / ') || '-';
+    return `Arete ${r.areteOficial || '-'} | Inventario: ${r.inventarioTipo || '-'} | Sexo: ${r.sexo || '-'} | Raza: ${raz} | Nac: ${r.fechaNac || '-'} | Grupo: ${r.grupo || '-'}`;
+  }
+  function fmtCriaBajaLinea(r){
+    return `Arete ${r.areteOficial || '-'} | Baja: ${r.fecha || '-'} | Motivo: ${r.causa || '-'}`;
+  }
+
+  function initCriaAlta(){
+    const form = document.getElementById('form-repro-cria-alta');
+    if (!form) return;
+
+    const btnLimpiar = document.getElementById('btnReproCriaAltaLimpiar');
+    if (btnLimpiar) btnLimpiar.addEventListener('click', ()=> form.reset());
+
+    const btnCopiar = document.getElementById('btnCopiarCruzaCria');
+    if (btnCopiar) btnCopiar.addEventListener('click', ()=>{
+      const criaBox = document.getElementById('criaBoxProps');
+      if (!criaBox) return;
+      const getVal = (sel) => (sel ? (sel.value||'').trim() : '');
+      const pre = getVal(criaBox.querySelector('select[name="razaC"]'));
+      const c1 = getVal(criaBox.querySelector('select[name="cruzaC1"]'));
+      const c2 = getVal(criaBox.querySelector('select[name="cruzaC2"]'));
+      const selPre = form.querySelector('[name="razaPre"]'); if (selPre) selPre.value = pre;
+      const selC1 = form.querySelector('[name="cruza1"]'); if (selC1) selC1.value = c1;
+      const selC2 = form.querySelector('[name="cruza2"]'); if (selC2) selC2.value = c2;
+    });
+
+    form.addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const fd = new FormData(form);
+      const obj = {};
+      fd.forEach((v,k)=> obj[k]=v);
+      const arete = String(obj.areteOficial||'').trim();
+      if (!arete) return alert('Arete oficial requerido.');
+      if (!obj.inventarioTipo) return alert('Selecciona el tipo de inventario.');
+      if (!obj.grupo) return alert('Selecciona el grupo.');
+
+      const res = upsertCabeza(obj, {mode:'upsert', reason:'Alta cría (Reproducción)'});
+      if (!res.ok){
+        alert(res.msg||'No se pudo guardar');
+        return;
+      }
+
+      const lista = getData(CRIAS_KEY);
+      obj._fechaRegistro = new Date().toISOString();
+      lista.push(obj);
+      setData(CRIAS_KEY, lista);
+      pintarLista(CRIAS_KEY, 'lista-repro-crias', fmtCriaAltaLinea);
+      if (typeof renderCabezasUI === 'function') renderCabezasUI();
+      actualizarPanel();
+      actualizarReportes();
+      form.reset();
+      alert('Alta de cría guardada.');
+    });
+
+    pintarLista(CRIAS_KEY, 'lista-repro-crias', fmtCriaAltaLinea);
+  }
+
+  function initCriaBaja(){
+    const form = document.getElementById('form-repro-cria-baja');
+    if (!form) return;
+    const inpArete = document.getElementById('repro-baja-arete');
+    const inpFecha = document.getElementById('repro-baja-fecha');
+    if (inpFecha) inpFecha.value = new Date().toISOString().slice(0,10);
+
+    function llenarDetalle(){
+      const a = (inpArete?.value||'').trim();
+      const cab = getCabeza(a);
+      document.getElementById('repro-baja-grupo').value = cab ? (cab.grupo||'') : '';
+      document.getElementById('repro-baja-sexo').value = cab ? (cab.sexo||'') : '';
+      const raz = cab ? ([cab.razaPre, cab.cruza1, cab.cruza2].filter(Boolean).join(' / ')) : '';
+      document.getElementById('repro-baja-raza').value = raz || '';
+    }
+    if (inpArete) inpArete.addEventListener('change', llenarDetalle);
+
+    const btnLim = document.getElementById('btnReproCriaBajaLimpiar');
+    if (btnLim) btnLim.addEventListener('click', ()=>{
+      form.reset();
+      if (inpFecha) inpFecha.value = new Date().toISOString().slice(0,10);
+      ['repro-baja-grupo','repro-baja-sexo','repro-baja-raza'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+    });
+
+    form.addEventListener('submit', (ev)=>{
+      ev.preventDefault();
+      const a = (inpArete?.value||'').trim();
+      const causa = (document.getElementById('repro-baja-causa').value||'').trim();
+      const fecha = (document.getElementById('repro-baja-fecha').value||'').trim() || new Date().toISOString().slice(0,10);
+      const obs = (document.getElementById('repro-baja-obs').value||'').trim();
+
+      const cab = getCabeza(a);
+      if (!cab || cab.status === 'Baja'){
+        alert('Ese arete no existe en inventario activo.');
+        return;
+      }
+      if (!causa){
+        alert('Selecciona la causa.');
+        return;
+      }
+
+      moverAnimalABajas(a, { fecha, motivo: causa, obs });
+      const lista = getData(CRIAS_BAJAS_KEY);
+      lista.push({ areteOficial: a, causa, fecha, obs, _fechaRegistro: new Date().toISOString() });
+      setData(CRIAS_BAJAS_KEY, lista);
+      pintarLista(CRIAS_BAJAS_KEY, 'lista-repro-crias-bajas', fmtCriaBajaLinea);
+      if (typeof renderCabezasUI === 'function') renderCabezasUI();
+      actualizarPanel();
+      actualizarReportes();
+      alert('Baja de cría guardada.');
+      form.reset();
+      if (inpFecha) inpFecha.value = new Date().toISOString().slice(0,10);
+      ['repro-baja-grupo','repro-baja-sexo','repro-baja-raza'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+    });
+
+    pintarLista(CRIAS_BAJAS_KEY, 'lista-repro-crias-bajas', fmtCriaBajaLinea);
+  }
+
+  initCriaAlta();
+  initCriaBaja();
 
   
