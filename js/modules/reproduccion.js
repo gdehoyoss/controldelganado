@@ -31,6 +31,18 @@
     });
     return best;
   }
+  function numToCommonProp(n, den = 16){
+    if (!den) return '0/1';
+    const num = Math.max(0, Math.round(n * den));
+    return `${num}/${den}`;
+  }
+  function denFromProp(prop){
+    const t = String(prop||'').trim();
+    if (!t || !t.includes('/')) return 1;
+    const parts = t.split('/');
+    const den = Number(parts[1]);
+    return Number.isFinite(den) && den > 0 ? den : 1;
+  }
   function ensurePropSelect(afterEl, name){
     if (!afterEl || afterEl.parentElement?.querySelector('select[data-prop="'+name+'"]')) return null;
     const sel = document.createElement('select');
@@ -296,12 +308,14 @@
     addHalf(H); addHalf(M);
 
     const cTop = top3(C);
-    const parts = cTop.map(([k,v])=> `${k} ${numToBestProp(v)}`);
+    const dens = cTop.map(([,v])=> denFromProp(numToBestProp(v)));
+    const commonDen = Math.max(1, ...dens);
+    const parts = cTop.map(([k,v])=> `${k} ${numToCommonProp(v, commonDen)}`);
     // añade "Otras" si quedó residual y no entra en top3
     const sumTop = cTop.reduce((a,[,v])=>a+v,0);
     if (sumTop < 0.999){
       const other = 1 - sumTop;
-      if (other > 0.02) parts.push(`Otras ${numToBestProp(other)}`);
+      if (other > 0.02) parts.push(`Otras ${numToCommonProp(other, commonDen)}`);
     }
 
     // salida principal
