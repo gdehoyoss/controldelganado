@@ -6,6 +6,11 @@ manejarFormulario(
   'form-maquinaria',
   'pecuario_maquinaria',
   'lista-maquinaria',
-  (m) => `${m.tipo || '-'} | ${m.desc || '-'} | Cant: ${m.cantidad || ''} | Últ. mantto: ${m.fechaMant || '-'}`,
+  (m) => {
+    const valor = (m.valor !== undefined && m.valor !== null && String(m.valor).trim() !== '')
+      ? ` | Valor: ${fmtMXN(Number(m.valor) || 0)}`
+      : '';
+    return `${m.tipo || '-'} | ${m.desc || '-'}${valor} | Cant: ${m.cantidad || ''} | Últ. mantto: ${m.fechaMant || '-'}`;
+  },
   null
 );
