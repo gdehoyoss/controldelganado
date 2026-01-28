@@ -1008,7 +1008,14 @@ const renderChecks = ()=>{
   function repGetAllData(keys){
     const out = {};
     (keys||[]).forEach(k=>{
-      out[k] = getData(k) || [];
+      const raw = getData(k);
+      if (Array.isArray(raw)) {
+        out[k] = raw;
+      } else if (raw && typeof raw === 'object') {
+        out[k] = Object.values(raw);
+      } else {
+        out[k] = [];
+      }
     });
     return out;
   }
