@@ -196,21 +196,40 @@
     });
   }
 
+  function refrescarCatalogoSuplementos() {
+    const sel = document.getElementById('selSuplCatalogo');
+    if (!sel) return;
+    const cat = getData('pecuario_suplementos');
+    sel.innerHTML = '<option value="">Selecciona…</option>';
+    cat.forEach(s => {
+      const clave = (s.clave || s.nombre || '').trim();
+      if (!clave) return;
+      const o = document.createElement('option');
+      o.value = clave;
+      o.textContent = `${clave} — ${s.nombre || ''}`;
+      sel.appendChild(o);
+    });
+  }
+
   function pintarSuplementos() {
     const cont = document.getElementById('lista-supl');
     if (!cont) return;
     const lista = getData('pecuario_suplementos');
     cont.innerHTML = '';
     if (!lista.length) {
-      cont.innerHTML = '<div>Sin registros.</div>';
+      cont.innerHTML = '<div>Sin suplementos.</div>';
+      refrescarCatalogoSuplementos();
       return;
     }
     lista.slice().reverse().forEach(s => {
-      const div = document.createElement('div');
-      const cor = s.corralId ? ` | Corral ${s.corralId}` : '';
-      div.textContent = `${s.nombre || '-'}${cor} | Temporada/Clima: ${s.temporada || '-'} | Frec: ${s.frecuencia || '-'}`;
-      cont.appendChild(div);
+      const d = document.createElement('div');
+      const clave = s.clave || s.nombre || '';
+      const uso = s.uso ? ` | Uso: ${s.uso}` : '';
+      d.textContent = `${clave} | ${s.nombre || ''}${uso} | Temporada: ${s.temporada || ''}`;
+      cont.appendChild(d);
     });
+    refrescarCatalogoSuplementos();
+    if (typeof refrescarSuplementosCorrales === 'function') refrescarSuplementosCorrales();
   }
 
   const formSupl = document.getElementById('form-supl');
@@ -586,22 +605,6 @@
     if (btnAdd) btnAdd.addEventListener('click', ()=>addIngredienteRow());
     if (btnClr) btnClr.addEventListener('click', initIngredientesUI);
 
-    // Catálogo -> select
-    function refrescarCatalogo(){
-      const sel = document.getElementById('selSuplCatalogo');
-      if (!sel) return;
-      const cat = getData('pecuario_suplementos');
-      sel.innerHTML = '<option value="">Selecciona…</option>';
-      cat.forEach(s=>{
-        const clave = (s.clave||s.nombre||'').trim();
-        if (!clave) return;
-        const o = document.createElement('option');
-        o.value = clave;
-        o.textContent = `${clave} — ${s.nombre||''}`;
-        sel.appendChild(o);
-      });
-    }
-
     function refrescarCorralesSupl(){
       const selPot = document.getElementById('selPotreroSupl');
       const selCor = document.getElementById('selCorralSupl');
@@ -686,26 +689,8 @@
       });
     }
 
-    // sobre-escribir pintarSuplementos para catálogo
-    window.pintarSuplementos = function(){
-      const cont = document.getElementById('lista-supl');
-      if (!cont) return;
-      const lista = getData('pecuario_suplementos');
-      cont.innerHTML = '';
-      if (!lista.length) { cont.innerHTML = '<div>Sin suplementos.</div>'; refrescarCatalogo(); return; }
-      lista.slice().reverse().forEach(s=>{
-        const d = document.createElement('div');
-        const clave = s.clave || s.nombre || '';
-        const uso = s.uso ? ` | Uso: ${s.uso}` : '';
-        d.textContent = `${clave} | ${s.nombre||''}${uso} | Temporada: ${s.temporada||''}`;
-        cont.appendChild(d);
-      });
-      refrescarCatalogo();
-      if (typeof refrescarSuplementosCorrales === 'function') refrescarSuplementosCorrales();
-    };
-
     // inicial
-    refrescarCatalogo();
+    refrescarCatalogoSuplementos();
     refrescarCorralesSupl();
     refrescarCabezas();
     renderSuministros();
