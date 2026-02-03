@@ -1627,195 +1627,6 @@
     <h2>Responsabilidades y tareas</h2>
     <p>Asigna tareas y da seguimiento. Vaquero/Auxiliar/Otro solo ven lo que se les asigna y pueden marcarlo como completado.</p>
 
-    
-    <div class="tarjeta" style="background:#fff;border:1px solid #e5e7eb;">
-      <h3 style="margin:0 0 8px;">Altas y Bajas de Personal</h3>
-      <p class="nota">Registra la información completa del personal y marca si es Alta o Baja.</p>
-      <div class="acciones toggle-group" id="personal-movimiento-btns" style="margin-bottom:6px;">
-        <button type="button" class="btn-terciario activo" data-mov="Alta">Alta</button>
-        <button type="button" class="btn-secundario" data-mov="Baja">Baja</button>
-      </div>
-      <input type="hidden" id="personal-movimiento" value="Alta" />
-      <input type="hidden" id="personal-reg-id" />
-
-      <form id="form-personal">
-        <div class="fila-tres">
-          <div>
-            <label>Nombre completo</label>
-            <input id="personal-nombre" required />
-          </div>
-          <div>
-            <label>Número de trabajador</label>
-            <input id="personal-numero" placeholder="Ej. 001" />
-          </div>
-          <div>
-            <label>Celular</label>
-            <input id="personal-celular" type="tel" />
-          </div>
-        </div>
-
-        <label>Domicilio</label>
-        <input id="personal-domicilio" />
-
-        <div class="fila-tres">
-          <div>
-            <label>Sexo</label>
-            <select id="personal-sexo">
-              <option value="">Selecciona…</option>
-              <option>Femenino</option>
-              <option>Masculino</option>
-            </select>
-          </div>
-          <div>
-            <label>Fecha de nacimiento</label>
-            <input id="personal-fecha-nac" type="date" />
-          </div>
-          <div>
-            <label>Estado civil</label>
-            <select id="personal-estado-civil">
-              <option value="">Selecciona…</option>
-              <option>Soltero</option>
-              <option>Casado</option>
-              <option>Concubinato</option>
-              <option>Otro</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="fila-tres" id="personal-soltero" style="display:none;">
-          <div>
-            <label>Nombre del padre</label>
-            <input id="personal-padre" />
-          </div>
-          <div>
-            <label>Nombre de la madre</label>
-            <input id="personal-madre" />
-          </div>
-          <div></div>
-        </div>
-
-        <div class="fila-dos" id="personal-pareja" style="display:none;">
-          <div>
-            <label>Nombre de pareja</label>
-            <input id="personal-pareja-nombre" />
-          </div>
-          <div>
-            <label>Fecha de nacimiento de pareja</label>
-            <input id="personal-pareja-nac" type="date" />
-          </div>
-        </div>
-
-        <div class="tarjeta" style="background:#f9fafb;border:1px dashed #e5e7eb; margin-top:8px;">
-          <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
-            <h4 style="margin:0;">Hijos</h4>
-            <button type="button" class="btn-terciario" id="btn-personal-add-hijo">Agregar hijo</button>
-          </div>
-          <div id="personal-hijos" style="margin-top:6px;"></div>
-        </div>
-
-        <div class="fila-tres">
-          <div>
-            <label>Estudios realizados</label>
-            <select id="personal-estudios-grado">
-              <option value="">Selecciona…</option>
-              <option>Primaria</option>
-              <option>Secundaria</option>
-              <option>Técnica</option>
-              <option>Preparatoria</option>
-              <option>Carrera</option>
-              <option>Otros estudios</option>
-            </select>
-          </div>
-          <div>
-            <label>Estado</label>
-            <select id="personal-estudios-estado">
-              <option value="">Selecciona…</option>
-              <option>Terminados</option>
-              <option>Parcial</option>
-            </select>
-          </div>
-          <div>
-            <label>Carrera / Otros estudios</label>
-            <select id="personal-estudios-carrera">
-              <option value="">Selecciona…</option>
-              <option>Veterinaria</option>
-              <option>Zootecnia</option>
-              <option>Agrónomo</option>
-              <option>Ingeniería</option>
-              <option>Administración</option>
-              <option>Otro</option>
-            </select>
-          </div>
-        </div>
-        <div class="fila-dos" id="personal-estudios-otro-wrap" style="display:none;">
-          <div>
-            <label>Especifica carrera u otros estudios</label>
-            <input id="personal-estudios-otro" placeholder="Escribe la carrera u otros estudios" />
-          </div>
-          <div></div>
-        </div>
-
-        <div class="tarjeta" style="background:#f9fafb;border:1px dashed #e5e7eb; margin-top:8px;">
-          <h4 style="margin:0 0 8px;">Trabajos Previos (últimos 3)</h4>
-          <div class="trabajo-previo fila-seis" data-index="0">
-            <input id="personal-trabajo-0-patron" placeholder="Nombre del patrón" />
-            <input id="personal-trabajo-0-celular" placeholder="Celular" />
-            <input id="personal-trabajo-0-municipio" placeholder="Municipio" />
-            <input id="personal-trabajo-0-tiempo" placeholder="Tiempo laborado" />
-            <input id="personal-trabajo-0-puesto" placeholder="Puesto desempeñado" />
-            <input id="personal-trabajo-0-ingreso" placeholder="Ingreso semanal" />
-          </div>
-          <div class="trabajo-previo fila-seis" data-index="1">
-            <input id="personal-trabajo-1-patron" placeholder="Nombre del patrón" />
-            <input id="personal-trabajo-1-celular" placeholder="Celular" />
-            <input id="personal-trabajo-1-municipio" placeholder="Municipio" />
-            <input id="personal-trabajo-1-tiempo" placeholder="Tiempo laborado" />
-            <input id="personal-trabajo-1-puesto" placeholder="Puesto desempeñado" />
-            <input id="personal-trabajo-1-ingreso" placeholder="Ingreso semanal" />
-          </div>
-          <div class="trabajo-previo fila-seis" data-index="2">
-            <input id="personal-trabajo-2-patron" placeholder="Nombre del patrón" />
-            <input id="personal-trabajo-2-celular" placeholder="Celular" />
-            <input id="personal-trabajo-2-municipio" placeholder="Municipio" />
-            <input id="personal-trabajo-2-tiempo" placeholder="Tiempo laborado" />
-            <input id="personal-trabajo-2-puesto" placeholder="Puesto desempeñado" />
-            <input id="personal-trabajo-2-ingreso" placeholder="Ingreso semanal" />
-          </div>
-        </div>
-
-        <div class="fila-dos">
-          <div>
-            <label>Foto del INE (frente)</label>
-            <input id="personal-ine-frente" type="file" accept="image/*" />
-          </div>
-          <div>
-            <label>Foto del INE (reverso)</label>
-            <input id="personal-ine-reverso" type="file" accept="image/*" />
-          </div>
-        </div>
-
-        <div class="fila-tres">
-          <div>
-            <label>Puesto a desempeñar</label>
-            <select id="personal-puesto"></select>
-          </div>
-          <div>
-            <label>Agregar nuevo puesto</label>
-            <input id="personal-puesto-nuevo" placeholder="Ej. Veterinario" />
-          </div>
-          <div style="display:flex; align-items:flex-end;">
-            <button type="button" class="btn-terciario" id="btn-personal-puesto-add">Agregar puesto</button>
-          </div>
-        </div>
-
-        <div class="acciones">
-          <button type="submit" class="btn-primario">Guardar registro</button>
-          <button type="button" class="btn-secundario" id="btn-personal-limpiar">Limpiar</button>
-        </div>
-      </form>
-      <div class="lista" id="lista-personal"></div>
-    </div>
-
     <div class="tarjeta" style="background:#fff;border:1px solid #e5e7eb; margin-top:12px;">
       <h3 style="margin:0 0 8px;">Responsabilidades por Módulo</h3>
       <form id="form-responsabilidades">
@@ -2118,54 +1929,246 @@
     <p class="nota">Estos datos se usan como referencia general y pueden ajustarse en cualquier momento.</p>
 
     <hr style="margin:18px 0; border:none; border-top:1px solid #e5e7eb;">
-    <h3>Usuarios y accesos</h3>
-    <p class="nota">Uso exclusivo del Propietario y/o Gerente. Aquí se autorizan las altas y bajas del personal capturado en el apartado de Personal del Rancho, así como los módulos a los que cada empleado puede acceder.</p>
+    <h3>Personal del rancho</h3>
+    <p class="nota">Desde aquí se registran altas y bajas del personal y se definen los módulos a los que cada empleado puede acceder.</p>
 
-    <form id="form-usuarios">
-      <div class="fila-tres">
-        <div>
-          <label>Personal del rancho</label>
-          <select name="nombre" id="usuario-personal" required></select>
-          <div class="nota" id="usuarioPersonalInfo">ID: — | Puesto: —</div>
-        </div>
-        <div>
-          <label>Rol</label>
-          <select name="rol" required>
-            <option value="">Selecciona…</option>
-            <option>Propietario</option>
-            <option>Gerente</option>
-            <option>Supervisor</option>
-            <option>Vaquero</option>
-            <option>Auxiliar</option>
-            <option>Otro</option>
-          </select>
-            <div id="rolOtroWrap" style="display:none; margin-top:6px;">
-              <label>Nombre del rol (Otro)</label>
-              <input name="rolOtro" placeholder="Ej. Veterinario, Chofer, Administrativo…" />
-            </div>
-        </div>
-        <div>
-          <label>Estado (Alta/Baja)</label>
-          <select name="activo">
-            <option value="Activo">Alta autorizada</option>
-            <option value="Inactivo">Baja autorizada</option>
-          </select>
-        </div>
+    <div class="tarjeta" style="background:#fff;border:1px solid #e5e7eb;">
+      <h3 style="margin:0 0 8px;">Altas y Bajas de Personal</h3>
+      <p class="nota">Registra la información completa del personal y marca si es Alta o Baja.</p>
+      <div class="acciones toggle-group" id="personal-movimiento-btns" style="margin-bottom:6px;">
+        <button type="button" class="btn-terciario activo" data-mov="Alta">Alta</button>
+        <button type="button" class="btn-secundario" data-mov="Baja">Baja</button>
       </div>
+      <input type="hidden" id="personal-movimiento" value="Alta" />
+      <input type="hidden" id="personal-reg-id" />
 
-      <label>Acceso a módulos</label>
-      <div class="tarjeta" style="background:#fff;border:1px solid #e5e7eb;">
-        <div class="nota">Marca los módulos permitidos para este usuario.</div>
-        <div id="chkPermisos"></div>
-      </div>
+      <form id="form-personal">
+        <div class="fila-tres">
+          <div>
+            <label>Nombre completo</label>
+            <input id="personal-nombre" required />
+          </div>
+          <div>
+            <label>Número de trabajador</label>
+            <input id="personal-numero" placeholder="Ej. 001" />
+          </div>
+          <div>
+            <label>Celular</label>
+            <input id="personal-celular" type="tel" />
+          </div>
+        </div>
 
-      <div class="acciones">
-        <button type="submit" class="btn-primario">Guardar usuario</button>
-        <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-usuarios')">Limpiar</button>
-      </div>
-    </form>
+        <label>Domicilio</label>
+        <input id="personal-domicilio" />
 
-    <div class="lista" id="lista-usuarios"></div>
+        <div class="fila-tres">
+          <div>
+            <label>Sexo</label>
+            <select id="personal-sexo">
+              <option value="">Selecciona…</option>
+              <option>Femenino</option>
+              <option>Masculino</option>
+            </select>
+          </div>
+          <div>
+            <label>Fecha de nacimiento</label>
+            <input id="personal-fecha-nac" type="date" />
+          </div>
+          <div>
+            <label>Estado civil</label>
+            <select id="personal-estado-civil">
+              <option value="">Selecciona…</option>
+              <option>Soltero</option>
+              <option>Casado</option>
+              <option>Concubinato</option>
+              <option>Otro</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="fila-tres" id="personal-soltero" style="display:none;">
+          <div>
+            <label>Nombre del padre</label>
+            <input id="personal-padre" />
+          </div>
+          <div>
+            <label>Nombre de la madre</label>
+            <input id="personal-madre" />
+          </div>
+          <div></div>
+        </div>
+
+        <div class="fila-dos" id="personal-pareja" style="display:none;">
+          <div>
+            <label>Nombre de pareja</label>
+            <input id="personal-pareja-nombre" />
+          </div>
+          <div>
+            <label>Fecha de nacimiento de pareja</label>
+            <input id="personal-pareja-nac" type="date" />
+          </div>
+        </div>
+
+        <div class="tarjeta" style="background:#f9fafb;border:1px dashed #e5e7eb; margin-top:8px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+            <h4 style="margin:0;">Hijos</h4>
+            <button type="button" class="btn-terciario" id="btn-personal-add-hijo">Agregar hijo</button>
+          </div>
+          <div id="personal-hijos" style="margin-top:6px;"></div>
+        </div>
+
+        <div class="fila-tres">
+          <div>
+            <label>Estudios realizados</label>
+            <select id="personal-estudios-grado">
+              <option value="">Selecciona…</option>
+              <option>Primaria</option>
+              <option>Secundaria</option>
+              <option>Técnica</option>
+              <option>Preparatoria</option>
+              <option>Carrera</option>
+              <option>Otros estudios</option>
+            </select>
+          </div>
+          <div>
+            <label>Estado</label>
+            <select id="personal-estudios-estado">
+              <option value="">Selecciona…</option>
+              <option>Terminados</option>
+              <option>Parcial</option>
+            </select>
+          </div>
+          <div>
+            <label>Carrera / Otros estudios</label>
+            <select id="personal-estudios-carrera">
+              <option value="">Selecciona…</option>
+              <option>Veterinaria</option>
+              <option>Zootecnia</option>
+              <option>Agrónomo</option>
+              <option>Ingeniería</option>
+              <option>Administración</option>
+              <option>Otro</option>
+            </select>
+          </div>
+        </div>
+        <div class="fila-dos" id="personal-estudios-otro-wrap" style="display:none;">
+          <div>
+            <label>Especifica carrera u otros estudios</label>
+            <input id="personal-estudios-otro" placeholder="Escribe la carrera u otros estudios" />
+          </div>
+          <div></div>
+        </div>
+
+        <div class="tarjeta" style="background:#f9fafb;border:1px dashed #e5e7eb; margin-top:8px;">
+          <h4 style="margin:0 0 8px;">Trabajos Previos (últimos 3)</h4>
+          <div class="trabajo-previo fila-seis" data-index="0">
+            <input id="personal-trabajo-0-patron" placeholder="Nombre del patrón" />
+            <input id="personal-trabajo-0-celular" placeholder="Celular" />
+            <input id="personal-trabajo-0-municipio" placeholder="Municipio" />
+            <input id="personal-trabajo-0-tiempo" placeholder="Tiempo laborado" />
+            <input id="personal-trabajo-0-puesto" placeholder="Puesto desempeñado" />
+            <input id="personal-trabajo-0-ingreso" placeholder="Ingreso semanal" />
+          </div>
+          <div class="trabajo-previo fila-seis" data-index="1">
+            <input id="personal-trabajo-1-patron" placeholder="Nombre del patrón" />
+            <input id="personal-trabajo-1-celular" placeholder="Celular" />
+            <input id="personal-trabajo-1-municipio" placeholder="Municipio" />
+            <input id="personal-trabajo-1-tiempo" placeholder="Tiempo laborado" />
+            <input id="personal-trabajo-1-puesto" placeholder="Puesto desempeñado" />
+            <input id="personal-trabajo-1-ingreso" placeholder="Ingreso semanal" />
+          </div>
+          <div class="trabajo-previo fila-seis" data-index="2">
+            <input id="personal-trabajo-2-patron" placeholder="Nombre del patrón" />
+            <input id="personal-trabajo-2-celular" placeholder="Celular" />
+            <input id="personal-trabajo-2-municipio" placeholder="Municipio" />
+            <input id="personal-trabajo-2-tiempo" placeholder="Tiempo laborado" />
+            <input id="personal-trabajo-2-puesto" placeholder="Puesto desempeñado" />
+            <input id="personal-trabajo-2-ingreso" placeholder="Ingreso semanal" />
+          </div>
+        </div>
+
+        <div class="fila-dos">
+          <div>
+            <label>Foto del INE (frente)</label>
+            <input id="personal-ine-frente" type="file" accept="image/*" />
+          </div>
+          <div>
+            <label>Foto del INE (reverso)</label>
+            <input id="personal-ine-reverso" type="file" accept="image/*" />
+          </div>
+        </div>
+
+        <div class="fila-tres">
+          <div>
+            <label>Puesto a desempeñar</label>
+            <select id="personal-puesto"></select>
+          </div>
+          <div>
+            <label>Agregar nuevo puesto</label>
+            <input id="personal-puesto-nuevo" placeholder="Ej. Veterinario" />
+          </div>
+          <div style="display:flex; align-items:flex-end;">
+            <button type="button" class="btn-terciario" id="btn-personal-puesto-add">Agregar puesto</button>
+          </div>
+        </div>
+
+        <div class="acciones">
+          <button type="submit" class="btn-primario">Guardar registro</button>
+          <button type="button" class="btn-secundario" id="btn-personal-limpiar">Limpiar</button>
+        </div>
+      </form>
+      <div class="lista" id="lista-personal"></div>
+
+      <hr style="margin:18px 0; border:none; border-top:1px dashed #e5e7eb;">
+      <h4 style="margin:0 0 8px;">Accesos a módulos</h4>
+      <p class="nota">Uso exclusivo del Propietario y/o Gerente. Aquí se autorizan las altas y bajas del personal y se asignan sus módulos.</p>
+
+      <form id="form-usuarios">
+        <div class="fila-tres">
+          <div>
+            <label>Personal del rancho</label>
+            <select name="nombre" id="usuario-personal" required></select>
+            <div class="nota" id="usuarioPersonalInfo">ID: — | Puesto: —</div>
+          </div>
+          <div>
+            <label>Rol</label>
+            <select name="rol" required>
+              <option value="">Selecciona…</option>
+              <option>Propietario</option>
+              <option>Gerente</option>
+              <option>Supervisor</option>
+              <option>Vaquero</option>
+              <option>Auxiliar</option>
+              <option>Otro</option>
+            </select>
+              <div id="rolOtroWrap" style="display:none; margin-top:6px;">
+                <label>Nombre del rol (Otro)</label>
+                <input name="rolOtro" placeholder="Ej. Veterinario, Chofer, Administrativo…" />
+              </div>
+          </div>
+          <div>
+            <label>Estado (Alta/Baja)</label>
+            <select name="activo">
+              <option value="Activo">Alta autorizada</option>
+              <option value="Inactivo">Baja autorizada</option>
+            </select>
+          </div>
+        </div>
+
+        <label>Acceso a módulos</label>
+        <div class="tarjeta" style="background:#fff;border:1px solid #e5e7eb;">
+          <div class="nota">Marca los módulos permitidos para este usuario.</div>
+          <div id="chkPermisos"></div>
+        </div>
+
+        <div class="acciones">
+          <button type="submit" class="btn-primario">Guardar usuario</button>
+          <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-usuarios')">Limpiar</button>
+        </div>
+      </form>
+
+      <div class="lista" id="lista-usuarios"></div>
+    </div>
 
   </section>
 </main>
