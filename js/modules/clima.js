@@ -71,6 +71,11 @@ async function fetchTempActual(p){
     const z=(n)=>String(n).padStart(2,'0');
     return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}`;
   };
+  const shiftYearISO = (iso, delta)=>{
+    const d = new Date(String(iso) + 'T12:00:00');
+    d.setFullYear(d.getFullYear() + delta);
+    return fmtYMD(d);
+  };
 
   let lastPos = null;
 
@@ -132,6 +137,8 @@ async function fetchTempActual(p){
       const tmin = (daily.temperature_2m_min || []).slice(0, 7);
       const code = (daily.weathercode || []).slice(0, 7);
       const rain = (daily.precipitation_sum || []).slice(0, 7);
+      let prevByDate = {};
+      let prevAccumByDate = {};
 
       if (!fechas.length) {
         grid.innerHTML = '<div class="nota">Sin datos de pronóstico.</div>';
@@ -139,6 +146,36 @@ async function fetchTempActual(p){
       }
 
       grid.innerHTML = '';
+
+      try{
+        const prevRangeEnd = shiftYearISO(fechas[fechas.length - 1], -1);
+        const prevYear = Number(prevRangeEnd.slice(0, 4));
+        const prevRangeStart = `${prevYear}-01-01`;
+        const urlPrev = `https://archive-api.open-meteo.com/v1/archive?latitude=${p.lat}&longitude=${p.lon}&start_date=${prevRangeStart}&end_date=${prevRangeEnd}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=auto`;
+        const rPrev = await fetch(urlPrev);
+        if (rPrev.ok){
+          const dPrev = await rPrev.json();
+          const prevDaily = dPrev.daily || {};
+          const prevTimes = prevDaily.time || [];
+          const prevTmax = prevDaily.temperature_2m_max || [];
+          const prevTmin = prevDaily.temperature_2m_min || [];
+          const prevRain = prevDaily.precipitation_sum || [];
+          let accum = 0;
+          prevTimes.forEach((iso, idx)=>{
+            const rainMm = Number(prevRain[idx] ?? 0);
+            accum += rainMm;
+            prevByDate[iso] = {
+              tmax: Number(prevTmax[idx]),
+              tmin: Number(prevTmin[idx]),
+              rain: rainMm
+            };
+            prevAccumByDate[iso] = accum;
+          });
+        }
+      }catch(e){
+        prevByDate = {};
+        prevAccumByDate = {};
+      }
 
       // Re-crear el acumulado anual (se borra al limpiar el grid)
       accumEl = document.createElement('div');
@@ -154,6 +191,12 @@ async function fetchTempActual(p){
         const kind = kindFromCode(code[i]);
         const desc = W[code[i]] || '';
         const mm = Number(rain[i] ?? 0);
+        const prevIso = shiftYearISO(iso, -1);
+        const prev = prevByDate[prevIso];
+        const prevAccum = prevAccumByDate[prevIso];
+        const prevTempText = prev ? `${Math.round(prev.tmax)}° / ${Math.round(prev.tmin)}°` : '—';
+        const prevRainText = prev ? `${prev.rain.toFixed(1)} mm` : '—';
+        const prevAccumText = prevAccum !== undefined ? `${prevAccum.toFixed(1)} mm` : '—';
 
         const card = document.createElement('div');
         card.className = 'wx-card';
@@ -162,6 +205,11 @@ async function fetchTempActual(p){
           <div class="wx-icon" title="${desc}">${iconSvg(kind)}</div>
           <div class="wx-temp">${Math.round(tmax[i])}° <small>/ ${Math.round(tmin[i])}°</small></div>
           <div class="wx-rain">${mm.toFixed(1)} mm</div>
+          <div class="wx-prev">
+            <div>Año ant: ${prevTempText}</div>
+            <div>Lluvia: ${prevRainText}</div>
+            <div>Acum: ${prevAccumText}</div>
+          </div>
         `;
         grid.appendChild(card);
       });
