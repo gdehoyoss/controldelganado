@@ -89,6 +89,7 @@
     base.fechaNac = clean(rec.fechaNac);
     base.grupo = clean(rec.grupo);
     base.obs = clean(rec.obs);
+    base.origenAlta = clean(rec.origenAlta || base.origenAlta);
     base.inventarioTipo = resolverInventarioTipo(rec.inventarioTipo, base.inventarioTipo, base.grupo);
     base._updatedAt = now;
 
@@ -101,7 +102,7 @@
     // bitácora de cambios
     const diff = {};
     if (prev){
-      ['areteRancho','sexo','razaPre','cruza1','cruza2','fechaNac','grupo','obs','inventarioTipo','status'].forEach(k=>{
+      ['areteRancho','sexo','razaPre','cruza1','cruza2','fechaNac','grupo','obs','origenAlta','inventarioTipo','status'].forEach(k=>{
         if ((prev[k]||'') !== (base[k]||'')) diff[k] = {de: prev[k]||'', a: base[k]||''};
       });
     } else {
@@ -381,7 +382,7 @@ actualizarPanel();
   // ======================
   const ROLES = ["Propietario","Gerente","Supervisor","Vaquero","Auxiliar","Otro"];
   const REPORT_ITEMS = [
-    {key:"animales", label:"Animales"},
+    {key:"animales", label:"Ganado"},
     {key:"bajas", label:"Bajas (Ventas / Muertes)"},
     {key:"pesajes", label:"Pesajes"},
     {key:"repro", label:"Reproducción y partos"},
@@ -521,7 +522,7 @@ const renderChecks = ()=>{
   // ======================
   const REPORT_MODAL_CFG = {
     animales: {
-      title: "Animales (Inventario activo)",
+      title: "Ganado (Inventario activo)",
       keys: ["pecuario_cabezas"],
       normalize: (dataByKey) => {
         const raw = dataByKey["pecuario_cabezas"];
@@ -585,7 +586,7 @@ const renderChecks = ()=>{
       filters: [
         {label:"Motivo", field:"motivo", values: ()=> ["Ventas","Muertes y desechos","Extraviados","Otros"]},
         {label:"Inventario", field:"inventarioTipo", values: ()=> ["Ganado Reproducción","Ganado Comercial"]},
-        {label:"Cuenta", field:"cuentaLabel", values: ()=> CONTA_ACCOUNTS.filter(a=>a.code && (['BGR-01','BGC-01','RMD-01'].includes(a.code))).map(a=>`${a.code} — ${a.name}`)},
+        {label:"Cuenta", field:"cuentaLabel", values: ()=> CONTA_ACCOUNTS.filter(a=>a.code && (['BGR-01','BGC-01','BRD-01'].includes(a.code))).map(a=>`${a.code} — ${a.name}`)},
         {label:"Grupo", field:"grupo", values: ()=> gruposBase},
         {label:"Sexo", field:"sexo", values: ()=> ["Hembra","Macho"]},
         {label:"Raza", field:"razaPre", values: ()=> getRazas()},
@@ -860,7 +861,7 @@ const renderChecks = ()=>{
       title: "Actividades / Tareas",
       keys: ["pecuario_actividades"],
       filters: [
-        {label:"Módulo", field:"modulo", values: ()=> ["Animales","Pesajes","Potreros","Corrales","Reproducción y Partos","Sanidad","Contabilidad","Seguridad","Maquinaria y Equipo","Otro"]},
+        {label:"Módulo", field:"modulo", values: ()=> ["Ganado","Pesajes","Potreros","Corrales","Reproducción y Partos","Sanidad","Contabilidad","Seguridad","Maquinaria y Equipo","Otro"]},
         {label:"Asignado a", field:"asignadoA"},
         {label:"Fecha de inicio", field:"fechaInicio"},
         {label:"Fecha fin", field:"fechaFin"},

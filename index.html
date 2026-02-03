@@ -119,9 +119,9 @@
 
   <!-- ANIMALES (incluye PESAJES) -->
   <section id="mod-animales" class="modulo">
-    <h2>Cabezas</h2>
+    <h2>Ganado</h2>
     
-    <div class="subtabs" aria-label="Submódulos Cabezas">
+    <div class="subtabs" aria-label="Submódulos Ganado">
       <button type="button" class="activo" data-sub="anim-altas">Altas</button>
       <button type="button" data-sub="anim-bajas">Bajas</button>
       <button type="button" data-sub="anim-pes">Pesajes</button>
@@ -132,7 +132,7 @@
     <!-- Altas -->
     <div id="sub-anim-altas" class="submodulo activo">
       <form id="form-animales">
-        <div class="fila-tres">
+        <div class="fila-cuatro">
           <div>
             <label>Arete oficial</label>
             <input name="areteOficial" required />
@@ -147,6 +147,14 @@
               <option value="">Selecciona…</option>
               <option>Ganado Reproducción</option>
               <option>Ganado Comercial</option>
+            </select>
+          </div>
+          <div>
+            <label>Origen del registro</label>
+            <select name="origenAlta" required>
+              <option value="">Selecciona…</option>
+              <option>Nacimiento</option>
+              <option>Compra</option>
             </select>
           </div>
         </div>
@@ -378,7 +386,10 @@
             <select id="baja-causa" required>
               <option value="">Selecciona…</option>
               <option>Venta</option>
-              <option>Muerte/Desecho</option>
+              <option>Muerte</option>
+              <option>Desecho</option>
+              <option>Transferencia a Comercial</option>
+              <option>Transferencia a Reproducción</option>
               <option>Extraviado</option>
               <option>Otros</option>
             </select>
@@ -415,7 +426,8 @@
               <option value="">—</option>
               <option value="BGR-01">BGR-01 Venta Ganado Reproducción</option>
               <option value="BGC-01">BGC-01 Venta Ganado Comercial</option>
-              <option value="RMD-01">RMD-01 Muerte y Desecho</option>
+              <option value="BRD-01">BRD-01 Venta Desechos</option>
+              <option value="RME-01">RME-01 Mermas / Desechos</option>
             </select>
           </div>
           <div>
@@ -1167,17 +1179,17 @@
   </section>
 <!-- CONTABILIDAD -->
   <section id="mod-conta" class="modulo">
-    <h2>Contabilidad: Ingresos y Egresos (flujo de efectivo)</h2>
-    <p class="nota">Contabilidad por <b>flujo de efectivo</b> con cuentas de <b>Resultados</b> y <b>Balance</b>. Las transacciones con efectivo se registran contra <b>Caja y Bancos (B-01)</b>; los movimientos sin efectivo se capturan en cuentas de balance para reflejar aportaciones o revaluaciones. Operaciones a crédito se registran únicamente al <b>cobrar</b> o <b>pagar</b>.</p>
+    <h2>Contabilidad: Ingresos y Egresos de efectivo</h2>
+    <p class="nota">Ingresos y egresos de efectivo para conocer al día el impacto en el flujo de efectivo y en el Patrimonio. Las transacciones con efectivo se registran contra <b>Caja y Bancos (B-01)</b>; las operaciones sin efectivo se capturan en cuentas de balance para reflejar movimientos entre cuentas (aportaciones, revaluaciones o pérdidas de activos). No se manejan cuentas por cobrar o por pagar: solo se registra cuando se cobra o se paga.</p>
 
     <div class="conta-guidelines">
       <h3>Guía rápida del registro</h3>
       <ul>
         <li><b>Ingresos con efectivo</b>: cuentas de Resultados y Balance que incrementan Caja y Bancos.</li>
         <li><b>Egresos con efectivo</b>: cuentas de Resultados y Balance que disminuyen Caja y Bancos.</li>
-        <li><b>Movimientos sin efectivo</b>: cuentas de Balance para aportaciones en especie y revaluaciones de activos.</li>
+        <li><b>Movimientos sin efectivo</b>: cuentas de Balance para aportaciones en especie, revaluaciones o ajustes entre cuentas.</li>
       </ul>
-      <p class="nota">El primer registro recomendado es el asiento de apertura: captura el saldo inicial en <b>B-01</b> y registra aportaciones en especie en las cuentas de balance correspondientes.</p>
+      <p class="nota">Cada registro con efectivo pide la subcuenta de <b>Caja y Bancos (B-01)</b>. Si la transacción no tiene impacto en efectivo, selecciona la contra cuenta de Balance correspondiente.</p>
     </div>
 
     <div class="conta-bar">
@@ -1187,14 +1199,15 @@
           <select id="conta-year"></select>
         </div>
         <div>
-          <label>Saldo inicial Caja y Bancos (B-01)</label>
-          <input id="conta-opening" type="number" step="0.01" placeholder="0.00" />
+          <label>Saldo inicial por subcuenta (B-01)</label>
+          <div id="conta-opening-wrap"></div>
           <small class="muted">Solo Propietario/Gerente/Supervisor</small>
         </div>
         <div>
           <label>Saldo Caja y Bancos (B-01)</label>
           <div id="conta-cash" class="conta-cash">$0.00</div>
           <small id="conta-cash-hint" class="muted"></small>
+          <div id="conta-cash-subtotals" class="nota"></div>
         </div>
       </div>
 
@@ -1222,12 +1235,96 @@
       </div>
     </div>
 
+    <div class="conta-card">
+      <h3>Subcuentas de Caja y Bancos (B-01)</h3>
+      <div class="fila-tres" style="align-items:end; gap:12px;">
+        <div>
+          <label>Código</label>
+          <input id="conta-caja-code" placeholder="Ej. B-01.4" />
+        </div>
+        <div>
+          <label>Nombre</label>
+          <input id="conta-caja-name" placeholder="Ej. Banco 3" />
+        </div>
+        <div>
+          <button type="button" class="btn-terciario" id="btn-conta-caja-add">Agregar subcuenta</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="conta-card">
+      <div class="acciones">
+        <button type="button" class="btn-primario" id="btn-conta-opening-toggle">Asiento de Inicio de Operaciones</button>
+      </div>
+      <div id="conta-opening-panel" class="conta-opening-panel">
+        <p class="nota">Registra las aportaciones iniciales en efectivo y en especie. Este asiento representa el inicio de operaciones: activos y pasivos contra Patrimonio.</p>
+        <form id="form-conta-opening">
+          <div class="fila-tres">
+            <div>
+              <label>Fecha</label>
+              <input type="date" name="fecha" />
+            </div>
+            <div></div>
+            <div></div>
+          </div>
+          <h4>Caja y Bancos (B-01)</h4>
+          <div id="conta-opening-cash-wrap"></div>
+
+          <h4>Aportaciones en especie (Activos)</h4>
+          <div class="fila-tres">
+            <div>
+              <label>Ganado Reproducción (BGR-01)</label>
+              <input type="number" step="0.01" name="open-bgr" placeholder="0.00" />
+            </div>
+            <div>
+              <label>Ganado Comercial (BGC-01)</label>
+              <input type="number" step="0.01" name="open-bgc" placeholder="0.00" />
+            </div>
+            <div>
+              <label>Maquinaria y Equipo (BME-01)</label>
+              <input type="number" step="0.01" name="open-bme" placeholder="0.00" />
+            </div>
+          </div>
+          <div class="fila-tres">
+            <div>
+              <label>Corrales e Instalaciones (BCI-01)</label>
+              <input type="number" step="0.01" name="open-bci" placeholder="0.00" />
+            </div>
+            <div>
+              <label>Terrenos y Edificios (BTE-01)</label>
+              <input type="number" step="0.01" name="open-bte" placeholder="0.00" />
+            </div>
+            <div>
+              <label>Otros Activos (BOA-01)</label>
+              <input type="number" step="0.01" name="open-boa" placeholder="0.00" />
+            </div>
+          </div>
+
+          <h4>Pasivos iniciales</h4>
+          <div class="fila-dos">
+            <div>
+              <label>Préstamos Bancarios (BPB-01)</label>
+              <input type="number" step="0.01" name="open-bpb" placeholder="0.00" />
+            </div>
+            <div>
+              <label>Préstamos de Terceros (BPT-01)</label>
+              <input type="number" step="0.01" name="open-bpt" placeholder="0.00" />
+            </div>
+          </div>
+
+          <div class="acciones">
+            <button type="submit" class="btn-primario">Registrar asiento inicial</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <div id="conta-editor-only" class="nota"></div>
 
     <form id="form-conta2">
       <h3>Registrar movimiento</h3>
 
-      <div class="fila-cuatro">
+      <div class="fila-tres">
         <div>
           <label>Fecha</label>
           <input type="date" name="fecha" required />
@@ -1237,12 +1334,19 @@
           <select name="cuentaKey" id="conta-cuenta" required></select>
         </div>
         <div>
-          <label>Contra Cuenta</label>
-          <select name="contraCuenta" id="conta-contra"></select>
-        </div>
-        <div>
           <label>Monto</label>
           <input type="number" step="0.01" name="monto" required />
+        </div>
+      </div>
+
+      <div class="fila-dos">
+        <div id="conta-caja-wrap">
+          <label>Caja y Bancos (B-01)</label>
+          <select name="cajaSubcuenta" id="conta-caja"></select>
+        </div>
+        <div id="conta-contra-wrap">
+          <label>Contra Cuenta (Balance)</label>
+          <select name="contraCuenta" id="conta-contra"></select>
         </div>
       </div>
 
@@ -1276,7 +1380,7 @@
       </div>
 
       <div id="conta-arete-wrap" style="display:none;">
-        <label>Arete Oficial (Venta BGR-01/BGC-01 o Baja RMD-01)</label>
+        <label>Arete Oficial (ventas y movimientos de ganado)</label>
         <input name="areteOficial" placeholder="Ej. MX123456789" />
       </div>
 
@@ -1317,6 +1421,7 @@
             <th>Fecha</th>
             <th>Cuenta</th>
             <th>Tipo</th>
+            <th>Caja/Bancos</th>
             <th>Contra Cuenta</th>
             <th>Arete oficial</th>
             <th>Proveedor/Cliente</th>
@@ -1327,7 +1432,6 @@
             <th style="text-align:right;">Egreso</th>
             <th>Descripción</th>
             <th>Acciones</th>
-    
           </tr>
         </thead>
         <tbody id="conta-tbody"></tbody>
@@ -1349,31 +1453,30 @@
       </table>
     </div>
 
-    
-    <h3>Estado de Resultados (acumulado del año)</h3>
+    <h3>Estado de Movimientos de Flujo (acumulado del año)</h3>
     <div class="conta-table-wrap">
       <table class="conta-table">
         <thead>
           <tr>
             <th>Cuenta</th>
             <th style="text-align:right;">Valor</th>
-            <th style="text-align:right;">% del Ing. Result.</th>
+            <th style="text-align:right;">% del Ing. Total</th>
             <th style="text-align:right;">Por Vientre</th>
           </tr>
         </thead>
-        <tbody id="conta-er-ing-tbody"></tbody>
-        <tbody id="conta-er-egr-tbody"></tbody>
+        <tbody id="conta-flujo-ing-tbody"></tbody>
+        <tbody id="conta-flujo-egr-tbody"></tbody>
         <tfoot>
           <tr>
-            <th colspan="1">Utilidad / Pérdida</th>
-            <th id="conta-er-util" style="text-align:right;"></th>
+            <th colspan="1">Aumento / Disminución de Flujo</th>
+            <th id="conta-flujo-net" style="text-align:right;"></th>
             <th></th>
-            <th id="conta-er-util-v" style="text-align:right;"></th>
+            <th id="conta-flujo-net-v" style="text-align:right;"></th>
           </tr>
         </tfoot>
       </table>
       <div class="nota" style="margin-top:8px;">
-        * % calculado contra el <b>Total de Ingresos de Resultados</b>. "Por Vientre" usa el número de vientres activos en Inventario.
+        * % calculado contra el <b>Total de Ingresos</b>. "Por Vientre" usa las cabezas en inventario del grupo de Reproducción.
       </div>
     </div>
 
@@ -1393,7 +1496,7 @@
             <th id="conta-bg-total-act" style="text-align:right;"></th>
           </tr>
           <tr>
-            <th>Préstamos Bancarios (saldo)</th>
+            <th>Préstamos (saldo)</th>
             <th id="conta-bg-pasivo" style="text-align:right;"></th>
           </tr>
           <tr>
@@ -1425,6 +1528,7 @@
             <th>Arete oficial</th>
             <th>Tipo producto</th>
             <th>Ref. pago</th>
+            <th>Caja/Bancos o Contra cuenta</th>
             <th style="text-align:right;">Monto</th>
             <th>Descripción</th>
           </tr>
@@ -1432,9 +1536,23 @@
         <tbody id="conta-rep-tbody"></tbody>
       </table>
     </div>
+
+    <h3>Catálogo de cuentas contables</h3>
+    <div class="conta-table-wrap">
+      <table class="conta-table">
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Cuenta</th>
+            <th>Concepto</th>
+          </tr>
+        </thead>
+        <tbody id="conta-catalog-tbody"></tbody>
+      </table>
+    </div>
   </section>
 
-  <!-- REGISTROS DEL VELADOR (incluye visitas) -->
+<!-- REGISTROS DEL VELADOR (incluye visitas) -->
   <section id="mod-seguridad" class="modulo">
     <h2>Registros del Velador</h2>
     <p>Registro de visitas, vehículos y bitácora diaria del velador.</p>
@@ -1844,7 +1962,7 @@
             <label>Módulo</label>
             <select name="modulo">
               <option value="">Selecciona…</option>
-              <option>Animales</option>
+              <option>Ganado</option>
               <option>Pesajes</option>
               <option>Potreros</option>
               <option>Corrales</option>
@@ -1955,7 +2073,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr data-rep="animales"><td style="padding:6px;">Animales</td><td style="padding:6px;" id="rep-animales">0</td></tr>
+        <tr data-rep="animales"><td style="padding:6px;">Ganado</td><td style="padding:6px;" id="rep-animales">0</td></tr>
         <tr data-rep="bajas"><td style="padding:6px;">Bajas (Ventas / Muertes)</td><td style="padding:6px;" id="rep-bajas">0</td></tr>
         <tr data-rep="pesajes"><td style="padding:6px;">Pesajes</td><td style="padding:6px;" id="rep-pesajes">0</td></tr>
         <tr data-rep="repro"><td style="padding:6px;">Reproducción y partos</td><td style="padding:6px;" id="rep-repro">0</td></tr>
@@ -2035,7 +2153,7 @@
           <input type="number" step="1" name="capacidad" />
         </div>
         <div>
-          <label>Animales actuales</label>
+          <label>Ganado actual</label>
           <input type="number" step="1" name="animalesActuales" />
         </div>
       </div>
@@ -2162,7 +2280,7 @@
     <form id="form-conta-edit">
       <input type="hidden" name="id" />
 
-      <div class="fila-cuatro">
+      <div class="fila-tres">
         <div>
           <label>Fecha</label>
           <input type="date" name="fecha" required />
@@ -2172,12 +2290,19 @@
           <select name="cuentaKey" id="conta-edit-cuenta" required></select>
         </div>
         <div>
-          <label>Contra Cuenta</label>
-          <select name="contraCuenta" id="conta-edit-contra"></select>
-        </div>
-        <div>
           <label>Monto</label>
           <input type="number" step="0.01" name="monto" required />
+        </div>
+      </div>
+
+      <div class="fila-dos">
+        <div id="conta-edit-caja-wrap">
+          <label>Caja y Bancos (B-01)</label>
+          <select name="cajaSubcuenta" id="conta-edit-caja"></select>
+        </div>
+        <div id="conta-edit-contra-wrap">
+          <label>Contra Cuenta (Balance)</label>
+          <select name="contraCuenta" id="conta-edit-contra"></select>
         </div>
       </div>
 
@@ -2211,7 +2336,7 @@
       </div>
 
       <div id="conta-edit-arete-wrap" style="display:none;">
-        <label>Arete Oficial (Venta BGR-01/BGC-01 o Baja RMD-01)</label>
+        <label>Arete Oficial (Ventas BGR-01/BGC-01)</label>
         <input name="areteOficial" placeholder="Ej. MX123456789" />
       </div>
 

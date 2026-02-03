@@ -714,7 +714,7 @@
   // --------- Usuarios y permisos ----------
   const MODS = [
     {id:'panel', label:'Panel'},
-    {id:'animales', label:'Animales'},
+    {id:'animales', label:'Ganado'},
     {id:'potreros', label:'Potreros y Corrales'},
     {id:'repro', label:'Reproducción y partos'},
     {id:'sanidad', label:'Sanidad'},    {id:'conta', label:'Contabilidad'},

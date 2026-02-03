@@ -451,6 +451,12 @@ header small {
 .conta-guidelines{ margin: 12px 0 16px; padding: 12px; border: 1px dashed #d1d5db; border-radius: 12px; background: #f9fafb; }
 .conta-guidelines h3{ margin: 0 0 6px; font-size: 16px; }
 .conta-guidelines ul{ margin: 0 0 6px 18px; padding: 0; }
+.conta-card{ margin: 12px 0 16px; padding: 12px; border: 1px solid #e5e7eb; border-radius: 12px; background: #fff; }
+.conta-opening-panel{ display: none; margin-top: 12px; }
+.conta-opening-panel.activo{ display: block; }
+.conta-opening-row{ display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.conta-opening-row label{ font-size: 12px; }
+.conta-opening-row input{ max-width: 160px; }
 .conta-table-wrap{ overflow:auto; border:1px solid #eee; border-radius: 12px; background:#fff; }
 .conta-table{ width:100%; border-collapse: collapse; min-width: 900px; }
 .conta-table th, .conta-table td{ border-bottom:1px solid #f0f0f0; padding: 8px; vertical-align: top; }
