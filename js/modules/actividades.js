@@ -325,7 +325,7 @@ function getPersonasDisponibles(){
   }
   const usuarios = toArray(usuariosRaw)
     .filter(u=> !u || u.activo === undefined || u.activo === 'Activo' || u.activo === 'Sí')
-    .map(u=>u && u.nombre)
+    .map(u=>u && (u.nombre || u.nombreCompleto || u.usuario))
     .filter(Boolean);
 
   let personalRaw = [];
@@ -334,7 +334,7 @@ function getPersonasDisponibles(){
   } catch (e) {
     personalRaw = getData('pecuario_personal_rancho');
   }
-  const personal = toArray(personalRaw).map(p=> (p && (p.nombre || p.usuario)) || '').filter(Boolean);
+  const personal = toArray(personalRaw).map(p=> (p && (p.nombre || p.nombreCompleto || p.usuario)) || '').filter(Boolean);
 
   return Array.from(new Set([...usuarios, ...personal].map(n=>String(n||'').trim()).filter(Boolean)));
 }
@@ -491,17 +491,20 @@ function agregarHijoUI(data){
 
   const nombre = document.createElement('input');
   nombre.placeholder = 'Nombre';
+  nombre.setAttribute('aria-label', 'Nombre del hijo');
   nombre.value = data && data.nombre ? data.nombre : '';
   nombre.dataset.field = 'nombre';
 
   const sexo = document.createElement('select');
   sexo.dataset.field = 'sexo';
   sexo.innerHTML = '<option value="">Sexo</option><option>Femenino</option><option>Masculino</option>';
+  sexo.setAttribute('aria-label', 'Sexo del hijo');
   sexo.value = data && data.sexo ? data.sexo : '';
 
   const fecha = document.createElement('input');
   fecha.type = 'date';
   fecha.dataset.field = 'fecha';
+  fecha.setAttribute('aria-label', 'Fecha de nacimiento del hijo');
   fecha.value = data && data.fecha ? data.fecha : '';
 
   const btn = document.createElement('button');
@@ -640,7 +643,9 @@ function renderResponsUI(){
     div.style.gap='10px';
     div.style.alignItems='center';
     const mods = (x.modulosNombres && x.modulosNombres.length) ? x.modulosNombres.join(', ') : (x.moduloNombre||x.moduloId||'');
-    div.textContent = `${x.usuario} | ${mods} | ${x.periodicidad||''} | ${x.descripcion}`;
+    const rolTxt = x.rol ? ` | Rol: ${x.rol}` : '';
+    const freqTxt = x.frecuencia ? ` | Frecuencia: ${x.frecuencia}` : (x.periodicidad ? ` | Frecuencia: ${x.periodicidad}` : '');
+    div.textContent = `${x.usuario} | ${mods}${rolTxt}${freqTxt} | ${x.descripcion}`;
     const acciones = document.createElement('div');
     acciones.style.display='flex'; acciones.style.gap='8px';
     const bD = document.createElement('button'); bD.type='button'; bD.className='btn-secundario'; bD.textContent='Borrar'; bD.dataset.action='del'; bD.dataset.id=x.id;
@@ -664,7 +669,9 @@ function renderEspecialesUI(){
   if (!e.length){ cont.innerHTML='<div>Sin tareas especiales.</div>'; return; }
   e.slice().reverse().forEach(x=>{
     const div = document.createElement('div');
-    div.textContent = `${x.usuario} | ${x.moduloNombre||x.moduloId} | ${x.inicio||'-'} → ${x.fin||'-'} | ${x.descripcion}`;
+    const estado = x.estado ? ` | ${x.estado}` : '';
+    const herr = x.herramientas ? ` | Herr: ${x.herramientas}` : '';
+    div.textContent = `${x.usuario} | ${x.moduloNombre||x.moduloId} | ${x.inicio||'-'} → ${x.fin||'-'}${estado}${herr} | ${x.descripcion}`;
     cont.appendChild(div);
   });
 }
@@ -707,6 +714,10 @@ function initActividadesExtras(){
   const estadoCivilSel = document.getElementById('personal-estado-civil');
   const solteroWrap = document.getElementById('personal-soltero');
   const parejaWrap = document.getElementById('personal-pareja');
+  const estudiosGrado = document.getElementById('personal-estudios-grado');
+  const estudiosCarrera = document.getElementById('personal-estudios-carrera');
+  const estudiosOtroWrap = document.getElementById('personal-estudios-otro-wrap');
+  const estudiosOtro = document.getElementById('personal-estudios-otro');
 
   const toggleEstadoCivil = ()=>{
     const estado = (estadoCivilSel && estadoCivilSel.value) ? estadoCivilSel.value : '';
@@ -715,6 +726,17 @@ function initActividadesExtras(){
   };
   if (estadoCivilSel) estadoCivilSel.addEventListener('change', toggleEstadoCivil);
   toggleEstadoCivil();
+
+  const toggleEstudiosOtro = ()=>{
+    const grado = estudiosGrado ? estudiosGrado.value : '';
+    const carreraSel = estudiosCarrera ? estudiosCarrera.value : '';
+    const mostrar = grado === 'Carrera' || grado === 'Otros estudios' || carreraSel === 'Otro';
+    if (estudiosOtroWrap) estudiosOtroWrap.style.display = mostrar ? '' : 'none';
+    if (!mostrar && estudiosOtro) estudiosOtro.value = '';
+  };
+  if (estudiosGrado) estudiosGrado.addEventListener('change', toggleEstudiosOtro);
+  if (estudiosCarrera) estudiosCarrera.addEventListener('change', toggleEstudiosOtro);
+  toggleEstudiosOtro();
 
   const setMovimiento = (mov)=>{
     if (movInput) movInput.value = mov;
@@ -771,8 +793,10 @@ function initActividadesExtras(){
       const madreNombre = (document.getElementById('personal-madre').value||'').trim();
       const parejaNombre = (document.getElementById('personal-pareja-nombre').value||'').trim();
       const parejaNacimiento = (document.getElementById('personal-pareja-nac').value||'').trim();
-      const escuela = (document.getElementById('personal-escuela').value||'').trim();
-      const escuelaUbicacion = (document.getElementById('personal-escuela-ubicacion').value||'').trim();
+      const estudiosGradoVal = (document.getElementById('personal-estudios-grado').value||'').trim();
+      const estudiosEstadoVal = (document.getElementById('personal-estudios-estado').value||'').trim();
+      const estudiosCarreraVal = (document.getElementById('personal-estudios-carrera').value||'').trim();
+      const estudiosOtroVal = (document.getElementById('personal-estudios-otro').value||'').trim();
       const puesto = (document.getElementById('personal-puesto').value||'').trim();
       const existentes = recId ? getPersonalRancho().find(x=>x.id===recId) : null;
       const ineFrente = (document.getElementById('personal-ine-frente').files[0] || {}).name || (existentes ? (existentes.ineFrente || '') : '');
@@ -784,11 +808,30 @@ function initActividadesExtras(){
         if (!nombreH && !sexoH && !fechaH) return null;
         return {nombre: nombreH, sexo: sexoH, fecha: fechaH};
       }).filter(Boolean);
+      const trabajosPrevios = Array.from(document.querySelectorAll('.trabajo-previo')).map(row=>{
+        const idx = row.dataset.index;
+        const patron = (document.getElementById(`personal-trabajo-${idx}-patron`).value||'').trim();
+        const celularT = (document.getElementById(`personal-trabajo-${idx}-celular`).value||'').trim();
+        const municipio = (document.getElementById(`personal-trabajo-${idx}-municipio`).value||'').trim();
+        const tiempo = (document.getElementById(`personal-trabajo-${idx}-tiempo`).value||'').trim();
+        const puestoT = (document.getElementById(`personal-trabajo-${idx}-puesto`).value||'').trim();
+        const ingreso = (document.getElementById(`personal-trabajo-${idx}-ingreso`).value||'').trim();
+        if (!patron && !celularT && !municipio && !tiempo && !puestoT && !ingreso) return null;
+        return {
+          patron,
+          celular: celularT,
+          municipio,
+          tiempoLaborado: tiempo,
+          puesto: puestoT,
+          ingresoSemanal: ingreso
+        };
+      }).filter(Boolean);
 
       const rec = {
         id: recId || `per_${Date.now()}_${Math.random().toString(16).slice(2)}`,
         movimiento,
         nombre,
+        usuario: nombre,
         numeroTrabajador,
         celular,
         domicilio,
@@ -800,8 +843,13 @@ function initActividadesExtras(){
         parejaNombre,
         parejaNacimiento,
         hijos,
-        escuela,
-        escuelaUbicacion,
+        estudios: {
+          grado: estudiosGradoVal,
+          estado: estudiosEstadoVal,
+          carrera: estudiosCarreraVal,
+          especificacion: estudiosOtroVal
+        },
+        trabajosPrevios,
         ineFrente,
         ineReverso,
         puesto,
@@ -822,6 +870,7 @@ function initActividadesExtras(){
       limpiarHijosUI();
       actualizarPuestosSelect();
       toggleEstadoCivil();
+      toggleEstudiosOtro();
       alert('Personal guardado.');
     });
     const btnL = document.getElementById('btn-personal-limpiar');
@@ -832,6 +881,7 @@ function initActividadesExtras(){
       limpiarHijosUI();
       actualizarPuestosSelect();
       toggleEstadoCivil();
+      toggleEstudiosOtro();
     });
   }
   const lp = document.getElementById('lista-personal');
@@ -864,8 +914,21 @@ function initActividadesExtras(){
         document.getElementById('personal-madre').value = rec.madreNombre || '';
         document.getElementById('personal-pareja-nombre').value = rec.parejaNombre || '';
         document.getElementById('personal-pareja-nac').value = rec.parejaNacimiento || '';
-        document.getElementById('personal-escuela').value = rec.escuela || '';
-        document.getElementById('personal-escuela-ubicacion').value = rec.escuelaUbicacion || '';
+        document.getElementById('personal-estudios-grado').value = (rec.estudios && rec.estudios.grado) || '';
+        document.getElementById('personal-estudios-estado').value = (rec.estudios && rec.estudios.estado) || '';
+        document.getElementById('personal-estudios-carrera').value = (rec.estudios && rec.estudios.carrera) || '';
+        document.getElementById('personal-estudios-otro').value = (rec.estudios && rec.estudios.especificacion) || '';
+        const trabajosPrevios = Array.isArray(rec.trabajosPrevios) ? rec.trabajosPrevios : [];
+        document.querySelectorAll('.trabajo-previo').forEach(row=>{
+          const idx = row.dataset.index;
+          const trabajo = trabajosPrevios[idx] || {};
+          document.getElementById(`personal-trabajo-${idx}-patron`).value = trabajo.patron || '';
+          document.getElementById(`personal-trabajo-${idx}-celular`).value = trabajo.celular || '';
+          document.getElementById(`personal-trabajo-${idx}-municipio`).value = trabajo.municipio || '';
+          document.getElementById(`personal-trabajo-${idx}-tiempo`).value = trabajo.tiempoLaborado || '';
+          document.getElementById(`personal-trabajo-${idx}-puesto`).value = trabajo.puesto || '';
+          document.getElementById(`personal-trabajo-${idx}-ingreso`).value = trabajo.ingresoSemanal || '';
+        });
         actualizarPuestosSelect(rec.puesto || '');
         limpiarHijosUI();
         if (rec.hijos && rec.hijos.length){
@@ -873,6 +936,7 @@ function initActividadesExtras(){
         }
         setMovimiento(rec.movimiento || 'Alta');
         toggleEstadoCivil();
+        toggleEstudiosOtro();
       }
     });
   }
@@ -883,13 +947,14 @@ function initActividadesExtras(){
     fR.addEventListener('submit', (ev)=>{
       ev.preventDefault();
       const usuario = (document.getElementById('resp-usuario').value||'').trim();
-      const periodicidad = (document.getElementById('resp-periodicidad').value||'').trim();
+      const frecuencia = (document.getElementById('resp-frecuencia').value||'').trim();
+      const rol = (document.getElementById('resp-rol').value||'').trim();
       const descripcion = (document.getElementById('resp-desc').value||'').trim();
       const checks = Array.from(document.querySelectorAll('#resp-modulos input[type="checkbox"]:checked'));
       const modulosIds = checks.map(c=>c.value);
       const modulosNombres = checks.map(c=>c.dataset.name || c.value);
-      if (!usuario || !modulosIds.length || !descripcion){
-        alert('Completa trabajador, módulos y descripción.');
+      if (!usuario || !modulosIds.length || !rol || !descripcion){
+        alert('Completa trabajador, módulos, rol y descripción.');
         return;
       }
       const r = getRespons();
@@ -898,7 +963,8 @@ function initActividadesExtras(){
         usuario,
         modulosIds,
         modulosNombres,
-        periodicidad,
+        frecuencia,
+        rol,
         descripcion,
         createdAt: new Date().toISOString()
       });
@@ -940,6 +1006,7 @@ function initActividadesExtras(){
       const fin = (document.getElementById('esp-fin').value||'').trim();
       const moduloId = (document.getElementById('esp-modulo').value||'').trim();
       const herr = (document.getElementById('esp-herr').value||'').trim();
+      const estado = (document.getElementById('esp-estado').value||'').trim();
       const desc = (document.getElementById('esp-desc').value||'').trim();
       if (!usuario || !inicio || !fin || !moduloId || !desc){
         alert('Completa trabajador, fechas, módulo y descripción.');
@@ -956,6 +1023,7 @@ function initActividadesExtras(){
         moduloId,
         moduloNombre: mod ? mod.name : moduloId,
         herramientas: herr,
+        estado,
         descripcion: desc,
         createdAt: new Date().toISOString()
       });
