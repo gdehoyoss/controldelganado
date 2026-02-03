@@ -886,17 +886,13 @@
     asegurarUsuarioDefault();
     renderPermisosCheckboxes();
     renderListaUsuarios();
-    renderPersonalUsuariosSelect();
     llenarUsuariosHeader();
     aplicarPermisos();
 
-    const form = document.getElementById('form-usuarios');
-    if (!form) return;
-
-    // Rol: 'Otro' con nombre editable
-    const selRol = form.querySelector('select[name="rol"]');
-    const wrapOtro = document.getElementById('rolOtroWrap');
-    const inpOtro = form.querySelector('input[name="rolOtro"]');
+    const selRol = document.getElementById('personal-rol');
+    const wrapOtro = document.getElementById('personal-rol-otro-wrap');
+    const inpOtro = document.getElementById('personal-rol-otro');
+    if (!selRol) return;
     const toggleOtro = ()=>{
       const v = selRol ? selRol.value : '';
       const show = (v === 'Otro');
@@ -908,57 +904,6 @@
     };
     if (selRol) selRol.addEventListener('change', toggleOtro);
     toggleOtro();
-
-    form.addEventListener('submit', (e)=>{
-      e.preventDefault();
-      const datos = new FormData(form);
-      const obj = {};
-      datos.forEach((v,k)=>obj[k]=String(v||''));
-      const personal = getPersonalRancho();
-      const rec = personal.find(p=>p.usuario===obj.nombre);
-      if (!rec){
-        alert('Selecciona un trabajador capturado en Personal del Rancho.');
-        return;
-      }
-      obj.personalId = rec.identificacion || '';
-      obj.puesto = rec.puesto || '';
-      // Normalizar rol (con 'Otro' editable)
-      const rolSel = (obj.rol||'').trim();
-      const rolOtro = (obj.rolOtro||'').trim();
-      if (rolSel === 'Otro'){
-        if (!rolOtro){ alert('Seleccionaste "Otro". Escribe el nombre del rol.'); return; }
-        obj.rolBase = 'Otro';
-        obj.rol = rolOtro;
-      } else {
-        obj.rolBase = rolSel;
-        obj.rol = rolSel;
-      }
-      delete obj.rolOtro;
-
-      const perms = [];
-      MODS.forEach(m=>{
-        const chk = document.getElementById('perm_'+m.id);
-        if (chk && chk.checked) perms.push(m.id);
-      });
-      obj.permisos = perms;
-      const usuarios = getUsuarios();
-      const idx = usuarios.findIndex(u=>u.nombre===obj.nombre);
-      if (idx >= 0){
-        usuarios[idx] = Object.assign({}, usuarios[idx], obj);
-      } else {
-        usuarios.push(obj);
-      }
-      setUsuarios(usuarios);
-      pintarToast('Usuario guardado');
-      form.reset();
-      renderPermisosCheckboxes();
-      renderListaUsuarios();
-      renderPersonalUsuariosSelect();
-      llenarUsuariosHeader();
-      aplicarPermisos();
-      if (typeof poblarSelectUsuariosAsignacion === 'function') poblarSelectUsuariosAsignacion();
-      if (window.renderTareasUI) window.renderTareasUI();
-    });
   })();
 
 
