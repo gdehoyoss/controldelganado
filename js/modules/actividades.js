@@ -819,24 +819,9 @@ function initActividadesExtras(){
     }
   };
 
-  const obtenerUsuariosLocal = ()=>{
-    if (typeof getUsuarios === 'function') return getUsuarios();
-    const raw = getData('pecuario_usuarios');
-    if (Array.isArray(raw)) return raw;
-    if (raw && typeof raw === 'object') return Object.values(raw);
-    return [];
-  };
-
-  const guardarUsuariosLocal = (lista)=>{
-    if (typeof setUsuarios === 'function') {
-      setUsuarios(lista);
-    } else {
-      setData('pecuario_usuarios', lista || []);
-    }
-  };
-
   const completarAccesosDesdeUsuario = (nombre)=>{
-    const usuario = obtenerUsuariosLocal().find(u=>u.nombre===nombre);
+    if (typeof getUsuarios !== 'function') return;
+    const usuario = getUsuarios().find(u=>u.nombre===nombre);
     const rolSel = document.getElementById('personal-rol');
     const rolOtro = document.getElementById('personal-rol-otro');
     const estadoSel = document.getElementById('personal-estado');
@@ -958,28 +943,30 @@ function initActividadesExtras(){
       const i = p.findIndex(x=>x.id===rec.id);
       if (i>=0) p[i]=rec; else p.push(rec);
       setPersonalRancho(p);
-      const usuarios = obtenerUsuariosLocal();
-      const rolFinal = (rolSel === 'Otro') ? rolOtro : rolSel;
-      const rolBase = (rolSel === 'Otro') ? 'Otro' : rolSel;
-      const usuarioRec = {
-        nombre,
-        rol: rolFinal,
-        rolBase,
-        activo: estadoUsuario,
-        permisos: permisosUsuario,
-        personalId: numeroTrabajador || '',
-        puesto
-      };
-      const idx = usuarios.findIndex(u=>u.nombre===nombre);
-      if (idx >= 0){
-        usuarios[idx] = Object.assign({}, usuarios[idx], usuarioRec);
-      } else {
-        usuarios.push(usuarioRec);
+      if (typeof getUsuarios === 'function' && typeof setUsuarios === 'function'){
+        const usuarios = getUsuarios();
+        const rolFinal = (rolSel === 'Otro') ? rolOtro : rolSel;
+        const rolBase = (rolSel === 'Otro') ? 'Otro' : rolSel;
+        const usuarioRec = {
+          nombre,
+          rol: rolFinal,
+          rolBase,
+          activo: estadoUsuario,
+          permisos: permisosUsuario,
+          personalId: numeroTrabajador || '',
+          puesto
+        };
+        const idx = usuarios.findIndex(u=>u.nombre===nombre);
+        if (idx >= 0){
+          usuarios[idx] = Object.assign({}, usuarios[idx], usuarioRec);
+        } else {
+          usuarios.push(usuarioRec);
+        }
+        setUsuarios(usuarios);
+        if (typeof renderListaUsuarios === 'function') renderListaUsuarios();
+        if (typeof llenarUsuariosHeader === 'function') llenarUsuariosHeader();
+        if (typeof aplicarPermisos === 'function') aplicarPermisos();
       }
-      guardarUsuariosLocal(usuarios);
-      if (typeof renderListaUsuarios === 'function') renderListaUsuarios();
-      if (typeof llenarUsuariosHeader === 'function') llenarUsuariosHeader();
-      if (typeof aplicarPermisos === 'function') aplicarPermisos();
       renderPersonalUI();
       actualizarResumenDia();
       poblarSelectUsuariosMulti(['resp-usuario','esp-usuario']);
