@@ -7,7 +7,13 @@ function setTareas(t){ setData('pecuario_actividades', t || []); }
 const PUESTOS_KEY = 'pecuario_puestos_personal';
 const DEFAULT_PUESTOS = ['Propietario','Gerente','Supervisor','Vaquero','Regador','Operador','Auxiliar'];
 
-function getPuestosPersonal(){ return getData(PUESTOS_KEY) || []; }
+function getPuestosPersonal(){
+  const raw = getData(PUESTOS_KEY);
+  if (Array.isArray(raw)) return raw;
+  if (raw && typeof raw === 'object') return Object.values(raw);
+  if (typeof raw === 'string') return [raw];
+  return [];
+}
 function setPuestosPersonal(v){ setData(PUESTOS_KEY, v || []); }
 function puestosDisponibles(){
   const extra = getPuestosPersonal();
@@ -17,7 +23,18 @@ function puestosDisponibles(){
 
 function usuarioActualObj(){
   const nombre = localStorage.getItem('pecuario_usuario_actual') || '';
-  return getUsuarios().find(x=>x.nombre===nombre) || null;
+  const toArray = (val)=>{
+    if (Array.isArray(val)) return val;
+    if (val && typeof val === 'object') return Object.values(val);
+    return [];
+  };
+  let usuariosRaw = [];
+  try {
+    usuariosRaw = (typeof getUsuarios === 'function') ? getUsuarios() : getData('pecuario_usuarios');
+  } catch (e) {
+    usuariosRaw = getData('pecuario_usuarios');
+  }
+  return toArray(usuariosRaw).find(x=>x && x.nombre===nombre) || null;
 }
 function rolBaseActual(){
   const u = usuarioActualObj();
