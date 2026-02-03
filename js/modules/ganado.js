@@ -9,7 +9,8 @@
 
   function fmtAnimalLinea(a){
     const inv = (typeof resolverInventarioTipo === 'function') ? resolverInventarioTipo(a.inventarioTipo, '', a.grupo) : (a.inventarioTipo || '');
-    return `Arete ${a.areteOficial || '-'} | Inventario: ${inv || '-'} | Sexo: ${a.sexo || '-'} | Raza: ${a.razaPre || '-'} | Cruza: ${[a.cruza1,a.cruza2].filter(Boolean).join(' / ') || '-'} | Grupo: ${a.grupo || '-'}`;
+    const origen = a.origenAlta || '-';
+    return `Arete ${a.areteOficial || '-'} | Inventario: ${inv || '-'} | Origen: ${origen} | Sexo: ${a.sexo || '-'} | Raza: ${a.razaPre || '-'} | Cruza: ${[a.cruza1,a.cruza2].filter(Boolean).join(' / ') || '-'} | Grupo: ${a.grupo || '-'}`;
   }
 
   function fmtAnimalBajaLinea(a){
@@ -82,6 +83,7 @@
       fechaNac: cab.fechaNac || '',
       grupo: cab.grupo || '',
       obs: cab.obs || '',
+      origenAlta: cab.origenAlta || '',
       inventarioTipo: cab.inventarioTipo || ''
     } : { areteOficial: a };
 
@@ -289,6 +291,7 @@
     form.querySelector('[name="areteRancho"]').value = cab.areteRancho || '';
     const invSel = form.querySelector('[name="inventarioTipo"]');
     if (invSel) invSel.value = (typeof resolverInventarioTipo === 'function') ? resolverInventarioTipo(cab.inventarioTipo, '', cab.grupo) : (cab.inventarioTipo || '');
+    const origenSel = form.querySelector('[name="origenAlta"]'); if (origenSel) origenSel.value = cab.origenAlta || '';
     form.querySelector('[name="sexo"]').value = cab.sexo || '';
     const selPre = form.querySelector('[name="razaPre"]') || document.getElementById('selRazaPre');
     if (selPre) selPre.value = cab.razaPre || '';
@@ -346,6 +349,23 @@
         return;
       }
 
+      if (causa.toLowerCase().includes('transferencia')){
+        const destino = causa.toLowerCase().includes('comercial') ? 'Ganado Comercial' : 'Ganado Reproducción';
+        const res = upsertCabeza({ ...cab, inventarioTipo: destino }, {mode:'upsert', reason:'Transferencia de inventario'});
+        if (!res.ok){
+          alert(res.msg || 'No se pudo transferir el inventario.');
+          return;
+        }
+        renderCabezasUI();
+        actualizarPanel();
+        actualizarReportes();
+        alert(`Transferencia realizada a ${destino}.`);
+        f.reset();
+        if (inpFecha) inpFecha.value = new Date().toISOString().slice(0,10);
+        ['baja-grupo','baja-sexo','baja-raza'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+        return;
+      }
+
       // mover a bajas (y marca en cabezas)
       moverAnimalABajas(a, {
         fecha,
@@ -358,13 +378,18 @@
       // si se capturó monto y cuenta, registra movimiento contable
       if (monto && cuenta){
         try{
-          const acc = CONTA_ACCOUNTS.find(x=>x.code===cuenta);
+          const acc = (typeof contaGetAccountByCode === 'function') ? contaGetAccountByCode(cuenta) : null;
+          const cajaDefault = (typeof contaDefaultCashSub === 'function') ? contaDefaultCashSub() : 'B-01.1';
+          const cuentaKey = acc ? acc.key : '';
           const mov = {
             id: 'AUTO-' + Math.random().toString(36).slice(2,10).toUpperCase(),
             fecha,
+            cuentaKey,
+            cuentaCode: cuenta,
+            cuentaName: acc ? acc.name : '',
             tipo: acc ? acc.tipo : '',
-            cuentaCodigo: cuenta,
-            cuentaNombre: acc ? acc.name : '',
+            contraCuenta: '',
+            cajaSubcuenta: cajaDefault,
             tercero: '',
             factura: '',
             tipoProducto: '',
@@ -408,6 +433,10 @@ migrarCabezasLegacy();
         }
         if (!obj.inventarioTipo){
           alert('Selecciona el tipo de inventario.');
+          return;
+        }
+        if (!obj.origenAlta){
+          alert('Selecciona el origen del registro.');
           return;
         }
         const arete = String(obj.areteOficial||'').trim();
