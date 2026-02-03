@@ -2230,6 +2230,43 @@
           </div>
         </div>
 
+        <div class="tarjeta" style="background:#fff;border:1px solid #e5e7eb; margin-top:10px;">
+          <h4 style="margin:0 0 8px;">Accesos a módulos</h4>
+          <p class="nota">Define el rol, estatus y los módulos a los que tendrá acceso este usuario.</p>
+          <div class="fila-tres">
+            <div>
+              <label>Rol</label>
+              <select id="personal-rol" required>
+                <option value="">Selecciona…</option>
+                <option>Propietario</option>
+                <option>Gerente</option>
+                <option>Supervisor</option>
+                <option>Vaquero</option>
+                <option>Auxiliar</option>
+                <option>Otro</option>
+              </select>
+              <div id="personal-rol-otro-wrap" style="display:none; margin-top:6px;">
+                <label>Nombre del rol (Otro)</label>
+                <input id="personal-rol-otro" placeholder="Ej. Veterinario, Chofer, Administrativo…" />
+              </div>
+            </div>
+            <div>
+              <label>Estado (Alta/Baja)</label>
+              <select id="personal-estado">
+                <option value="Activo" selected>Alta autorizada</option>
+                <option value="Inactivo">Baja autorizada</option>
+              </select>
+            </div>
+            <div></div>
+          </div>
+
+          <label>Acceso a módulos</label>
+          <div class="tarjeta" style="background:#fff;border:1px solid #e5e7eb;">
+            <div class="nota">Marca los módulos permitidos para este usuario.</div>
+            <div id="chkPermisos"></div>
+          </div>
+        </div>
+
         <div class="acciones">
           <button type="submit" class="btn-primario">Guardar registro</button>
           <button type="button" class="btn-secundario" id="btn-personal-limpiar">Limpiar</button>
@@ -2238,53 +2275,7 @@
       <div class="lista" id="lista-personal"></div>
 
       <hr style="margin:18px 0; border:none; border-top:1px dashed #e5e7eb;">
-      <h4 style="margin:0 0 8px;">Accesos a módulos</h4>
-      <p class="nota">Uso exclusivo del Propietario y/o Gerente. Aquí se autorizan las altas y bajas del personal y se asignan sus módulos.</p>
-
-      <form id="form-usuarios">
-        <div class="fila-tres">
-          <div>
-            <label>Personal del rancho</label>
-            <select name="nombre" id="usuario-personal" required></select>
-            <div class="nota" id="usuarioPersonalInfo">ID: — | Puesto: —</div>
-          </div>
-          <div>
-            <label>Rol</label>
-            <select name="rol" required>
-              <option value="">Selecciona…</option>
-              <option>Propietario</option>
-              <option>Gerente</option>
-              <option>Supervisor</option>
-              <option>Vaquero</option>
-              <option>Auxiliar</option>
-              <option>Otro</option>
-            </select>
-              <div id="rolOtroWrap" style="display:none; margin-top:6px;">
-                <label>Nombre del rol (Otro)</label>
-                <input name="rolOtro" placeholder="Ej. Veterinario, Chofer, Administrativo…" />
-              </div>
-          </div>
-          <div>
-            <label>Estado (Alta/Baja)</label>
-            <select name="activo">
-              <option value="Activo">Alta autorizada</option>
-              <option value="Inactivo">Baja autorizada</option>
-            </select>
-          </div>
-        </div>
-
-        <label>Acceso a módulos</label>
-        <div class="tarjeta" style="background:#fff;border:1px solid #e5e7eb;">
-          <div class="nota">Marca los módulos permitidos para este usuario.</div>
-          <div id="chkPermisos"></div>
-        </div>
-
-        <div class="acciones">
-          <button type="submit" class="btn-primario">Guardar usuario</button>
-          <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-usuarios')">Limpiar</button>
-        </div>
-      </form>
-
+      <h4 style="margin:0 0 8px;">Usuarios registrados</h4>
       <div class="lista" id="lista-usuarios"></div>
     </div>
 

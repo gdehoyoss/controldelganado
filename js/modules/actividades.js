@@ -793,6 +793,74 @@ function initActividadesExtras(){
     });
   }
 
+  const leerPermisosPersonal = ()=>{
+    return Array.from(document.querySelectorAll('#chkPermisos input[type="checkbox"]'))
+      .filter(chk=>chk.checked)
+      .map(chk=>chk.value);
+  };
+
+  const aplicarPermisosPersonal = (permisos)=>{
+    const permitidos = Array.isArray(permisos) ? permisos : [];
+    document.querySelectorAll('#chkPermisos input[type="checkbox"]').forEach(chk=>{
+      chk.checked = !permitidos.length ? true : permitidos.includes(chk.value);
+    });
+  };
+
+  const setRolOtroVisible = ()=>{
+    const sel = document.getElementById('personal-rol');
+    const wrap = document.getElementById('personal-rol-otro-wrap');
+    const inp = document.getElementById('personal-rol-otro');
+    if (!sel) return;
+    const show = sel.value === 'Otro';
+    if (wrap) wrap.style.display = show ? '' : 'none';
+    if (inp){
+      inp.required = show;
+      if (!show) inp.value = '';
+    }
+  };
+
+  const obtenerUsuariosLocal = ()=>{
+    if (typeof getUsuarios === 'function') return getUsuarios();
+    const raw = getData('pecuario_usuarios');
+    if (Array.isArray(raw)) return raw;
+    if (raw && typeof raw === 'object') return Object.values(raw);
+    return [];
+  };
+
+  const guardarUsuariosLocal = (lista)=>{
+    if (typeof setUsuarios === 'function') {
+      setUsuarios(lista);
+    } else {
+      setData('pecuario_usuarios', lista || []);
+    }
+  };
+
+  const completarAccesosDesdeUsuario = (nombre)=>{
+    const usuario = obtenerUsuariosLocal().find(u=>u.nombre===nombre);
+    const rolSel = document.getElementById('personal-rol');
+    const rolOtro = document.getElementById('personal-rol-otro');
+    const estadoSel = document.getElementById('personal-estado');
+    if (usuario){
+      const rolBase = usuario.rolBase || usuario.rol || '';
+      if (rolSel) rolSel.value = ['Propietario','Gerente','Supervisor','Vaquero','Auxiliar','Otro'].includes(rolBase) ? rolBase : 'Otro';
+      if (rolOtro && (rolSel && rolSel.value === 'Otro')) rolOtro.value = usuario.rol || '';
+      if (estadoSel) estadoSel.value = usuario.activo || 'Activo';
+      aplicarPermisosPersonal(usuario.permisos || []);
+    } else {
+      if (rolSel) rolSel.value = '';
+      if (rolOtro) rolOtro.value = '';
+      if (estadoSel) estadoSel.value = 'Activo';
+      aplicarPermisosPersonal([]);
+    }
+    setRolOtroVisible();
+  };
+
+  const rolPersonalSelect = document.getElementById('personal-rol');
+  if (rolPersonalSelect){
+    rolPersonalSelect.addEventListener('change', setRolOtroVisible);
+    setRolOtroVisible();
+  }
+
   if (fP){
     fP.addEventListener('submit', (ev)=>{
       ev.preventDefault();
@@ -815,6 +883,19 @@ function initActividadesExtras(){
       const estudiosCarreraVal = (document.getElementById('personal-estudios-carrera').value||'').trim();
       const estudiosOtroVal = (document.getElementById('personal-estudios-otro').value||'').trim();
       const puesto = (document.getElementById('personal-puesto').value||'').trim();
+      const rolSel = (document.getElementById('personal-rol').value||'').trim();
+      const rolOtro = (document.getElementById('personal-rol-otro').value||'').trim();
+      const estadoUsuario = (document.getElementById('personal-estado').value||'').trim() || 'Activo';
+      const permisosUsuario = leerPermisosPersonal();
+      if (!rolSel){ alert('Selecciona el rol del usuario.'); return; }
+      if (rolSel === 'Otro' && !rolOtro){
+        alert('Seleccionaste "Otro". Escribe el nombre del rol.');
+        return;
+      }
+      if (!permisosUsuario.length){
+        alert('Selecciona al menos un módulo para el usuario.');
+        return;
+      }
       const existentes = recId ? getPersonalRancho().find(x=>x.id===recId) : null;
       const ineFrente = (document.getElementById('personal-ine-frente').files[0] || {}).name || (existentes ? (existentes.ineFrente || '') : '');
       const ineReverso = (document.getElementById('personal-ine-reverso').files[0] || {}).name || (existentes ? (existentes.ineReverso || '') : '');
@@ -877,6 +958,28 @@ function initActividadesExtras(){
       const i = p.findIndex(x=>x.id===rec.id);
       if (i>=0) p[i]=rec; else p.push(rec);
       setPersonalRancho(p);
+      const usuarios = obtenerUsuariosLocal();
+      const rolFinal = (rolSel === 'Otro') ? rolOtro : rolSel;
+      const rolBase = (rolSel === 'Otro') ? 'Otro' : rolSel;
+      const usuarioRec = {
+        nombre,
+        rol: rolFinal,
+        rolBase,
+        activo: estadoUsuario,
+        permisos: permisosUsuario,
+        personalId: numeroTrabajador || '',
+        puesto
+      };
+      const idx = usuarios.findIndex(u=>u.nombre===nombre);
+      if (idx >= 0){
+        usuarios[idx] = Object.assign({}, usuarios[idx], usuarioRec);
+      } else {
+        usuarios.push(usuarioRec);
+      }
+      guardarUsuariosLocal(usuarios);
+      if (typeof renderListaUsuarios === 'function') renderListaUsuarios();
+      if (typeof llenarUsuariosHeader === 'function') llenarUsuariosHeader();
+      if (typeof aplicarPermisos === 'function') aplicarPermisos();
       renderPersonalUI();
       actualizarResumenDia();
       poblarSelectUsuariosMulti(['resp-usuario','esp-usuario']);
@@ -888,6 +991,7 @@ function initActividadesExtras(){
       actualizarPuestosSelect();
       toggleEstadoCivil();
       toggleEstudiosOtro();
+      completarAccesosDesdeUsuario('');
       alert('Personal guardado.');
     });
     const btnL = document.getElementById('btn-personal-limpiar');
@@ -899,6 +1003,7 @@ function initActividadesExtras(){
       actualizarPuestosSelect();
       toggleEstadoCivil();
       toggleEstudiosOtro();
+      completarAccesosDesdeUsuario('');
     });
   }
   const lp = document.getElementById('lista-personal');
@@ -954,6 +1059,7 @@ function initActividadesExtras(){
         setMovimiento(rec.movimiento || 'Alta');
         toggleEstadoCivil();
         toggleEstudiosOtro();
+        completarAccesosDesdeUsuario(rec.nombre || rec.usuario || '');
       }
     });
   }
