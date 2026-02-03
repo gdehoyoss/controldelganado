@@ -221,7 +221,7 @@
       const datos = new FormData(formSupl);
       const obj = {};
       datos.forEach((val, key) => { obj[key] = val; });
-      if (typeof validateCallback === 'function') { if (validateCallback(obj, form) === false) return; }
+      if (typeof validateCallback === 'function') { if (validateCallback(obj, formSupl) === false) return; }
 
       const lista = getData('pecuario_suplementos');
       obj._fechaRegistro = new Date().toISOString();
