@@ -1713,14 +1713,73 @@
           <div id="personal-hijos" style="margin-top:6px;"></div>
         </div>
 
-        <div class="fila-dos">
+        <div class="fila-tres">
           <div>
-            <label>Estudios realizados (escuela)</label>
-            <input id="personal-escuela" />
+            <label>Estudios realizados</label>
+            <select id="personal-estudios-grado">
+              <option value="">Selecciona…</option>
+              <option>Primaria</option>
+              <option>Secundaria</option>
+              <option>Técnica</option>
+              <option>Preparatoria</option>
+              <option>Carrera</option>
+              <option>Otros estudios</option>
+            </select>
           </div>
           <div>
-            <label>Ubicación de la escuela</label>
-            <input id="personal-escuela-ubicacion" />
+            <label>Estado</label>
+            <select id="personal-estudios-estado">
+              <option value="">Selecciona…</option>
+              <option>Terminados</option>
+              <option>Parcial</option>
+            </select>
+          </div>
+          <div>
+            <label>Carrera / Otros estudios</label>
+            <select id="personal-estudios-carrera">
+              <option value="">Selecciona…</option>
+              <option>Veterinaria</option>
+              <option>Zootecnia</option>
+              <option>Agrónomo</option>
+              <option>Ingeniería</option>
+              <option>Administración</option>
+              <option>Otro</option>
+            </select>
+          </div>
+        </div>
+        <div class="fila-dos" id="personal-estudios-otro-wrap" style="display:none;">
+          <div>
+            <label>Especifica carrera u otros estudios</label>
+            <input id="personal-estudios-otro" placeholder="Escribe la carrera u otros estudios" />
+          </div>
+          <div></div>
+        </div>
+
+        <div class="tarjeta" style="background:#f9fafb;border:1px dashed #e5e7eb; margin-top:8px;">
+          <h4 style="margin:0 0 8px;">Trabajos Previos (últimos 3)</h4>
+          <div class="trabajo-previo fila-seis" data-index="0">
+            <input id="personal-trabajo-0-patron" placeholder="Nombre del patrón" />
+            <input id="personal-trabajo-0-celular" placeholder="Celular" />
+            <input id="personal-trabajo-0-municipio" placeholder="Municipio" />
+            <input id="personal-trabajo-0-tiempo" placeholder="Tiempo laborado" />
+            <input id="personal-trabajo-0-puesto" placeholder="Puesto desempeñado" />
+            <input id="personal-trabajo-0-ingreso" placeholder="Ingreso semanal" />
+          </div>
+          <div class="trabajo-previo fila-seis" data-index="1">
+            <input id="personal-trabajo-1-patron" placeholder="Nombre del patrón" />
+            <input id="personal-trabajo-1-celular" placeholder="Celular" />
+            <input id="personal-trabajo-1-municipio" placeholder="Municipio" />
+            <input id="personal-trabajo-1-tiempo" placeholder="Tiempo laborado" />
+            <input id="personal-trabajo-1-puesto" placeholder="Puesto desempeñado" />
+            <input id="personal-trabajo-1-ingreso" placeholder="Ingreso semanal" />
+          </div>
+          <div class="trabajo-previo fila-seis" data-index="2">
+            <input id="personal-trabajo-2-patron" placeholder="Nombre del patrón" />
+            <input id="personal-trabajo-2-celular" placeholder="Celular" />
+            <input id="personal-trabajo-2-municipio" placeholder="Municipio" />
+            <input id="personal-trabajo-2-tiempo" placeholder="Tiempo laborado" />
+            <input id="personal-trabajo-2-puesto" placeholder="Puesto desempeñado" />
+            <input id="personal-trabajo-2-ingreso" placeholder="Ingreso semanal" />
           </div>
         </div>
 
@@ -1766,27 +1825,30 @@
             <select id="resp-usuario"></select>
           </div>
           <div>
-            <label>Periodicidad (si aplica)</label>
-            <select id="resp-periodicidad">
-              <option value="">—</option>
-              <option>Diarias</option>
-              <option>Terciadas</option>
-              <option>Semanales</option>
-              <option>Quincenales</option>
-              <option>Mensuales</option>
-              <option>Trimestrales</option>
-              <option>Semestrales</option>
-              <option>Anuales</option>
+            <label>Frecuencia</label>
+            <select id="resp-frecuencia">
+              <option value="">Selecciona…</option>
+              <option>Diaria</option>
+              <option>Terciada</option>
+              <option>Semanal</option>
+              <option>Quincenal</option>
+              <option>Mensual</option>
+              <option>Trimestral</option>
+              <option>Semestral</option>
+              <option>Anual</option>
             </select>
           </div>
-          <div></div>
+          <div>
+            <label>Rol o papel</label>
+            <input id="resp-rol" placeholder="Ej. Supervisor de módulo" />
+          </div>
         </div>
         <label>Módulos asignados</label>
         <div id="resp-modulos" class="check-grid"></div>
-        <label>Descripción de responsabilidades / rol</label>
+        <label>Descripción de responsabilidades</label>
         <textarea id="resp-desc" placeholder="Describe lo que debe hacer el trabajador en los módulos seleccionados"></textarea>
         <div class="acciones">
-          <button type="submit" class="btn-primario">Guardar responsabilidad</button>
+          <button type="submit" class="btn-primario">Guardar módulos y roles</button>
           <button type="button" class="btn-secundario" id="btn-resp-limpiar">Limpiar</button>
         </div>
       </form>
@@ -1810,7 +1872,7 @@
             <input id="esp-fin" type="date" />
           </div>
         </div>
-        <div class="fila-dos">
+        <div class="fila-tres">
           <div>
             <label>Módulo</label>
             <select id="esp-modulo"></select>
@@ -1818,6 +1880,13 @@
           <div>
             <label>Herramientas</label>
             <input id="esp-herr" placeholder="Opcional" />
+          </div>
+          <div>
+            <label>Estado</label>
+            <select id="esp-estado">
+              <option>En Proceso</option>
+              <option>Terminada</option>
+            </select>
           </div>
         </div>
         <label>Descripción</label>

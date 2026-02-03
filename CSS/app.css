@@ -120,6 +120,11 @@ header small {
       grid-template-columns: repeat(4,minmax(0,1fr));
       gap: 6px;
     }
+    .fila-seis {
+      display: grid;
+      grid-template-columns: repeat(6,minmax(0,1fr));
+      gap: 6px;
+    }
     .acciones {
       margin-top: 8px;
       display: flex;
@@ -441,7 +446,7 @@ header small {
 
     @media (max-width: 700px) {
       nav button { flex: 1 1 calc(50% - 4px); min-width: 140px; }
-      .fila-dos, .fila-tres, .fila-cuatro { grid-template-columns: 1fr; }}
+      .fila-dos, .fila-tres, .fila-cuatro, .fila-seis { grid-template-columns: 1fr; }}
   
 /* === Contabilidad (v2) === */
 .conta-bar{ margin: 10px 0 16px; padding: 12px; border: 1px solid #ddd; border-radius: 12px; background: #fff; }
