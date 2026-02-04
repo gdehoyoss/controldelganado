@@ -719,6 +719,8 @@ function actualizarResumenDia(){
 }
 
 function initActividadesExtras(){
+  if (window.__actividadesExtrasInit) return;
+  window.__actividadesExtrasInit = true;
   poblarSelectUsuariosMulti(['resp-usuario','esp-usuario']);
   poblarSelectModulos(['esp-modulo']);
   renderResponsModulos();
