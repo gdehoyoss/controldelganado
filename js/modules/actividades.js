@@ -469,17 +469,17 @@ function initTareasActividades(){
 // ======================
 // Actividades: Personal / Responsabilidades / Tareas especiales + Resumen diario
 // ======================
-const PERSONAL_KEY = 'pecuario_personal_rancho';
+const PERSONAL_RANCHO_KEY = 'pecuario_personal_rancho';
 const RESPONS_KEY = 'pecuario_responsabilidades';
 const ESPECIALES_KEY = 'pecuario_tareas_especiales';
 
 function getPersonalRancho(){
-  const raw = getData(PERSONAL_KEY);
+  const raw = getData(PERSONAL_RANCHO_KEY);
   if (Array.isArray(raw)) return raw;
   if (raw && typeof raw === 'object') return Object.values(raw);
   return [];
 }
-function setPersonalRancho(v){ setData(PERSONAL_KEY, v||[]); }
+function setPersonalRancho(v){ setData(PERSONAL_RANCHO_KEY, v||[]); }
 
 function actualizarPuestosSelect(selected){
   const sel = document.getElementById('personal-puesto');
