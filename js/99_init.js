@@ -28,4 +28,4 @@
   actualizarPanel();
   actualizarReportes();
   setupReportesModal();
-
+  if (typeof initActividadesExtras === 'function') initActividadesExtras();
