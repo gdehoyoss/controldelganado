@@ -89,6 +89,20 @@
     base.fechaNac = clean(rec.fechaNac);
     base.grupo = clean(rec.grupo);
     base.obs = clean(rec.obs);
+    const numOrEmpty = (v, dec = 2) => {
+      if (v === '' || v === null || v === undefined) return '';
+      const n = Number(v);
+      if (!Number.isFinite(n)) return '';
+      const m = Math.max(0, n);
+      return Number(m.toFixed(dec));
+    };
+    const valorInicialRec = numOrEmpty(rec.valorInicial, 2);
+    const valorActualRec = numOrEmpty(rec.valorActual, 2);
+    const pesoRec = numOrEmpty(rec.pesoKg, 1);
+    if (valorInicialRec !== '' && (!prev || prev.valorInicial === '' || prev.valorInicial === undefined || prev.valorInicial === null)) base.valorInicial = valorInicialRec;
+    if (valorActualRec !== '') base.valorActual = valorActualRec;
+    else if (!prev && valorInicialRec !== '') base.valorActual = valorInicialRec;
+    if (pesoRec !== '') base.pesoKg = pesoRec;
     base.origenAlta = clean(rec.origenAlta || base.origenAlta);
     base.inventarioTipo = resolverInventarioTipo(rec.inventarioTipo, base.inventarioTipo, base.grupo);
     base._updatedAt = now;
@@ -102,7 +116,7 @@
     // bitácora de cambios
     const diff = {};
     if (prev){
-      ['areteRancho','sexo','razaPre','cruza1','cruza2','fechaNac','grupo','obs','origenAlta','inventarioTipo','status'].forEach(k=>{
+      ['areteRancho','sexo','razaPre','cruza1','cruza2','fechaNac','grupo','obs','origenAlta','inventarioTipo','status','valorInicial','valorActual','pesoKg'].forEach(k=>{
         if ((prev[k]||'') !== (base[k]||'')) diff[k] = {de: prev[k]||'', a: base[k]||''};
       });
     } else {
@@ -383,6 +397,7 @@ actualizarPanel();
   const ROLES = ["Propietario","Gerente","Supervisor","Vaquero","Auxiliar","Otro"];
   const REPORT_ITEMS = [
     {key:"animales", label:"Ganado"},
+    {key:"valor_ganado", label:"Ganado: Actualizaciones de valor"},
     {key:"bajas", label:"Bajas (Ventas / Muertes)"},
     {key:"pesajes", label:"Pesajes"},
     {key:"repro", label:"Reproducción y partos"},
@@ -575,10 +590,46 @@ const renderChecks = ()=>{
         {label:"Fecha cambio de grupo", field:"fechaCambioGrupo"},
         {label:"Sexo", field:"sexo"},
         {label:"Raza", field:"razaPre"},
+        {label:"Peso (kg)", field:"pesoKg"},
+        {label:"Valor actual", field:"valorActual"},
         {label:"Ubicación", field:"ubicacion"},
         {label:"Edad", field:"edad"},
         {label:"Estado", field:"estado"},
         {label:"Obs.", field:"obs"}
+      ]
+    },
+
+    valor_ganado: {
+      title: "Ganado: actualizaciones de valor",
+      keys: ["pecuario_valor_cabezas"],
+      normalize: (dataByKey) => {
+        return (dataByKey["pecuario_valor_cabezas"] || []).map(x => ({
+          areteOficial: x.areteOficial || '',
+          fecha: x.fecha || '',
+          pesoKg: x.pesoKg !== undefined && x.pesoKg !== null ? x.pesoKg : '',
+          valorAnterior: x.valorAnterior !== undefined && x.valorAnterior !== null ? x.valorAnterior : '',
+          valorNuevo: x.valorNuevo !== undefined && x.valorNuevo !== null ? x.valorNuevo : '',
+          variacion: x.variacion !== undefined && x.variacion !== null ? x.variacion : '',
+          cambio: x.cambio || '',
+          motivo: x.motivo || '',
+          usuario: x.usuario || ''
+        }));
+      },
+      filters: [
+        {label:"Arete oficial", field:"areteOficial", type:"text"},
+        {label:"Fecha de actualización", field:"fecha"},
+        {label:"Cambio", field:"cambio", values: ()=> ["Subió", "Bajó", "Sin cambio"]}
+      ],
+      columns: [
+        {label:"Arete", field:"areteOficial"},
+        {label:"Fecha", field:"fecha"},
+        {label:"Peso (kg)", field:"pesoKg"},
+        {label:"Valor anterior", field:"valorAnterior"},
+        {label:"Valor nuevo", field:"valorNuevo"},
+        {label:"Variación", field:"variacion"},
+        {label:"Cambio", field:"cambio"},
+        {label:"Motivo", field:"motivo"},
+        {label:"Usuario", field:"usuario"}
       ]
     },
 

@@ -197,12 +197,29 @@
     // autofill desde Cabezas al escribir aretes
     const inpV = form.querySelector('input[name="vientre"]');
     const inpT = form.querySelector('input[name="toro"]');
+    const infoV = document.getElementById('repro-info-vientre');
+    const infoT = document.getElementById('repro-info-toro');
+
+    function renderInfo(target, cab){
+      if (!target) return;
+      if (!cab){
+        target.textContent = 'Sin datos cargados.';
+        return;
+      }
+      const valor = Number(cab.valorActual || cab.valorInicial || 0) || 0;
+      const peso = (cab.pesoKg !== undefined && cab.pesoKg !== null && cab.pesoKg !== '') ? `${cab.pesoKg} kg` : '-';
+      target.textContent = `Oficial: ${cab.areteOficial || '-'} | Rancho: ${cab.areteRancho || '-'} | Grupo: ${cab.grupo || '-'} | Sexo: ${cab.sexo || '-'} | Peso: ${peso} | Valor: ${fmtMXN(valor)}`;
+    }
+
     function fillFromArete(which){
       const input = which==='H' ? inpV : inpT;
       const a = (input?.value||'').trim();
       const res = (typeof findCabezaPorArete === 'function') ? findCabezaPorArete(a) : null;
       const cab = res ? res.cabeza : getCabeza(a);
-      if (!cab) return;
+      if (!cab){
+        renderInfo(which==='H' ? infoV : infoT, null);
+        return;
+      }
       if (res && res.matchedBy === 'rancho' && input && cab.areteOficial && input.value !== cab.areteOficial){
         input.value = cab.areteOficial;
       }
@@ -210,11 +227,17 @@
         if (razaH) razaH.value = cab.razaPre || '';
         if (cruzaH1) cruzaH1.value = cab.cruza1 || '';
         if (cruzaH2) cruzaH2.value = cab.cruza2 || '';
+        const peso = form.querySelector('input[name="pesoVientre"]');
+        if (peso && (cab.pesoKg || cab.pesoKg === 0)) peso.value = cab.pesoKg;
+        renderInfo(infoV, cab);
         setDefaultProps('H');
       } else {
         if (razaM) razaM.value = cab.razaPre || '';
         if (cruzaM1) cruzaM1.value = cab.cruza1 || '';
         if (cruzaM2) cruzaM2.value = cab.cruza2 || '';
+        const peso = form.querySelector('input[name="pesoToro"]');
+        if (peso && (cab.pesoKg || cab.pesoKg === 0)) peso.value = cab.pesoKg;
+        renderInfo(infoT, cab);
         setDefaultProps('M');
       }
       calcCria();

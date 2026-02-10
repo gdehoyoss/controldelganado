@@ -206,6 +206,16 @@
             <input name="obs" />
           </div>
         </div>
+        <div class="fila-dos">
+          <div>
+            <label>Valor inicial de la cabeza (MXN)</label>
+            <input type="number" step="0.01" min="0" name="valorInicial" placeholder="Ej. 18500" />
+          </div>
+          <div>
+            <label>Peso inicial (kg)</label>
+            <input type="number" step="0.1" min="0" name="pesoKg" placeholder="Ej. 420" />
+          </div>
+        </div>
         <div class="nota">La raza agregada se suma a los desplegables de raza y cruzas.</div>
 
 
@@ -229,6 +239,40 @@
       </div>
 
       <div class="lista" id="lista-animales"></div>
+      <h4 style="margin-top:14px;">Actualización de valor por mercado</h4>
+      <p class="nota">Registra subidas o bajadas de precio por arete para mantener actualizado el valor del inventario.</p>
+      <form id="form-valor-cabeza" class="tarjeta" style="background:#fff;border:1px solid #e5e7eb;margin-bottom:12px;">
+        <div class="fila-cuatro">
+          <div>
+            <label>Arete</label>
+            <input name="areteOficial" required />
+          </div>
+          <div>
+            <label>Fecha de actualización</label>
+            <input type="date" name="fecha" required />
+          </div>
+          <div>
+            <label>Peso (kg)</label>
+            <input type="number" step="0.1" min="0" name="pesoKg" required />
+          </div>
+          <div>
+            <label>Nuevo valor (MXN)</label>
+            <input type="number" step="0.01" min="0" name="valorNuevo" required />
+          </div>
+        </div>
+        <div class="fila-dos">
+          <div>
+            <label>Motivo / referencia de mercado</label>
+            <input name="motivo" placeholder="Ej. ajuste semanal por mercado local" />
+          </div>
+          <div style="display:flex;align-items:end;gap:10px;">
+            <button type="submit" class="btn-terciario">Guardar actualización</button>
+            <button type="button" class="btn-secundario" id="btn-valor-limpiar">Limpiar</button>
+          </div>
+        </div>
+      </form>
+      <div class="nota" id="nota-valor-inventario"></div>
+      <div class="lista" id="lista-valor-cabezas"></div>
       <h4 style="margin-top:14px;">Editados</h4>
       <div class="lista" id="lista-animales-editados"></div>
     </div>
@@ -828,6 +872,7 @@
         <div>
           <label>Arete madre (oficial o rancho)</label>
           <input name="vientre" required />
+          <div class="nota" id="repro-info-vientre">Sin datos cargados.</div>
         </div>
         <div>
           <label>Raza preponderante</label>
@@ -847,6 +892,7 @@
         <div>
           <label>Arete padre (oficial o rancho)</label>
           <input name="toro" />
+          <div class="nota" id="repro-info-toro">Sin datos cargados.</div>
         </div>
         <div>
           <label>Raza preponderante</label>
@@ -1957,6 +2003,7 @@
       </thead>
       <tbody>
         <tr data-rep="animales"><td style="padding:6px;">Ganado</td><td style="padding:6px;" id="rep-animales">0</td></tr>
+        <tr data-rep="valor_ganado"><td style="padding:6px;">Ganado: Actualizaciones de valor</td><td style="padding:6px;" id="rep-valor-ganado">0</td></tr>
         <tr data-rep="bajas"><td style="padding:6px;">Bajas (Ventas / Muertes)</td><td style="padding:6px;" id="rep-bajas">0</td></tr>
         <tr data-rep="pesajes"><td style="padding:6px;">Pesajes</td><td style="padding:6px;" id="rep-pesajes">0</td></tr>
         <tr data-rep="repro"><td style="padding:6px;">Reproducción y partos</td><td style="padding:6px;" id="rep-repro">0</td></tr>
