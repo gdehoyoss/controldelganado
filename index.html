@@ -1382,8 +1382,8 @@
   </section>
 <!-- CONTABILIDAD -->
   <section id="mod-conta" class="modulo">
-    <h2>Contabilidad: Ingresos y Egresos de efectivo</h2>
-    <p class="nota">Ingresos y egresos de efectivo para conocer al día el impacto en el flujo de efectivo y en el Patrimonio. Las transacciones con efectivo se registran contra <b>Caja y Bancos (B-01)</b>; las operaciones sin efectivo se capturan en cuentas de balance para reflejar movimientos entre cuentas (aportaciones, revaluaciones o pérdidas de activos). No se manejan cuentas por cobrar o por pagar: solo se registra cuando se cobra o se paga.</p>
+    <h2 id="conta-main-title">Contabilidad: Ingresos y Egresos de efectivo</h2>
+    <p class="nota" id="conta-main-legend">Registro de todas las operaciones del Rancho que involucren el Efectivo, tales como; ventas de ganado, de activos varios, de préstamos recibidos de bancos o de terceros, apoyos de instituciones, retiros de efectivo, etc.</p>
 
     <div class="conta-guidelines">
       <h3>Guía rápida del registro</h3>
@@ -1711,15 +1711,25 @@
     </div>
 
     <h3>Reporte por cuenta</h3>
-    <div class="fila-dos">
+    <div class="fila-tres">
       <div>
         <label>Cuenta</label>
         <select id="conta-rep-cuenta"></select>
       </div>
-      <div class="acciones" style="align-self:end;">
-        <button type="button" class="btn-secundario" id="btn-conta-export-cuenta">Exportar CSV (cuenta)</button>
+      <div>
+        <label>Desde</label>
+        <input type="date" id="conta-rep-desde" />
+      </div>
+      <div>
+        <label>Hasta</label>
+        <input type="date" id="conta-rep-hasta" />
       </div>
     </div>
+    <div class="acciones" style="margin-top:8px;">
+      <button type="button" class="btn-secundario" id="btn-conta-export-cuenta">Exportar CSV (cuenta)</button>
+    </div>
+
+    <div class="tarjeta" id="conta-rep-caja-resumen" style="background:#fff;border:1px solid #e5e7eb; margin-top:8px; display:none;"></div>
 
     <div class="conta-table-wrap">
       <table class="conta-table">
@@ -2242,6 +2252,14 @@
           <label>Ganado actual</label>
           <input type="number" step="1" name="animalesActuales" />
         </div>
+      </div>
+
+      <div class="tarjeta" style="background:#fff;border:1px solid #e5e7eb; margin-top:12px;">
+        <label style="display:flex;align-items:center;gap:10px;margin:0;">
+          <input type="checkbox" name="contabilidadAvanzada" value="1" />
+          <span><b>Contabilidad avanzada</b> (encendido = avanzada / apagado = básica)</span>
+        </label>
+        <p class="nota" style="margin:8px 0 0 0;">En modo básico solo se registran movimientos de efectivo de ingresos y egresos contra Caja y Bancos (B-01).</p>
       </div>
 
       <div class="acciones">

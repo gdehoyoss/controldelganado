@@ -88,13 +88,76 @@ const CONTA_CATALOG = {
   ]
 };
 
-const CONTA_ACCOUNTS = [
+const CONTA_ACCOUNTS_ADV = [
   ...CONTA_CATALOG.ingresos.resultados.map(a => ({ ...a, tipo: 'Ingreso', grupo: 'Resultados', cashImpact: true })),
   ...CONTA_CATALOG.ingresos.balance.map(a => ({ ...a, tipo: 'Ingreso', grupo: 'Balance', cashImpact: true })),
   ...CONTA_CATALOG.egresos.resultados.map(a => ({ ...a, tipo: 'Egreso', grupo: 'Resultados', cashImpact: true })),
   ...CONTA_CATALOG.egresos.balance.map(a => ({ ...a, tipo: 'Egreso', grupo: 'Balance', cashImpact: true })),
   ...CONTA_CATALOG.balanceSinEfectivo.map(a => ({ ...a, tipo: 'Sin efectivo', grupo: 'Balance', cashImpact: false }))
 ].map(a => ({ ...a, key: `${a.code}||${a.name}||${a.tipo}||${a.grupo}` }));
+
+const CONTA_CATALOG_BASICO = {
+  ingresos: [
+    { code: 'RVG-01', name: 'Ventas de Ganado', concept: 'Ingreso por venta de ganado.' },
+    { code: 'RV-07', name: 'Venta de insumos', concept: 'Ingreso por venta de insumos.' },
+    { code: 'RV-10', name: 'Ingresos Varios', concept: 'Ingreso de efectivo por conceptos diversos.' },
+    { code: 'RV-12', name: 'Ingresos por intereses', concept: 'Intereses cobrados en efectivo.' },
+    { code: 'RV-13', name: 'Apoyos y subsidios', concept: 'Apoyos y subsidios recibidos en efectivo.' },
+    { code: 'RAE-01', name: 'Aportaciones de Efectivo', concept: 'Aportaciones en efectivo al rancho.' },
+    { code: 'BVB-01', name: 'Venta de Activos', concept: 'Venta de activos con entrada de efectivo.' },
+    { code: 'BPT-01', name: 'Préstamos de terceros', concept: 'Préstamos recibidos de terceros.' }
+  ],
+  egresos: [
+    { code: 'RGP-01', name: 'Gastos Nóminas', concept: 'Pagos al personal.' },
+    { code: 'RGP-02', name: 'Prestaciones a Trabajadores', concept: 'Prestaciones y compensaciones al personal.' },
+    { code: 'RGP-03', name: 'Gastos de traslado personal', concept: 'Traslados del personal.' },
+    { code: 'RGP-04', name: 'Alimentos al personal', concept: 'Alimentos para el personal.' },
+    { code: 'RGP-05', name: 'Otros - Personal', concept: 'Otros gastos de personal.' },
+    { code: 'RGV-01', name: 'Gastos de viaje', concept: 'Gastos de viaje.' },
+    { code: 'RGM-01', name: 'Mantenimiento: Maquinaria y equipo', concept: 'Mantenimiento de maquinaria y equipo.' },
+    { code: 'RGM-02', name: 'Mantenimiento: Corrales y cercas', concept: 'Mantenimiento de corrales y cercas.' },
+    { code: 'RGM-03', name: 'Mantenimiento: Bodegas y casas', concept: 'Mantenimiento de bodegas y casas.' },
+    { code: 'RGM-04', name: 'Mantenimiento: Equipo de riego y bombas', concept: 'Mantenimiento de riego y bombas.' },
+    { code: 'RGM-05', name: 'Mantenimiento: Otros', concept: 'Otros gastos de mantenimiento.' },
+    { code: 'RGAG-01', name: 'Gastos alimento Ganado', concept: 'Gastos de alimento para ganado.' },
+    { code: 'RGMD-01', name: 'Gastos Medicamentos', concept: 'Gastos de medicamentos y sanidad.' },
+    { code: 'RGH-01', name: 'Gastos Herramientas', concept: 'Compra de herramientas.' },
+    { code: 'RH-01', name: 'Honorarios', concept: 'Pago de honorarios.' },
+    { code: 'RM-01', name: 'Mermas', concept: 'Registro de mermas.' },
+    { code: 'RMD-01', name: 'Muertes y desechos', concept: 'Pérdidas por muertes y desechos.' },
+    { code: 'RCL-01', name: 'Combustibles y Lub.', concept: 'Combustibles y lubricantes.' },
+    { code: 'RE-01', name: 'Electricidad Riego', concept: 'Pago de electricidad para riego.' },
+    { code: 'RE-02', name: 'Electricidad general', concept: 'Pago de electricidad general.' },
+    { code: 'RS-01', name: 'Servicios en general', concept: 'Pago de servicios generales.' },
+    { code: 'RDI-01', name: 'Derechos e impuestos', concept: 'Pago de derechos e impuestos.' },
+    { code: 'RFG-01', name: 'Fletes Ganado', concept: 'Pago de fletes de ganado.' },
+    { code: 'RFA-01', name: 'Fletes Alimento', concept: 'Pago de fletes de alimento.' },
+    { code: 'RRE-01', name: 'Retiros de Efectivo', concept: 'Retiros de efectivo.' },
+    { code: 'BCA-01', name: 'Compra de Activos', concept: 'Compra de activos.' },
+    { code: 'BPT-02', name: 'Pagos préstamos de terceros', concept: 'Pago de préstamos a terceros.' }
+  ]
+};
+
+const CONTA_ACCOUNTS_BASIC = [
+  ...CONTA_CATALOG_BASICO.ingresos.map(a => ({ ...a, tipo: 'Ingreso', grupo: 'Resultados', cashImpact: true })),
+  ...CONTA_CATALOG_BASICO.egresos.map(a => ({ ...a, tipo: 'Egreso', grupo: 'Resultados', cashImpact: true }))
+].map(a => ({ ...a, key: `${a.code}||${a.name}||${a.tipo}||${a.grupo}` }));
+
+function getContaConfig(){
+  const saved = getData('pecuario_config') || [];
+  return saved.length ? saved[saved.length - 1] : {};
+}
+
+function contaModoAvanzado(){
+  const cfg = getContaConfig();
+  if (!cfg || typeof cfg !== 'object') return true;
+  if (!Object.prototype.hasOwnProperty.call(cfg, 'contabilidadAvanzada')) return true;
+  return String(cfg.contabilidadAvanzada) === '1';
+}
+
+function contaAccounts(){
+  return contaModoAvanzado() ? CONTA_ACCOUNTS_ADV : CONTA_ACCOUNTS_BASIC;
+}
 
 function fmtMXN(n){
   const v = Number(n || 0);
@@ -146,7 +209,7 @@ function contaFindLedgerIndex(id){
 }
 
 function contaGetAccountByKey(key){
-  const acc = CONTA_ACCOUNTS.find(a=>a.key===key);
+  const acc = contaAccounts().find(a=>a.key===key);
   if (acc) return acc;
   const parts = String(key||'').split('||');
   return { key, code: parts[0] || '', name: parts[1] || 'Cuenta', tipo: parts[2] || 'Egreso', grupo: parts[3] || '' };
@@ -156,7 +219,7 @@ function contaGetAccountByCode(code, tipo){
   if (!code) return null;
   const clean = String(code).trim();
   if (!clean) return null;
-  const byCode = CONTA_ACCOUNTS.filter(a => a.code === clean);
+  const byCode = contaAccounts().filter(a => a.code === clean);
   if (!byCode.length) return null;
   if (tipo){
     const found = byCode.find(a => a.tipo === tipo);
@@ -167,7 +230,7 @@ function contaGetAccountByCode(code, tipo){
 
 function contaGetBalanceAccounts(){
   const map = new Map();
-  CONTA_ACCOUNTS.forEach(a=>{
+  contaAccounts().forEach(a=>{
     if (a.grupo !== 'Balance') return;
     const baseName = String(a.name || '').replace(/\s*\(.*\)$/, '').trim() || a.name;
     if (!map.has(a.code)) map.set(a.code, { code: a.code, name: baseName, balanceClass: a.balanceClass });
@@ -303,18 +366,23 @@ function contaFillAccountSelect(sel, opts){
     sel.appendChild(o);
   }
 
-  const groups = [
-    { tipo:'Ingreso', grupo:'Resultados', label:'Ingresos — Resultados' },
-    { tipo:'Ingreso', grupo:'Balance', label:'Ingresos — Balance' },
-    { tipo:'Egreso', grupo:'Resultados', label:'Egresos — Resultados' },
-    { tipo:'Egreso', grupo:'Balance', label:'Egresos — Balance' },
-    { tipo:'Sin efectivo', grupo:'Balance', label:'Balance sin efectivo' }
-  ];
+  const groups = contaModoAvanzado()
+    ? [
+      { tipo:'Ingreso', grupo:'Resultados', label:'Ingresos — Resultados' },
+      { tipo:'Ingreso', grupo:'Balance', label:'Ingresos — Balance' },
+      { tipo:'Egreso', grupo:'Resultados', label:'Egresos — Resultados' },
+      { tipo:'Egreso', grupo:'Balance', label:'Egresos — Balance' },
+      { tipo:'Sin efectivo', grupo:'Balance', label:'Balance sin efectivo' }
+    ]
+    : [
+      { tipo:'Ingreso', grupo:'Resultados', label:'Ingresos de dinero' },
+      { tipo:'Egreso', grupo:'Resultados', label:'Egresos de dinero' }
+    ];
 
   groups.forEach(g=>{
     const og = document.createElement('optgroup');
     og.label = g.label;
-    CONTA_ACCOUNTS
+    contaAccounts()
       .filter(a=>a.tipo===g.tipo && a.grupo===g.grupo)
       .forEach(a=>{
         const o = document.createElement('option');
@@ -395,26 +463,37 @@ function contaRenderCatalog(){
   if (!body) return;
 
   const rows = [];
-  rows.push('<tr><td colspan="3"><b>Resultados — Ingresos</b></td></tr>');
-  CONTA_CATALOG.ingresos.resultados.forEach(a=>{
-    rows.push(`<tr><td>${escapeHtml(a.code)}</td><td>${escapeHtml(a.name)}</td><td>${escapeHtml(a.concept||'')}</td></tr>`);
-  });
-  rows.push('<tr><td colspan="3"><b>Resultados — Egresos</b></td></tr>');
-  CONTA_CATALOG.egresos.resultados.forEach(a=>{
-    rows.push(`<tr><td>${escapeHtml(a.code)}</td><td>${escapeHtml(a.name)}</td><td>${escapeHtml(a.concept||'')}</td></tr>`);
-  });
-  rows.push('<tr><td colspan="3"><b>Balance con impacto en Caja y Bancos — Ingresos</b></td></tr>');
-  CONTA_CATALOG.ingresos.balance.forEach(a=>{
-    rows.push(`<tr><td>${escapeHtml(a.code)}</td><td>${escapeHtml(a.name)}</td><td>${escapeHtml(a.concept||'')}</td></tr>`);
-  });
-  rows.push('<tr><td colspan="3"><b>Balance con impacto en Caja y Bancos — Egresos</b></td></tr>');
-  CONTA_CATALOG.egresos.balance.forEach(a=>{
-    rows.push(`<tr><td>${escapeHtml(a.code)}</td><td>${escapeHtml(a.name)}</td><td>${escapeHtml(a.concept||'')}</td></tr>`);
-  });
-  rows.push('<tr><td colspan="3"><b>Balance sin impacto en Caja y Bancos</b></td></tr>');
-  CONTA_CATALOG.balanceSinEfectivo.forEach(a=>{
-    rows.push(`<tr><td>${escapeHtml(a.code)}</td><td>${escapeHtml(a.name)}</td><td>${escapeHtml(a.concept||'')}</td></tr>`);
-  });
+  if (contaModoAvanzado()){
+    rows.push('<tr><td colspan="3"><b>Resultados — Ingresos</b></td></tr>');
+    CONTA_CATALOG.ingresos.resultados.forEach(a=>{
+      rows.push(`<tr><td>${escapeHtml(a.code)}</td><td>${escapeHtml(a.name)}</td><td>${escapeHtml(a.concept||'')}</td></tr>`);
+    });
+    rows.push('<tr><td colspan="3"><b>Resultados — Egresos</b></td></tr>');
+    CONTA_CATALOG.egresos.resultados.forEach(a=>{
+      rows.push(`<tr><td>${escapeHtml(a.code)}</td><td>${escapeHtml(a.name)}</td><td>${escapeHtml(a.concept||'')}</td></tr>`);
+    });
+    rows.push('<tr><td colspan="3"><b>Balance con impacto en Caja y Bancos — Ingresos</b></td></tr>');
+    CONTA_CATALOG.ingresos.balance.forEach(a=>{
+      rows.push(`<tr><td>${escapeHtml(a.code)}</td><td>${escapeHtml(a.name)}</td><td>${escapeHtml(a.concept||'')}</td></tr>`);
+    });
+    rows.push('<tr><td colspan="3"><b>Balance con impacto en Caja y Bancos — Egresos</b></td></tr>');
+    CONTA_CATALOG.egresos.balance.forEach(a=>{
+      rows.push(`<tr><td>${escapeHtml(a.code)}</td><td>${escapeHtml(a.name)}</td><td>${escapeHtml(a.concept||'')}</td></tr>`);
+    });
+    rows.push('<tr><td colspan="3"><b>Balance sin impacto en Caja y Bancos</b></td></tr>');
+    CONTA_CATALOG.balanceSinEfectivo.forEach(a=>{
+      rows.push(`<tr><td>${escapeHtml(a.code)}</td><td>${escapeHtml(a.name)}</td><td>${escapeHtml(a.concept||'')}</td></tr>`);
+    });
+  } else {
+    rows.push('<tr><td colspan="3"><b>Ingresos de dinero</b></td></tr>');
+    CONTA_CATALOG_BASICO.ingresos.forEach(a=>{
+      rows.push(`<tr><td>${escapeHtml(a.code)}</td><td>${escapeHtml(a.name)}</td><td>${escapeHtml(a.concept||'')}</td></tr>`);
+    });
+    rows.push('<tr><td colspan="3"><b>Egresos de dinero</b></td></tr>');
+    CONTA_CATALOG_BASICO.egresos.forEach(a=>{
+      rows.push(`<tr><td>${escapeHtml(a.code)}</td><td>${escapeHtml(a.name)}</td><td>${escapeHtml(a.concept||'')}</td></tr>`);
+    });
+  }
   body.innerHTML = rows.join('');
 }
 
@@ -429,6 +508,37 @@ function contaRender(){
   const alertBox = document.getElementById('conta-alert');
   const editorNote = document.getElementById('conta-editor-only');
   const form = document.getElementById('form-conta2');
+  const advanced = contaModoAvanzado();
+
+  const titleEl = document.getElementById('conta-main-title');
+  const legendEl = document.getElementById('conta-main-legend');
+  if (titleEl) titleEl.textContent = advanced ? 'Contabilidad: Ingresos y Egresos de efectivo' : 'Contabilidad básica: Ingresos y Egresos de efectivo';
+  if (legendEl) legendEl.textContent = advanced
+    ? 'Ingresos y egresos de efectivo para conocer al día el impacto en el flujo de efectivo y en el Patrimonio. Las transacciones con efectivo se registran contra Caja y Bancos (B-01); las operaciones sin efectivo se capturan en cuentas de balance para reflejar movimientos entre cuentas (aportaciones, revaluaciones o pérdidas de activos). No se manejan cuentas por cobrar o por pagar: solo se registra cuando se cobra o se paga.'
+    : 'Registro de todas las operaciones del Rancho que involucren el Efectivo, tales como; ventas de ganado, de activos varios, de préstamos recibidos de bancos o de terceros, apoyos de instituciones, retiros de efectivo, etc.';
+
+  const guide = document.querySelector('#mod-conta .conta-guidelines');
+  if (guide) guide.style.display = advanced ? '' : 'none';
+  const openingCardBtn = document.getElementById('btn-conta-opening-toggle')?.closest('.conta-card');
+  if (openingCardBtn) openingCardBtn.style.display = advanced ? '' : 'none';
+  const openingPanel = document.getElementById('conta-opening-panel');
+  if (openingPanel && !advanced) openingPanel.classList.remove('activo');
+  const openingYearWrap = document.getElementById('conta-opening-wrap')?.closest('div');
+  if (openingYearWrap) openingYearWrap.style.display = advanced ? '' : 'none';
+  const estadoSel = document.getElementById('conta-filter-estado');
+  if (estadoSel){
+    const sinOpt = Array.from(estadoSel.options || []).find(o => o.value === 'sin-efectivo');
+    if (sinOpt) sinOpt.style.display = advanced ? '' : 'none';
+    if (!advanced && estadoSel.value === 'sin-efectivo') estadoSel.value = 'all';
+  }
+  const contraHeader = document.querySelector('#mod-conta .conta-table thead th:nth-child(5)');
+  if (contraHeader) contraHeader.style.display = advanced ? '' : 'none';
+  const bgTitle = Array.from(document.querySelectorAll('#mod-conta h3')).find(h=>h.textContent.includes('Balance General'));
+  if (bgTitle){
+    const bgWrap = bgTitle.nextElementSibling;
+    if (bgWrap) bgWrap.style.display = advanced ? '' : 'none';
+    bgTitle.style.display = advanced ? '' : 'none';
+  }
 
   if (openingWrap){
     const opening = contaGetOpening(year);
@@ -567,7 +677,7 @@ function contaRender(){
         <td>${escapeHtml((a.code? a.code+' — ':'') + a.name)}</td>
         <td>${escapeHtml(a.tipo||'')}</td>
         <td>${escapeHtml(caja)}</td>
-        <td>${escapeHtml(contra)}</td>
+        <td style="display:${advanced ? '' : 'none'};">${escapeHtml(contra)}</td>
         <td>${escapeHtml(m.areteOficial||'')}</td>
         <td>${escapeHtml(m.tercero||'')}</td>
         <td>${escapeHtml(m.factura||'')}</td>
@@ -627,8 +737,8 @@ function contaRender(){
     sumByKey.get(k).sum += amt;
   });
 
-  const flujoIng = CONTA_ACCOUNTS.filter(a=>a.tipo==='Ingreso' && contaAccountImpactsCash(a));
-  const flujoEgr = CONTA_ACCOUNTS.filter(a=>a.tipo==='Egreso' && contaAccountImpactsCash(a));
+  const flujoIng = contaAccounts().filter(a=>a.tipo==='Ingreso' && contaAccountImpactsCash(a));
+  const flujoEgr = contaAccounts().filter(a=>a.tipo==='Egreso' && contaAccountImpactsCash(a));
   const getSum = (a)=> (sumByKey.get(a.key)?.sum || 0);
   const totalIng = flujoIng.reduce((s,a)=> s + getSum(a), 0);
   const totalEgr = flujoEgr.reduce((s,a)=> s + getSum(a), 0);
@@ -696,7 +806,7 @@ function contaRender(){
   };
 
   const nameByCode = {};
-  CONTA_ACCOUNTS.forEach(a=>{
+  contaAccounts().forEach(a=>{
     if (a.grupo==='Balance'){
       const baseName = String(a.name || '').replace(/\s*\(.*\)$/, '').trim() || a.name;
       nameByCode[a.code] = nameByCode[a.code] || baseName;
@@ -761,10 +871,16 @@ function contaRender(){
   if (bgPatr) bgPatr.textContent = fmtMXN(patrimonioCalc);
 
   const repSel = document.getElementById('conta-rep-cuenta');
+  const repDesde = document.getElementById('conta-rep-desde')?.value || '';
+  const repHasta = document.getElementById('conta-rep-hasta')?.value || '';
   const repKey = repSel?.value || '';
   const repBody = document.getElementById('conta-rep-tbody');
+  const repCajaResumen = document.getElementById('conta-rep-caja-resumen');
   if (repBody){
-    const repRows = repKey ? t.ledger.filter(m=>m.cuentaKey===repKey).sort((a,b)=> (a.fecha||'').localeCompare(b.fecha||'')) : [];
+    let repRows = repKey ? t.ledger.filter(m=>m.cuentaKey===repKey) : [];
+    if (repDesde) repRows = repRows.filter(m => String(m.fecha||'') >= repDesde);
+    if (repHasta) repRows = repRows.filter(m => String(m.fecha||'') <= repHasta);
+    repRows = repRows.sort((a,b)=> (a.fecha||'').localeCompare(b.fecha||''));
     repBody.innerHTML = repKey
       ? (repRows.map(m=>{
           const amt = Number(m.monto||0);
@@ -780,8 +896,21 @@ function contaRender(){
             <td style="text-align:right;">${escapeHtml(fmtMXN(amt))}</td>
             <td>${escapeHtml(m.descripcion||'')}</td>
           </tr>`;
-        }).join('') || `<tr><td colspan="9" class="muted">Sin movimientos para esta cuenta.</td></tr>`)
+        }).join('') || `<tr><td colspan="9" class="muted">Sin movimientos para esta cuenta en el rango seleccionado.</td></tr>`)
       : `<tr><td colspan="9" class="muted">Selecciona una cuenta para ver su reporte.</td></tr>`;
+
+    if (repCajaResumen){
+      if (repKey){
+        const repAcc = contaGetAccountByKey(repKey);
+        const totalIng = repRows.filter(m=>contaGetAccountByKey(m.cuentaKey).tipo==='Ingreso').reduce((sum,m)=>sum+Number(m.monto||0),0);
+        const totalEgr = repRows.filter(m=>contaGetAccountByKey(m.cuentaKey).tipo==='Egreso').reduce((sum,m)=>sum+Number(m.monto||0),0);
+        const saldo = totalIng - totalEgr;
+        repCajaResumen.style.display = '';
+        repCajaResumen.innerHTML = `<b>Resumen (${escapeHtml(repAcc.code || '')} — ${escapeHtml(repAcc.name || '')})</b><br>Ingresos: <b>${escapeHtml(fmtMXN(totalIng))}</b> · Egresos: <b>${escapeHtml(fmtMXN(totalEgr))}</b> · Saldo: <b>${escapeHtml(fmtMXN(saldo))}</b>`;
+      } else {
+        repCajaResumen.style.display = 'none';
+      }
+    }
   }
 
   contaRenderCatalog();
@@ -838,19 +967,19 @@ function initContabilidad(){
   function contaToggleCashFields(){
     if (!selCuenta) return;
     const acc = contaGetAccountByKey(selCuenta.value || '');
-    const needsCash = contaAccountImpactsCash(acc);
+    const needsCash = !contaModoAvanzado() ? true : contaAccountImpactsCash(acc);
     if (cajaWrap) cajaWrap.style.display = needsCash ? '' : 'none';
-    if (contraWrap) contraWrap.style.display = needsCash ? 'none' : '';
+    if (contraWrap) contraWrap.style.display = (!contaModoAvanzado() || needsCash) ? 'none' : '';
   }
 
   function contaToggleCashFieldsEdit(){
     if (!editCuenta) return;
     const acc = contaGetAccountByKey(editCuenta.value || '');
-    const needsCash = contaAccountImpactsCash(acc);
+    const needsCash = !contaModoAvanzado() ? true : contaAccountImpactsCash(acc);
     const editCajaWrap = document.getElementById('conta-edit-caja-wrap');
     const editContraWrap = document.getElementById('conta-edit-contra-wrap');
     if (editCajaWrap) editCajaWrap.style.display = needsCash ? '' : 'none';
-    if (editContraWrap) editContraWrap.style.display = needsCash ? 'none' : '';
+    if (editContraWrap) editContraWrap.style.display = (!contaModoAvanzado() || needsCash) ? 'none' : '';
   }
 
   const selFiltro = document.getElementById('conta-filter-cuenta');
@@ -899,6 +1028,8 @@ function initContabilidad(){
   const s = document.getElementById('conta-search'); if (s) s.addEventListener('input', contaRender);
   const e = document.getElementById('conta-filter-estado'); if (e) e.addEventListener('change', contaRender);
   if (selRep) selRep.addEventListener('change', contaRender);
+  const repDesde = document.getElementById('conta-rep-desde'); if (repDesde) repDesde.addEventListener('change', contaRender);
+  const repHasta = document.getElementById('conta-rep-hasta'); if (repHasta) repHasta.addEventListener('change', contaRender);
 
   if (btnLimpiar && form){
     btnLimpiar.addEventListener('click', ()=> form.reset());
@@ -1009,7 +1140,7 @@ function initContabilidad(){
           alert('Selecciona la subcuenta de Caja/Bancos.');
           return;
         }
-      } else if (contaContraRequired(acc) && !contraCuenta){
+      } else if (contaModoAvanzado() && contaContraRequired(acc) && !contraCuenta){
         alert('Selecciona la contra cuenta.');
         return;
       }
@@ -1101,7 +1232,7 @@ function initContabilidad(){
           alert('Selecciona la subcuenta de Caja/Bancos.');
           return;
         }
-      } else if (contaContraRequired(acc) && !contraCuenta){
+      } else if (contaModoAvanzado() && contaContraRequired(acc) && !contraCuenta){
         alert('Selecciona la contra cuenta.');
         return;
       }
@@ -1211,10 +1342,14 @@ function initContabilidad(){
       if (!key){ alert('Selecciona una cuenta para exportar.'); return; }
       const acc = contaGetAccountByKey(key);
       const t = contaTotalsForYear(year);
+      const desde = document.getElementById('conta-rep-desde')?.value || '';
+      const hasta = document.getElementById('conta-rep-hasta')?.value || '';
       const rows = [
         ['Fecha','Cuenta','Caja/Bancos','Contra Cuenta','Proveedor/Cliente','Factura','Arete Oficial','Tipo producto','Ref pago','Monto','Descripción','Usuario'],
         ...t.ledger
           .filter(m=>m.cuentaKey===key)
+          .filter(m=> !desde || String(m.fecha||'') >= desde)
+          .filter(m=> !hasta || String(m.fecha||'') <= hasta)
           .slice().sort((a,b)=> (a.fecha||'').localeCompare(b.fecha||''))
           .map(m=>[
             m.fecha||'',
@@ -1364,6 +1499,18 @@ function initContabilidad(){
       openingCashWrap.appendChild(row);
     });
   }
+
+  document.addEventListener('pecuario:contabilidad-modo-cambio', ()=>{
+    contaFillAccountSelect(selCuenta, { includeAll:false });
+    contaFillAccountSelect(editCuenta, { includeAll:false });
+    contaFillAccountSelect(selFiltro, { includeAll:true });
+    contaFillAccountSelect(selRep, { includeAll:true });
+    contaToggleArete();
+    contaToggleCashFields();
+    contaToggleAreteEdit();
+    contaToggleCashFieldsEdit();
+    contaRender();
+  });
 
   // Primera render
   contaRender();

@@ -6,11 +6,16 @@
   (function () {
     const form = document.getElementById('form-config');
     if (!form) return;
+    const chkContaAvanzada = form.querySelector('input[name="contabilidadAvanzada"]');
+    if (chkContaAvanzada) chkContaAvanzada.checked = true;
     const saved = getData('pecuario_config');
     if (saved && saved.length) {
       const cfg = saved[saved.length - 1];
       Object.keys(cfg).forEach(k => {
-        if (form.elements[k]) form.elements[k].value = cfg[k];
+        if (!form.elements[k]) return;
+        const el = form.elements[k];
+        if (el.type === 'checkbox') el.checked = String(cfg[k]) === '1';
+        else form.elements[k].value = cfg[k];
       });
     }
     form.addEventListener('submit', (e) => {
@@ -18,12 +23,14 @@
       const datos = new FormData(form);
       const obj = {};
       datos.forEach((val, key) => { obj[key] = val; });
+      if (chkContaAvanzada) obj.contabilidadAvanzada = chkContaAvanzada.checked ? '1' : '0';
       if (typeof validateCallback === 'function') { if (validateCallback(obj, form) === false) return; }
 
       const lista = getData('pecuario_config');
       lista.push(obj);
       setData('pecuario_config', lista);
       alert('Perfil guardado.');
+      document.dispatchEvent(new CustomEvent('pecuario:contabilidad-modo-cambio', { detail: { avanzada: obj.contabilidadAvanzada === '1' } }));
       actualizarPanel();
       actualizarReportes();
     });
