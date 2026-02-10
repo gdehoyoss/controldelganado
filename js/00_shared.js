@@ -525,12 +525,24 @@ const renderChecks = ()=>{
       title: "Ganado",
       keys: ["pecuario_cabezas", "pecuario_animales_bajas"],
       normalize: (dataByKey) => {
+        const cambiosGrupo = getCambiosGrupo();
+        const cambiosPorArete = (cambiosGrupo||[]).reduce((acc, item)=>{
+          const arete = String(item.areteOficial || '').trim();
+          if (!arete) return acc;
+          const fechaRaw = String(item.fecha || '').trim();
+          if (!fechaRaw) return acc;
+          const fecha = fechaRaw.slice(0,10);
+          if (!acc[arete] || fecha > acc[arete]) acc[arete] = fecha;
+          return acc;
+        }, {});
+
         const rawActivos = dataByKey["pecuario_cabezas"];
         const activos = Array.isArray(rawActivos) ? rawActivos : Object.values(rawActivos || {});
         const altas = (activos||[]).filter(x => x && x.status !== 'Baja').map(x=>({
           ...x,
           estadoInventario: 'Alta',
-          inventarioTipo: resolverInventarioTipo(x.inventarioTipo, '', x.grupo)
+          inventarioTipo: resolverInventarioTipo(x.inventarioTipo, '', x.grupo),
+          fechaCambioGrupo: cambiosPorArete[String(x.areteOficial || '').trim()] || ''
         }));
 
         const bajasRaw = dataByKey[ANIMALES_BAJAS_KEY] || dataByKey["pecuario_animales_bajas"] || [];
@@ -538,7 +550,8 @@ const renderChecks = ()=>{
           ...x,
           estadoInventario: 'Baja',
           inventarioTipo: resolverInventarioTipo(x.inventarioTipo, '', x.grupo),
-          estado: x.estado || x._motivoBaja || x.motivo || ''
+          estado: x.estado || x._motivoBaja || x.motivo || '',
+          fechaCambioGrupo: cambiosPorArete[String(x.areteOficial || '').trim()] || ''
         }));
 
         return altas.concat(bajas);
@@ -547,6 +560,7 @@ const renderChecks = ()=>{
         {label:"Estatus", field:"estadoInventario", values: ()=> ["Alta","Baja"]},
         {label:"Inventario", field:"inventarioTipo", values: ()=> ["Ganado Reproducción","Ganado Comercial"]},
         {label:"Grupo", field:"grupo", values: ()=> gruposBase},
+        {label:"Cambios de grupo por fecha", field:"fechaCambioGrupo"},
         {label:"Sexo", field:"sexo", values: ()=> ["Hembra","Macho"]},
         {label:"Raza preponderante", field:"razaPre", values: ()=> getRazas()}
       ],
@@ -555,6 +569,7 @@ const renderChecks = ()=>{
         {label:"Arete rancho", field:"areteRancho"},
         {label:"Inventario", field:"inventarioTipo"},
         {label:"Grupo", field:"grupo"},
+        {label:"Fecha cambio de grupo", field:"fechaCambioGrupo"},
         {label:"Sexo", field:"sexo"},
         {label:"Raza", field:"razaPre"},
         {label:"Ubicación", field:"ubicacion"},
