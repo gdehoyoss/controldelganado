@@ -716,11 +716,46 @@ const renderChecks = ()=>{
     sanidad: {
       title: "Sanidad",
       keys: ["pecuario_sanidad"],
+      normalize: (dataByKey) => {
+        const bajas = getData('pecuario_animales_bajas') || [];
+        const bajasMuerteDesecho = new Set(
+          bajas
+            .filter(b => normalizarMotivoBaja((b._baja && b._baja.motivo) || b.motivo) === 'Muertes y desechos')
+            .map(b => String(b.areteOficial || '').trim())
+            .filter(Boolean)
+        );
+
+        return (dataByKey["pecuario_sanidad"] || []).map((x) => {
+          const enfermedadNombre = String(
+            x.enfermedad || (x.enfermedadCat === 'Otro' ? x.enfermedadOtro : x.enfermedadCat) || ''
+          ).trim();
+          const esVacuna = String(x.tipo || '').toLowerCase().includes('preventivo');
+          const vacunaNombre = esVacuna ? String(x.tratamiento || '').trim() : '';
+          const enfermedadProtege = esVacuna ? enfermedadNombre : '';
+          const arete = String(x.arete || '').trim();
+          const fecha = String(x.fecha || '').trim();
+          const aplicaMuerteDesecho = arete && bajasMuerteDesecho.has(arete);
+
+          return {
+            ...x,
+            enfermedadNombre,
+            enfermedadMuerteDesecho: aplicaMuerteDesecho ? (enfermedadNombre || 'Sin especificar') : '',
+            vacunaNombre,
+            enfermedadProtege,
+            vacunaAreteFecha: (esVacuna && (arete || fecha)) ? `Arete ${arete || '-'} | ${fecha || '-'}` : ''
+          };
+        });
+      },
       filters: [
         {label:"Arete oficial", field:"arete", type:"text"},
         {label:"Fecha", field:"fecha"},
         {label:"Tipo de evento", field:"tipo", values: ()=> ["Preventivo (vacuna)","Correctivo (enfermedad)"]},
         {label:"Enfermedad / motivo", field:"enfermedadCat", values: ()=> ["Digestivo","Respiratorio","Infeccioso","Motriz","Ocular","Otro"]},
+        {label:"Relación de enfermedades presentadas en el hato", field:"enfermedadNombre", values: (rows)=> repDistinct(rows.filter(r=>r.enfermedadNombre), 'enfermedadNombre')},
+        {label:"Enfermedades causantes de muerte o desechos", field:"enfermedadMuerteDesecho", values: (rows)=> repDistinct(rows.filter(r=>r.enfermedadMuerteDesecho), 'enfermedadMuerteDesecho')},
+        {label:"Vacunas (nombre)", field:"vacunaNombre", values: (rows)=> repDistinct(rows.filter(r=>r.vacunaNombre), 'vacunaNombre')},
+        {label:"Vacunas (enfermedad que protege)", field:"enfermedadProtege", values: (rows)=> repDistinct(rows.filter(r=>r.enfermedadProtege), 'enfermedadProtege')},
+        {label:"Vacunas (aretes y fechas de aplicación)", field:"vacunaAreteFecha", values: (rows)=> repDistinct(rows.filter(r=>r.vacunaAreteFecha), 'vacunaAreteFecha')},
         {label:"Temperatura", field:"temp"},
         {label:"Tratamiento / vacuna", field:"tratamiento"}
       ],
@@ -728,7 +763,11 @@ const renderChecks = ()=>{
         {label:"Fecha", field:"fecha"},
         {label:"Arete", field:"arete"},
         {label:"Tipo", field:"tipo"},
-        {label:"Enfermedad", field:"enfermedadCat"},
+        {label:"Enfermedad", field:"enfermedadNombre"},
+        {label:"Enf. muerte/desecho", field:"enfermedadMuerteDesecho"},
+        {label:"Vacuna", field:"vacunaNombre"},
+        {label:"Protege contra", field:"enfermedadProtege"},
+        {label:"Aplicación vacuna", field:"vacunaAreteFecha"},
         {label:"Temperatura", field:"temp"},
         {label:"Tratamiento", field:"tratamiento"},
         {label:"Detalle", field:"detalle"},
