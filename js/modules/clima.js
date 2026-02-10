@@ -25,8 +25,8 @@ async function fetchTempActual(p){
   const btnUpd  = document.getElementById('btnActualizarPronostico');
   const grid    = document.getElementById('wx7');
   const status  = document.getElementById('wxStatus');
-  const controls = document.querySelector('.wx-controls');
-  let accumEl = document.getElementById("wxAccum");
+  const wrap = document.querySelector('.wx-wrap');
+  let accumEl = document.getElementById('wxAccum');
   if (!btnPerm || !btnUpd || !grid) return;
 
   const W = {
@@ -178,14 +178,13 @@ async function fetchTempActual(p){
         prevAccumByDate = {};
       }
 
-      // Re-crear el acumulado anual (se borra al limpiar el grid)
-      accumEl = document.createElement('span');
-      accumEl.className = 'wx-accum';
-      accumEl.id = 'wxAccum';
-      accumEl.textContent = 'Acumulado anual: —';
-
-      // Mostrar el acumulado arriba del contenedor de tarjetas de temperatura
-      if (accumEl && !accumEl.isConnected) grid.appendChild(accumEl);
+      if (!accumEl && wrap){
+        accumEl = document.createElement('div');
+        accumEl.className = 'wx-accum';
+        accumEl.id = 'wxAccum';
+        accumEl.textContent = 'Acumulado anual: —';
+        wrap.prepend(accumEl);
+      }
 
       fechas.forEach((iso, i)=>{
         const d = new Date(String(iso) + 'T12:00:00');

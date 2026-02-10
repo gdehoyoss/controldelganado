@@ -232,8 +232,7 @@ header small {
     .wx-rain{ font-size:11px; color:#374151; margin-top:4px; font-weight:800; }
     .wx-prev{ margin-top:6px; font-size:10px; color:#6b7280; font-weight:700; line-height:1.2; }
     .wx-prev div{ margin-top:2px; }
-    .wx-accum{ margin-top:10px; font-size:12px; color:#374151; font-weight:800; }
-    .wx-controls .wx-accum{ margin-top:0; }
+    .wx-accum{ margin-top:4px; margin-bottom:6px; font-size:12px; color:#374151; font-weight:800; display:block; }
 
 .lista {
       margin-top: 8px;
