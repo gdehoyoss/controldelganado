@@ -1077,6 +1077,7 @@ const renderChecks = ()=>{
     const f2 = document.getElementById('repF2');
     const f3 = document.getElementById('repF3');
     const search = document.getElementById('repSearch');
+    const dateExact = document.getElementById('repDateExact');
     const btnCSV = document.getElementById('btnRepCSV');
 
     title.textContent = cfg.title || "Reporte";
@@ -1128,9 +1129,17 @@ const renderChecks = ()=>{
 
     // reset search
     if (search) search.value = '';
+    if (dateExact) dateExact.value = '';
 
     // Build select options (3 slots iguales: "Filtrar por" + opciones por campo)
     const filterFields = (cfg.filters || []).filter(Boolean);
+    const dateFields = Array.from(new Set([
+      ...filterFields.map(f => f && f.field),
+      ...cols.map(c => c && c.field)
+    ].filter(Boolean))).filter((field)=>{
+      const key = String(field).toLowerCase();
+      return key.includes('fecha') || key.includes('date') || key.includes('_at');
+    });
 
     function fillFilterSelect(sel){
       if (!sel) return;
@@ -1205,6 +1214,19 @@ function getFiltered(){
         }
       }
       });
+
+      const selectedDate = (dateExact && dateExact.value) ? dateExact.value.trim() : '';
+      if (selectedDate){
+        out = out.filter((r)=>{
+          return dateFields.some((field)=>{
+            const raw = repToText(r[field]).trim();
+            if (!raw) return false;
+            if (raw === selectedDate) return true;
+            return raw.slice(0,10) === selectedDate;
+          });
+        });
+      }
+
       const q = (search && search.value) ? search.value.trim().toLowerCase() : '';
       if (q){
         out = out.filter(r=>{
@@ -1257,6 +1279,7 @@ function getFiltered(){
       };
     });
     if (search) search.oninput = () => { window.clearTimeout(search._t); search._t = window.setTimeout(render, 120); };
+    if (dateExact) dateExact.onchange = render;
 
     render();
     if (modal){
