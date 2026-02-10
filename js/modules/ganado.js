@@ -6,6 +6,20 @@
   // Animales: Inventario de bajas (ventas/salidas)
   // ======================
   const ANIMALES_BAJAS_KEY = 'pecuario_animales_bajas';
+  const VALOR_CABEZAS_KEY = 'pecuario_valor_cabezas';
+
+  function getValorCabezas(){ return getData(VALOR_CABEZAS_KEY) || []; }
+  function setValorCabezas(arr){ setData(VALOR_CABEZAS_KEY, arr || []); }
+
+  function fmtValorLinea(v){
+    const varTxt = Number(v.variacion || 0);
+    const signo = varTxt > 0 ? '+' : '';
+    return `Arete ${v.areteOficial || '-'} | Fecha: ${v.fecha || '-'} | Peso: ${v.pesoKg || '-'} kg | Valor: ${fmtMXN(Number(v.valorAnterior || 0))} → ${fmtMXN(Number(v.valorNuevo || 0))} (${signo}${fmtMXN(varTxt)}) | ${v.cambio || 'Sin cambio'}${v.motivo ? (' | ' + v.motivo) : ''}`;
+  }
+
+  function totalValorInventario(){
+    return cabezasArray({includeBajas:false}).reduce((acc, c)=> acc + (Number(c.valorActual || c.valorInicial || 0) || 0), 0);
+  }
 
   function fmtAnimalLinea(a){
     const inv = (typeof resolverInventarioTipo === 'function') ? resolverInventarioTipo(a.inventarioTipo, '', a.grupo) : (a.inventarioTipo || '');
@@ -144,7 +158,9 @@
           const left = document.createElement('div');
           const raz = [c.razaPre, c.cruza1, c.cruza2].filter(Boolean).join(' / ') || '-';
           const inv = obtenerTipoInventario(c);
-          left.textContent = `Arete ${c.areteOficial} | Inventario: ${inv || '-'} | Sexo: ${c.sexo||'-'} | Raza: ${raz} | Grupo: ${c.grupo||'-'}`;
+          const valor = Number(c.valorActual || c.valorInicial || 0) || 0;
+          const peso = (c.pesoKg !== undefined && c.pesoKg !== null && c.pesoKg !== '') ? `${c.pesoKg} kg` : '-';
+          left.textContent = `Arete ${c.areteOficial} | Inventario: ${inv || '-'} | Sexo: ${c.sexo||'-'} | Raza: ${raz} | Grupo: ${c.grupo||'-'} | Peso: ${peso} | Valor: ${fmtMXN(valor)}`;
 
           const right = document.createElement('div');
           right.style.display='flex';
@@ -164,7 +180,15 @@
           bBaja.dataset.arete = c.areteOficial;
           bBaja.dataset.action = 'baja';
 
+          const bValor = document.createElement('button');
+          bValor.type='button';
+          bValor.className='btn-terciario';
+          bValor.textContent='Actualizar valor';
+          bValor.dataset.arete = c.areteOficial;
+          bValor.dataset.action = 'valor';
+
           right.appendChild(bEdit);
+          right.appendChild(bValor);
           right.appendChild(bBaja);
 
           div.appendChild(left);
@@ -278,6 +302,11 @@
 
     // refrescar selects
     if (typeof refrescarSelectorAnimalesCambioGrupo === 'function') refrescarSelectorAnimalesCambioGrupo();
+
+    const notaValor = document.getElementById('nota-valor-inventario');
+    if (notaValor) notaValor.textContent = `Valor total del inventario activo: ${fmtMXN(totalValorInventario())}`;
+
+    pintarLista(VALOR_CABEZAS_KEY, 'lista-valor-cabezas', fmtValorLinea);
   }
 
   function cargarCabezaEnFormulario(arete){
@@ -302,8 +331,64 @@
     const fn = form.querySelector('[name="fechaNac"]'); if (fn) fn.value = cab.fechaNac || '';
     const g = form.querySelector('[name="grupo"]'); if (g) g.value = cab.grupo || '';
     const obs = form.querySelector('[name="obs"]'); if (obs) obs.value = cab.obs || '';
+    const valorI = form.querySelector('[name="valorInicial"]'); if (valorI) valorI.value = cab.valorInicial ?? '';
+    const peso = form.querySelector('[name="pesoKg"]'); if (peso) peso.value = cab.pesoKg ?? '';
 
     pintarToast('Editando arete ' + cab.areteOficial);
+  }
+
+  function initValorCabezasForm(){
+    const form = document.getElementById('form-valor-cabeza');
+    if (!form) return;
+    const fecha = form.querySelector('[name="fecha"]');
+    if (fecha) fecha.value = new Date().toISOString().slice(0,10);
+    const btnLimpiar = document.getElementById('btn-valor-limpiar');
+    if (btnLimpiar) btnLimpiar.addEventListener('click', ()=>{
+      form.reset();
+      if (fecha) fecha.value = new Date().toISOString().slice(0,10);
+    });
+
+    form.addEventListener('submit', (ev)=>{
+      ev.preventDefault();
+      const fd = new FormData(form);
+      const arete = String(fd.get('areteOficial')||'').trim();
+      const fechaU = String(fd.get('fecha')||'').trim();
+      const pesoKg = Number(fd.get('pesoKg')||0);
+      const valorNuevo = Number(fd.get('valorNuevo')||0);
+      const motivo = String(fd.get('motivo')||'').trim();
+      if (!arete) return alert('Arete requerido.');
+      const cab = getCabeza(arete);
+      if (!cab || cab.status === 'Baja') return alert('El arete no existe en inventario activo.');
+      if (!fechaU) return alert('Fecha requerida.');
+      if (!Number.isFinite(valorNuevo) || valorNuevo < 0) return alert('Valor nuevo inválido.');
+      if (!Number.isFinite(pesoKg) || pesoKg < 0) return alert('Peso inválido.');
+
+      const valorAnterior = Number(cab.valorActual || cab.valorInicial || 0) || 0;
+      const variacion = Number((valorNuevo - valorAnterior).toFixed(2));
+      const cambio = variacion > 0 ? 'Subió' : (variacion < 0 ? 'Bajó' : 'Sin cambio');
+      const rec = {
+        areteOficial: arete,
+        fecha: fechaU,
+        pesoKg: Number(pesoKg.toFixed(1)),
+        valorAnterior: Number(valorAnterior.toFixed(2)),
+        valorNuevo: Number(valorNuevo.toFixed(2)),
+        variacion,
+        cambio,
+        motivo,
+        usuario: localStorage.getItem('pecuario_usuario_actual') || ''
+      };
+      const lista = getValorCabezas();
+      lista.push(rec);
+      setValorCabezas(lista);
+
+      upsertCabeza({ ...cab, pesoKg: rec.pesoKg, valorActual: rec.valorNuevo }, {mode:'upsert', reason:'Actualización de valor por mercado'});
+      renderCabezasUI();
+      actualizarPanel();
+      actualizarReportes();
+      form.reset();
+      if (fecha) fecha.value = new Date().toISOString().slice(0,10);
+      alert('Actualización de valor guardada.');
+    });
   }
 
   function initBajasForm(){
@@ -444,6 +529,20 @@ migrarCabezasLegacy();
           alert('Arete oficial requerido.');
           return;
         }
+        if (obj.valorInicial !== ''){
+          const v = Number(obj.valorInicial);
+          if (!Number.isFinite(v) || v < 0){
+            alert('Valor inicial inválido.');
+            return;
+          }
+        }
+        if (obj.pesoKg !== ''){
+          const p = Number(obj.pesoKg);
+          if (!Number.isFinite(p) || p < 0){
+            alert('Peso inicial inválido.');
+            return;
+          }
+        }
         const reason = (_cabezaEditando && _cabezaEditando === arete) ? 'Edición' : 'Alta';
         const res = upsertCabeza(obj, {mode:'upsert', reason});
         if (!res.ok){
@@ -486,6 +585,18 @@ migrarCabezasLegacy();
           if (b) b.click();
           const inp = document.getElementById('baja-arete');
           if (inp){ inp.value = arete; inp.dispatchEvent(new Event('change')); inp.focus(); }
+        } else if (act === 'valor'){
+          const formValor = document.getElementById('form-valor-cabeza');
+          const cab = getCabeza(arete);
+          if (formValor){
+            const iArete = formValor.querySelector('[name="areteOficial"]');
+            const iPeso = formValor.querySelector('[name="pesoKg"]');
+            const iValor = formValor.querySelector('[name="valorNuevo"]');
+            if (iArete) iArete.value = arete;
+            if (iPeso) iPeso.value = cab ? (cab.pesoKg ?? '') : '';
+            if (iValor) iValor.value = cab ? (cab.valorActual ?? cab.valorInicial ?? '') : '';
+            iValor?.focus();
+          }
         }
       });
     }
@@ -520,6 +631,7 @@ migrarCabezasLegacy();
     }
 
     initBajasForm();
+    initValorCabezasForm();
     renderCabezasUI();
   }
   

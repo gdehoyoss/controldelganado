@@ -73,6 +73,7 @@ function actualizarReportes() {
   };
 
   setCount('rep-animales',    cabezasArray({includeBajas:false}).length);
+  setCount('rep-valor-ganado',getData('pecuario_valor_cabezas').length);
   setCount('rep-bajas',       getData('pecuario_animales_bajas').length);
   setCount('rep-pesajes',     getData('pecuario_pesaje_ind').length + getData('pecuario_pesaje_grupo').length);
   setCount('rep-repro',       getData('pecuario_repro').length);
