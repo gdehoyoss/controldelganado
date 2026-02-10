@@ -386,7 +386,9 @@ actualizarPanel();
     {key:"bajas", label:"Bajas (Ventas / Muertes)"},
     {key:"pesajes", label:"Pesajes"},
     {key:"repro", label:"Reproducción y partos"},
-    {key:"sanidad", label:"Sanidad"},    {key:"conta", label:"Contabilidad"},
+    {key:"empadres", label:"Empadres (toro y vientres)"},
+    {key:"sanidad", label:"Sanidad"},
+    {key:"conta", label:"Contabilidad"},
     {key:"seguridad", label:"Registros del Velador"},
     {key:"maquinaria", label:"Maquinaria y equipo"},
     {key:"actividades", label:"Responsabilidades y tareas"},
@@ -709,6 +711,116 @@ const renderChecks = ()=>{
         {label:"Resultado", field:"resultado"},
         {label:"Calostro", field:"calostroNivel"},
         {label:"Salud nacer", field:"saludCat"},
+        {label:"Obs.", field:"obs"}
+      ]
+    },
+
+
+    empadres: {
+      title: "Empadres (toro y vientres)",
+      keys: ["pecuario_repro", "pecuario_cabezas"],
+      normalize: (dataByKey) => {
+        const repro = dataByKey["pecuario_repro"] || [];
+        const cabezasRaw = dataByKey["pecuario_cabezas"] || [];
+        const cabezas = Array.isArray(cabezasRaw) ? cabezasRaw : Object.values(cabezasRaw || {});
+        const byArete = new Map();
+
+        cabezas.forEach((c) => {
+          if (!c) return;
+          const of = String(c.areteOficial || '').trim();
+          const ran = String(c.areteRancho || '').trim();
+          if (of) byArete.set(of, c);
+          if (ran) byArete.set(ran, c);
+        });
+
+        const tsOf = (d) => {
+          const t = Date.parse(String(d || '').trim());
+          return Number.isFinite(t) ? t : NaN;
+        };
+        const daysBetween = (a, b) => {
+          const ta = tsOf(a);
+          const tb = tsOf(b);
+          if (!Number.isFinite(ta) || !Number.isFinite(tb)) return '';
+          return String(Math.max(0, Math.round((tb - ta) / 86400000)));
+        };
+        const addDaysISO = (d, n) => {
+          const t = tsOf(d);
+          if (!Number.isFinite(t)) return '';
+          const x = new Date(t);
+          x.setDate(x.getDate() + n);
+          return x.toISOString().slice(0, 10);
+        };
+
+        const resolveRes90 = (r) => {
+          const txt = String(r.resultado || '').toLowerCase();
+          if (txt.includes('preñez') || txt.includes('preñez') || txt.includes('gest')) return 'Preñada';
+          if (txt.includes('falla') || txt.includes('aborto') || txt.includes('vací')) return 'Vacía';
+          if (String(r.fechaParto || '').trim()) return 'Preñada';
+          return 'Pendiente';
+        };
+
+        return repro
+          .filter((r) => String(r.toro || '').trim() || String(r.vientre || '').trim() || String(r.fechaEmp || '').trim())
+          .map((r) => {
+            const toro = byArete.get(String(r.toro || '').trim()) || null;
+            const vientre = byArete.get(String(r.vientre || '').trim()) || null;
+
+            const fechaInicio = String(r.fechaEmp || '').trim();
+            const fechaTermino = String(r.fechaParto || r.fechaDestete || r.fechaProb || '').trim();
+            const res90 = resolveRes90(r);
+
+            return {
+              toroArete: String(r.toro || '').trim(),
+              toroAreteRancho: toro ? String(toro.areteRancho || '').trim() : '',
+              toroRaza: String(r.razaM || (toro ? toro.razaPre : '') || '').trim(),
+              toroCruza1: String(r.cruzaM1 || (toro ? toro.cruza1 : '') || '').trim(),
+              toroCruza2: String(r.cruzaM2 || (toro ? toro.cruza2 : '') || '').trim(),
+              toroEdad: String((toro && (toro.edad || toro.fechaNac)) || '').trim(),
+              vientreArete: String(r.vientre || '').trim(),
+              vientreAreteRancho: vientre ? String(vientre.areteRancho || '').trim() : '',
+              vientreSexo: String((vientre && vientre.sexo) || 'Hembra').trim(),
+              vientreRaza: String(r.razaH || (vientre ? vientre.razaPre : '') || '').trim(),
+              vientreCruza1: String(r.cruzaH1 || (vientre ? vientre.cruza1 : '') || '').trim(),
+              vientreCruza2: String(r.cruzaH2 || (vientre ? vientre.cruza2 : '') || '').trim(),
+              fechaInicio,
+              fechaTermino,
+              diasDisposicion: daysBetween(fechaInicio, fechaTermino),
+              prueba90Fecha: addDaysISO(fechaInicio, 90),
+              prueba90Resultado: res90,
+              destino: res90 === 'Preñada' ? 'Vientre en gestación' : (res90 === 'Vacía' ? 'Vientre vacío' : 'En seguimiento'),
+              fechaParto: String(r.fechaParto || '').trim(),
+              resultadoEmpadre: String(r.resultado || '').trim(),
+              obs: String(r.obs || '').trim()
+            };
+          });
+      },
+      filters: [
+        {label:"Toro (arete oficial)", field:"toroArete", type:"text"},
+        {label:"Vientre (arete oficial)", field:"vientreArete", type:"text"},
+        {label:"Resultado prueba 90 días", field:"prueba90Resultado", values: ()=> ["Preñada", "Vacía", "Pendiente"]},
+        {label:"Destino sugerido", field:"destino", values: ()=> ["Vientre en gestación", "Vientre vacío", "En seguimiento"]}
+      ],
+      columns: [
+        {label:"Toro (oficial)", field:"toroArete"},
+        {label:"Toro (rancho)", field:"toroAreteRancho"},
+        {label:"Toro raza preponderante", field:"toroRaza"},
+        {label:"Toro cruza 1", field:"toroCruza1"},
+        {label:"Toro cruza 2", field:"toroCruza2"},
+        {label:"Toro edad", field:"toroEdad"},
+        {label:"Vientre (oficial)", field:"vientreArete"},
+        {label:"Vientre (rancho)", field:"vientreAreteRancho"},
+        {label:"Sexo", field:"vientreSexo"},
+        {label:"Vientre raza", field:"vientreRaza"},
+        {label:"Vientre cruza 1", field:"vientreCruza1"},
+        {label:"Vientre cruza 2", field:"vientreCruza2"},
+        {label:"Inicio empadre", field:"fechaInicio"},
+        {label:"Fin empadre", field:"fechaTermino"},
+        {label:"Días en disposición", field:"diasDisposicion"},
+        {label:"Prueba preñez (90 días)", field:"prueba90Fecha"},
+        {label:"Resultado 90 días", field:"prueba90Resultado"},
+        {label:"Destino sugerido", field:"destino"},
+        {label:"Resultado empadre", field:"resultadoEmpadre"},
+        {label:"Fecha de parto", field:"fechaParto"},
         {label:"Obs.", field:"obs"}
       ]
     },
