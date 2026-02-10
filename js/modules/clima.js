@@ -25,6 +25,7 @@ async function fetchTempActual(p){
   const btnUpd  = document.getElementById('btnActualizarPronostico');
   const grid    = document.getElementById('wx7');
   const status  = document.getElementById('wxStatus');
+  const controls = document.querySelector('.wx-controls');
   let accumEl = document.getElementById("wxAccum");
   if (!btnPerm || !btnUpd || !grid) return;
 
@@ -178,10 +179,13 @@ async function fetchTempActual(p){
       }
 
       // Re-crear el acumulado anual (se borra al limpiar el grid)
-      accumEl = document.createElement('div');
+      accumEl = document.createElement('span');
       accumEl.className = 'wx-accum';
       accumEl.id = 'wxAccum';
       accumEl.textContent = 'Acumulado anual: —';
+
+      // Mostrar el acumulado junto al texto de "Actualizado"
+      if (accumEl && controls && !accumEl.isConnected) controls.appendChild(accumEl);
 
       fechas.forEach((iso, i)=>{
         const d = new Date(String(iso) + 'T12:00:00');
@@ -213,9 +217,6 @@ async function fetchTempActual(p){
         `;
         grid.appendChild(card);
       });
-
-      // Poner el acumulado al final de las tarjetas
-      if (accumEl && !accumEl.isConnected) grid.appendChild(accumEl);
 
       await cargarAcumuladoAnual(p);
 
