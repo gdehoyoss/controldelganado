@@ -794,7 +794,7 @@ ${celo}`;
     {id:'panel', label:'Panel'},
     {id:'animales', label:'Ganado'},
     {id:'potreros', label:'Potreros y Corrales'},
-    {id:'repro', label:'Reproducción y partos'},
+    {id:'repro', label:'Reproducción'},
     {id:'sanidad', label:'Sanidad'},    {id:'conta', label:'Contabilidad'},
     {id:'seguridad', label:'Registros del Velador'},
     {id:'maquinaria', label:'Maquinaria y equipo'},

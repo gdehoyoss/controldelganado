@@ -58,6 +58,7 @@
   }
   initSubtabs(document.getElementById('mod-animales'));
   initSubtabs(document.getElementById('mod-potreros'));
+  initSubtabs(document.getElementById('mod-repro'));
 
   // ======================
   // Formularios base

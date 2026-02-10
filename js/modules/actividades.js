@@ -557,7 +557,7 @@ function listaModulosParaRoles(){
   mods.push({id:'cabezas:bajas', name:'Cabezas – Bajas'});
   mods.push({id:'cabezas:pesajes', name:'Cabezas – Pesajes'});
   mods.push({id:'cabezas:cambios', name:'Cabezas – Cambios de Grupo'});
-  mods.push({id:'repro', name:'Reproducción y Partos'});
+  mods.push({id:'repro', name:'Reproducción'});
   mods.push({id:'potreros', name:'Potreros'});
   mods.push({id:'corrales', name:'Corrales'});
   return mods;
