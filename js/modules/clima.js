@@ -184,8 +184,8 @@ async function fetchTempActual(p){
       accumEl.id = 'wxAccum';
       accumEl.textContent = 'Acumulado anual: —';
 
-      // Mostrar el acumulado junto al texto de "Actualizado"
-      if (accumEl && controls && !accumEl.isConnected) controls.appendChild(accumEl);
+      // Mostrar el acumulado arriba del contenedor de tarjetas de temperatura
+      if (accumEl && !accumEl.isConnected) grid.appendChild(accumEl);
 
       fechas.forEach((iso, i)=>{
         const d = new Date(String(iso) + 'T12:00:00');
