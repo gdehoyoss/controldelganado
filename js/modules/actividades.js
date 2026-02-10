@@ -623,28 +623,79 @@ function renderPersonalUI(){
   if (actualiza) setPersonalRancho(p);
   cont.innerHTML = '';
   if (!p.length){ cont.innerHTML = '<div>Sin personal registrado.</div>'; return; }
-  p.forEach(x=>{
-    const div = document.createElement('div');
-    div.style.display='flex';
-    div.style.justifyContent='space-between';
-    div.style.gap='10px';
-    div.style.alignItems='center';
-    const nombre = x.nombre || x.usuario || 'Sin nombre';
-    div.textContent = `${nombre} | ${x.movimiento || 'Alta'} | No. ${x.numeroTrabajador || x.identificacion || '-'} | Puesto: ${x.puesto || '-'}`;
-    const acciones = document.createElement('div');
-    acciones.style.display='flex'; acciones.style.gap='8px';
-    const bE = document.createElement('button'); bE.type='button'; bE.className='btn-terciario'; bE.textContent='Editar'; bE.dataset.action='edit'; bE.dataset.id=x.id;
-    const bD = document.createElement('button'); bD.type='button'; bD.className='btn-secundario'; bD.textContent='Borrar'; bD.dataset.action='del'; bD.dataset.id=x.id;
-    acciones.appendChild(bE); acciones.appendChild(bD);
-    const wrap = document.createElement('div');
-    wrap.style.display='flex';
-    wrap.style.justifyContent='space-between';
-    wrap.style.gap='10px';
-    wrap.style.alignItems='center';
-    wrap.appendChild(div.cloneNode(true));
-    wrap.appendChild(acciones);
-    cont.appendChild(wrap);
-  });
+
+  const responsabilidades = getRespons();
+  const obtenerResponsabilidades = (nombre)=>{
+    const n = String(nombre || '').trim().toLowerCase();
+    if (!n) return [];
+    return responsabilidades.filter(r => String(r.usuario || '').trim().toLowerCase() === n);
+  };
+
+  const crearSeccion = (titulo, items, emptyMsg)=>{
+    const sec = document.createElement('div');
+    sec.style.marginTop = '10px';
+    const h = document.createElement('h4');
+    h.style.margin = '0 0 8px';
+    h.textContent = titulo;
+    sec.appendChild(h);
+
+    if (!items.length){
+      const emp = document.createElement('div');
+      emp.className = 'nota';
+      emp.textContent = emptyMsg;
+      sec.appendChild(emp);
+      return sec;
+    }
+
+    items.forEach(x=>{
+      const nombre = x.nombre || x.usuario || 'Sin nombre';
+      const numero = x.numeroTrabajador || x.identificacion || '-';
+      const educ = x.estudios || {};
+      const educTxt = [educ.grado, educ.estado, educ.carrera || educ.especificacion].filter(Boolean).join(' / ') || 'No registrado';
+      const hijos = Array.isArray(x.hijos) ? x.hijos.length : 0;
+      const familiaPartes = [];
+      if (x.estadoCivil) familiaPartes.push(`Estado civil: ${x.estadoCivil}`);
+      if (x.padreNombre || x.madreNombre) familiaPartes.push(`Padres: ${(x.padreNombre||'-')} / ${(x.madreNombre||'-')}`);
+      if (x.parejaNombre) familiaPartes.push(`Pareja: ${x.parejaNombre}`);
+      familiaPartes.push(`Hijos: ${hijos}`);
+      const familiaTxt = familiaPartes.join(' | ');
+      const relResp = obtenerResponsabilidades(nombre);
+      const respTxt = relResp.length
+        ? relResp.map(r=>{
+            const mods = (r.modulosNombres && r.modulosNombres.length) ? r.modulosNombres.join(', ') : (r.moduloNombre||r.moduloId||'-');
+            return `${mods}: ${r.descripcion || '-'}`;
+          }).join(' • ')
+        : 'Sin responsabilidades registradas';
+
+      const card = document.createElement('div');
+      card.style.border = '1px solid #e5e7eb';
+      card.style.borderRadius = '12px';
+      card.style.padding = '10px';
+      card.style.marginBottom = '8px';
+      card.style.background = '#fff';
+
+      const info = document.createElement('div');
+      info.innerHTML = `<b>${nombre}</b> | No. ${numero} | Puesto: ${x.puesto || '-'}<br>Identificación y contacto: ${x.domicilio || '-'} | Cel: ${x.celular || '-'} | Sexo: ${x.sexo || '-'} | Nacimiento: ${x.fechaNacimiento || '-'}<br>Educación: ${educTxt}<br>Familia: ${familiaTxt}<br>Responsabilidades: ${respTxt}`;
+
+      const acciones = document.createElement('div');
+      acciones.style.display='flex';
+      acciones.style.gap='8px';
+      acciones.style.marginTop='8px';
+      const bE = document.createElement('button'); bE.type='button'; bE.className='btn-terciario'; bE.textContent='Editar'; bE.dataset.action='edit'; bE.dataset.id=x.id;
+      const bD = document.createElement('button'); bD.type='button'; bD.className='btn-secundario'; bD.textContent='Borrar'; bD.dataset.action='del'; bD.dataset.id=x.id;
+      acciones.appendChild(bE); acciones.appendChild(bD);
+
+      card.appendChild(info);
+      card.appendChild(acciones);
+      sec.appendChild(card);
+    });
+    return sec;
+  };
+
+  const activos = p.filter(x => (x.movimiento || 'Alta') !== 'Baja');
+  const bajas = p.filter(x => (x.movimiento || '') === 'Baja');
+  cont.appendChild(crearSeccion('Personal laborando (con identificación, educación y familia)', activos, 'Sin personal laborando registrado.'));
+  cont.appendChild(crearSeccion('Personal dado de baja (con responsabilidades)', bajas, 'Sin personal dado de baja registrado.'));
 }
 
 function renderResponsUI(){
