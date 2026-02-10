@@ -81,6 +81,68 @@
     });
   }
 
+
+  function getVientresParaPirnos(){
+    return (cabezasArray({includeBajas:false}) || [])
+      .filter(a => {
+        const sexo = String(a.sexo || '').toLowerCase();
+        const grupo = String(a.grupo || '').toLowerCase();
+        return sexo === 'hembra' && grupo.includes('vientre');
+      })
+      .sort((a,b)=> String(a.areteOficial||'').localeCompare(String(b.areteOficial||''), 'es', {numeric:true}));
+  }
+
+  function refrescarVientresPirnos(){
+    const sel = document.getElementById('selVientrePirnos');
+    if (!sel) return;
+    const vientres = getVientresParaPirnos();
+    sel.innerHTML = '<option value="">Selecciona…</option>';
+    vientres.forEach(v => {
+      const arete = String(v.areteOficial || '').trim();
+      if (!arete) return;
+      const o = document.createElement('option');
+      o.value = arete;
+      o.textContent = `${arete} · Grupo: ${v.grupo || '-'}`;
+      o.dataset.grupo = v.grupo || '';
+      sel.appendChild(o);
+    });
+  }
+
+  function actualizarGrupoVientrePirnos(){
+    const sel = document.getElementById('selVientrePirnos');
+    const out = document.getElementById('pirnosGrupoActual');
+    if (!sel || !out) return;
+    const op = sel.options[sel.selectedIndex];
+    out.value = (op && op.dataset && op.dataset.grupo) ? op.dataset.grupo : '';
+  }
+
+  function transferirVientreAEmpadreDesdePirnos(showAlert, areteIn, enCeloIn){
+    const selV = document.getElementById('selVientrePirnos');
+    const selCelo = document.getElementById('selCeloPirnos');
+    if (!selV || !selCelo) return false;
+    const arete = String(areteIn || selV.value || '').trim();
+    const enCelo = String(enCeloIn || selCelo.value || '').trim();
+    if (!arete) {
+      if (showAlert) alert('Selecciona un vientre.');
+      return false;
+    }
+    if (enCelo !== 'Sí') {
+      if (showAlert) alert('Para transferir a Empadre, marca “Sí” en celo.');
+      return false;
+    }
+    const res = cambiarGrupoAnimal(arete, 'Vientre en empadre');
+    if (!res) {
+      if (showAlert) alert('No se pudo transferir el vientre al grupo de Empadre.');
+      return false;
+    }
+    refrescarVientresPirnos();
+    const sel = document.getElementById('selVientrePirnos');
+    if (sel) sel.value = arete;
+    actualizarGrupoVientrePirnos();
+    refrescarSelectorAnimalesCambioGrupo();
+    return true;
+  }
+
   function pirnosResumen(r){
     const f = r.fecha || (r._fechaRegistro ? r._fechaRegistro.slice(0,10) : '');
     const cor = r.corralId ? `Corral ${r.corralId}` : (r.corralKey||'');
@@ -91,8 +153,16 @@
     const hec = `Heces: ${r.heces||'-'} | Act. biol.: ${r.actividadDias||'-'} d`;
     const man = `Mantillo: nuevas esp. ${r.nuevasEspecies||'-'} | Forraje acostado ${r.forrajeAcostadoPct||'0'}%`;
     const rec = `Recuperación: ${r.recuperacionDias||'-'} d | Rumen: ${r.rumen||'-'}`;
-    return `${head}\n${infil}\n${suelo}\n${hec}\n${man}\n${rec}`;
+    const celo = `Celo: ${r.enCelo||'-'} | Vientre: ${r.vientreArete||'-'} | Grupo: ${r.grupoActualVientre||'-'}${r.transferidoEmpadre==='Sí' ? ' | Transferido a Empadre' : ''}`;
+    return `${head}
+${infil}
+${suelo}
+${hec}
+${man}
+${rec}
+${celo}`;
   }
+
 
   function renderPirnosList(filterKey){
     const cont = document.getElementById('lista-pirnos');
@@ -127,6 +197,14 @@
       obj.corralId = (parts[1]||'').trim();
       // Re-render list
       renderPirnosList(document.getElementById('selCorralPirnos')?.value || '');
+      if (obj.vientreArete) {
+        const transferido = transferirVientreAEmpadreDesdePirnos(false, obj.vientreArete, obj.enCelo);
+        if (transferido) {
+          obj.transferidoEmpadre = 'Sí';
+          lista[lista.length - 1] = obj;
+          setData('pecuario_pirnos', lista);
+        }
+      }
       // reponer fecha por default
       const f = document.getElementById('pirnosFecha');
       if (f) f.value = hoyISODate();
@@ -143,9 +221,20 @@
     const f = document.getElementById('pirnosFecha');
     if (f && !f.value) f.value = hoyISODate();
     refrescarCorralesPirnos();
+    refrescarVientresPirnos();
+    actualizarGrupoVientrePirnos();
     const sel = document.getElementById('selCorralPirnos');
     if (sel){
       sel.addEventListener('change', ()=> renderPirnosList(sel.value || ''));
+    }
+    const selV = document.getElementById('selVientrePirnos');
+    if (selV) selV.addEventListener('change', actualizarGrupoVientrePirnos);
+    const btnTr = document.getElementById('btnTransferirEmpadre');
+    if (btnTr) {
+      btnTr.addEventListener('click', ()=> {
+        const ok = transferirVientreAEmpadreDesdePirnos(true);
+        if (ok) alert('Vientre transferido al grupo de Empadre.');
+      });
     }
     const btnAll = document.getElementById('btnVerTodosPirnos');
     if (btnAll){
@@ -303,14 +392,16 @@
     const selCor = document.getElementById('selCorralSupl');
     if (!selPot || !selCor) return;
     const p = selPot.value || '';
-    const corr = getData('pecuario_corrales').filter(c => (c.potrero||'')===p && !(c.salida||'').trim());
+    const corr = getData('pecuario_corrales')
+      .filter(c => (!p || (c.potrero||'')===p) && !(c.salida||'').trim())
+      .sort((a,b)=> String(a.corralId||'').localeCompare(String(b.corralId||''), 'es', {numeric:true}));
     selCor.innerHTML = '<option value="">Selecciona…</option>';
     corr.forEach(c=>{
       const id = (c.corralId||'').trim();
       if (!id) return;
       const o = document.createElement('option');
       o.value = id;
-      o.textContent = `Corral ${id}`;
+      o.textContent = `${c.potrero ? `Potrero ${c.potrero} · ` : ''}Corral ${id}`;
       selCor.appendChild(o);
     });
  
@@ -610,14 +701,16 @@
       const selCor = document.getElementById('selCorralSupl');
       if (!selPot || !selCor) return;
       const p = selPot.value || '';
-      const corr = getData('pecuario_corrales').filter(c => (c.potrero||'')===p && !(c.salida||'').trim());
+      const corr = getData('pecuario_corrales')
+        .filter(c => (!p || (c.potrero||'')===p) && !(c.salida||'').trim())
+        .sort((a,b)=> String(a.corralId||'').localeCompare(String(b.corralId||''), 'es', {numeric:true}));
       selCor.innerHTML = '<option value="">Selecciona…</option>';
       corr.forEach(c=>{
         const id = (c.corralId||'').trim();
         if (!id) return;
         const o = document.createElement('option');
         o.value = id;
-        o.textContent = `Corral ${id}`;
+        o.textContent = `${c.potrero ? `Potrero ${c.potrero} · ` : ''}Corral ${id}`;
         selCor.appendChild(o);
       });
     }
