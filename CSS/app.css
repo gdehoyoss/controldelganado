@@ -76,6 +76,7 @@ header small {
       border-radius: 6px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.10);
       margin-bottom: 16px;
+      position: relative;
     }
     section.modulo.activo { display: block; }
 
@@ -486,3 +487,31 @@ header small {
 .muted{ font-size: 12px; opacity:.75; }
 .conta-actions{ gap: 8px; flex-wrap: wrap; }
 .conta-row-action{ padding: 4px 8px; font-size: 12px; line-height: 1; }
+
+/* Guía rápida por módulo */
+.btn-guia-modulo {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid #5a2f0c;
+  background: #8b4513;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.18);
+}
+.btn-guia-modulo:hover { filter: brightness(1.08); }
+.guia-lista {
+  margin: 8px 0 0 18px;
+  padding: 0;
+  font-size: 13px;
+}
+.guia-lista li { margin-bottom: 6px; }
