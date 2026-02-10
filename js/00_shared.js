@@ -522,17 +522,29 @@ const renderChecks = ()=>{
   // ======================
   const REPORT_MODAL_CFG = {
     animales: {
-      title: "Ganado (Inventario activo)",
-      keys: ["pecuario_cabezas"],
+      title: "Ganado",
+      keys: ["pecuario_cabezas", "pecuario_animales_bajas"],
       normalize: (dataByKey) => {
-        const raw = dataByKey["pecuario_cabezas"];
-        const arr = Array.isArray(raw) ? raw : Object.values(raw || {});
-        return (arr||[]).filter(x => x && x.status !== 'Baja').map(x=>({
+        const rawActivos = dataByKey["pecuario_cabezas"];
+        const activos = Array.isArray(rawActivos) ? rawActivos : Object.values(rawActivos || {});
+        const altas = (activos||[]).filter(x => x && x.status !== 'Baja').map(x=>({
           ...x,
+          estadoInventario: 'Alta',
           inventarioTipo: resolverInventarioTipo(x.inventarioTipo, '', x.grupo)
         }));
+
+        const bajasRaw = dataByKey[ANIMALES_BAJAS_KEY] || dataByKey["pecuario_animales_bajas"] || [];
+        const bajas = (bajasRaw||[]).map(x=>({
+          ...x,
+          estadoInventario: 'Baja',
+          inventarioTipo: resolverInventarioTipo(x.inventarioTipo, '', x.grupo),
+          estado: x.estado || x._motivoBaja || x.motivo || ''
+        }));
+
+        return altas.concat(bajas);
       },
       filters: [
+        {label:"Estatus", field:"estadoInventario", values: ()=> ["Alta","Baja"]},
         {label:"Inventario", field:"inventarioTipo", values: ()=> ["Ganado Reproducción","Ganado Comercial"]},
         {label:"Grupo", field:"grupo", values: ()=> gruposBase},
         {label:"Sexo", field:"sexo", values: ()=> ["Hembra","Macho"]},
