@@ -901,7 +901,40 @@ const renderChecks = ()=>{
 
     corrales: {
       title: "Corrales",
-      keys: ["pecuario_corrales"],
+      keys: ["pecuario_corrales","pecuario_pirnos"],
+      normalize: (dataByKey) => {
+        const corrales = dataByKey["pecuario_corrales"] || [];
+        const pirnos = dataByKey["pecuario_pirnos"] || [];
+        const byCorral = new Map();
+
+        pirnos.forEach((r) => {
+          const pot = String(r.potrero || '').trim();
+          const cor = String(r.corralId || '').trim();
+          if (!pot || !cor) return;
+          const key = `${pot}|${cor}`;
+          const prev = byCorral.get(key);
+          const prevTs = Date.parse(prev?.fecha || prev?._fechaRegistro || 0) || 0;
+          const curTs = Date.parse(r.fecha || r._fechaRegistro || 0) || 0;
+          if (!prev || curTs >= prevTs) byCorral.set(key, r);
+        });
+
+        return corrales.map((c) => {
+          const key = `${String(c.potrero || '').trim()}|${String(c.corralId || '').trim()}`;
+          const ind = byCorral.get(key) || {};
+          const hecesRaw = String(ind.heces || '').trim();
+          const heces = hecesRaw === '1' ? 'Sopa' : (hecesRaw === '2' ? 'Pastel' : (hecesRaw === '3' ? 'Piedra' : hecesRaw));
+          return {
+            ...c,
+            infil15: ind.infil15 || '',
+            infil30: ind.infil30 || '',
+            heces,
+            escarabajos: ind.escarabajos || '',
+            actividadDias: ind.actividadDias || '',
+            mantilloPct: ind.forrajeAcostadoPct || '',
+            sueloDesnudoPct: ind.sueloDesnudoPct || ''
+          };
+        });
+      },
       filters: [
         {label:"Corral", field:"corralId"},
         {label:"Potrero asociado", field:"potrero", values: ()=> (getData('pecuario_potreros')||[]).map(p=>p.letra).filter(Boolean)},
@@ -914,6 +947,13 @@ const renderChecks = ()=>{
         {label:"Densidad", field:"densidadAuto"},
         {label:"Acceso a bebederos", field:"bebedero", values: ()=> ["Sí","No","No especificado"]},
         {label:"Acceso a comederos", field:"comedero", values: ()=> ["Sí","No","No especificado"]},
+        {label:"Infiltración del agua 15 cm", field:"infil15", values: ()=> ["Sí","No"]},
+        {label:"Infiltración del agua 30 cm", field:"infil30", values: ()=> ["Sí","No"]},
+        {label:"Heces", field:"heces"},
+        {label:"Escarabajos", field:"escarabajos", values: ()=> ["Sí","No"]},
+        {label:"Actividad biológica (días)", field:"actividadDias"},
+        {label:"Mantillo (% forraje acostado)", field:"mantilloPct"},
+        {label:"Áreas descubiertas (%)", field:"sueloDesnudoPct"},
         {label:"Fecha de registro", field:"_fechaRegistro"}
       ],
       columns: [
