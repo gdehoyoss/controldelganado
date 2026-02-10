@@ -47,7 +47,7 @@
   <button data-modulo="panel" class="activo">Panel</button>
   <button data-modulo="animales">Ganado</button>
   <button data-modulo="potreros">Potreros y Corrales</button>
-  <button data-modulo="repro">Reproducción y partos</button>
+  <button data-modulo="repro">Reproducción</button>
   <button data-modulo="sanidad">Sanidad</button>
 <button data-modulo="conta">Contabilidad</button>
   <button data-modulo="seguridad">Registros del Velador</button>
@@ -817,10 +817,139 @@
     <div class="lista" id="lista-desglose-potreros-corrales"></div>
   </section>
 
-  <!-- REPRODUCCIÓN Y PARTOS -->
+  <!-- REPRODUCCIÓN -->
   <section id="mod-repro" class="modulo">
-    <h2>Reproducción y partos</h2>
+    <h2>Reproducción</h2>
     <p>Seguimiento de empadres, gestaciones y partos. Incluye cruza de la madre y del padre (preponderante + cruza 1/2) para estimar cruza de la cría.</p>
+
+    <div class="subtabs" aria-label="Submódulos Reproducción">
+      <button type="button" class="activo" data-sub="repro-empadre">Empadre</button>
+      <button type="button" data-sub="repro-partos">Partos</button>
+    </div>
+
+    <div id="sub-repro-empadre" class="submodulo activo">
+      <form id="form-empadre" class="tarjeta" style="background:#fff;border:1px solid #e5e7eb; margin-bottom:12px;">
+        <h3 style="margin-top:0;">Grupo de empadre</h3>
+        <div class="fila-cuatro">
+          <div>
+            <label>Fecha de creación del grupo</label>
+            <input type="date" name="fechaCreacion" id="empadreFechaCreacion" required />
+          </div>
+          <div>
+            <label>ID de grupo (fecha + consecutivo)</label>
+            <input name="idGrupoEmpadre" id="empadreIdGrupo" readonly />
+          </div>
+          <div>
+            <label>Toros asignados</label>
+            <input type="number" min="0" name="torosAsignados" id="empadreTorosAsignados" />
+          </div>
+          <div>
+            <label>Inseminadores asignados</label>
+            <input type="number" min="0" name="inseminadoresAsignados" id="empadreInseminadoresAsignados" />
+          </div>
+        </div>
+        <div class="fila-dos">
+          <div>
+            <label>Vientres que integran el grupo</label>
+            <input type="number" min="0" name="vientresGrupo" id="empadreVientresGrupo" />
+          </div>
+          <div style="display:flex; align-items:end;">
+            <button type="button" class="btn-terciario" id="btnEmpadreNuevoGrupo">Generar ID de grupo</button>
+          </div>
+        </div>
+
+        <h4 style="margin:8px 0;">Toro</h4>
+        <div class="fila-cuatro">
+          <div>
+            <label>Arete del toro (oficial o rancho)</label>
+            <input id="empadreToroArete" name="toroArete" />
+          </div>
+          <div>
+            <label>Arete oficial o rancho</label>
+            <input id="empadreToroAreteMostrado" name="toroAreteMostrado" readonly />
+          </div>
+          <div>
+            <label>Origen</label>
+            <input id="empadreToroOrigen" name="toroOrigen" readonly />
+          </div>
+          <div>
+            <label>Fecha de nacimiento</label>
+            <input id="empadreToroFechaNac" name="toroFechaNac" readonly />
+          </div>
+        </div>
+        <div class="fila-tres">
+          <div>
+            <label>Raza preponderante</label>
+            <input id="empadreToroRazaPre" name="toroRazaPre" readonly />
+          </div>
+          <div>
+            <label>Cruza 1</label>
+            <input id="empadreToroCruza1" name="toroCruza1" readonly />
+          </div>
+          <div>
+            <label>Cruza 2</label>
+            <input id="empadreToroCruza2" name="toroCruza2" readonly />
+          </div>
+        </div>
+
+        <h4 style="margin:8px 0;">Inseminación artificial</h4>
+        <div class="fila-tres">
+          <div>
+            <label>Técnico inseminador</label>
+            <input name="tecnicoInseminador" />
+          </div>
+          <div>
+            <label>Toro donador del semen</label>
+            <input name="toroDonador" />
+          </div>
+          <div>
+            <label>Vientres asignados (inseminador)</label>
+            <input type="number" min="0" name="vientresInseminador" />
+          </div>
+        </div>
+        <label>Observaciones de inseminación y características del semen</label>
+        <textarea name="obsInseminacion"></textarea>
+
+        <div class="fila-dos">
+          <div>
+            <label>Vientres asignados al toro</label>
+            <input type="number" min="0" name="vientresToro" />
+          </div>
+          <div>
+            <label>Vientres asignados en esta etapa (total)</label>
+            <input type="number" min="0" name="vientresEtapa" />
+          </div>
+        </div>
+
+        <h4 style="margin:8px 0;">Vientres</h4>
+        <label>Aretes de vientres (separados por coma o salto de línea)</label>
+        <textarea id="empadreVientresAretes" name="vientresAretes" placeholder="Ejemplo: 1201, 1202, 1203"></textarea>
+        <div class="acciones" style="margin-top:8px;">
+          <button type="button" class="btn-terciario" id="btnEmpadreCargarVientres">Cargar datos de vientres</button>
+        </div>
+        <div class="lista" id="empadreVientresDetalle"></div>
+
+        <div class="fila-dos" style="margin-top:10px;">
+          <div>
+            <label>% de preñez del grupo</label>
+            <input type="number" min="0" max="100" step="0.1" name="porcPrenez" />
+          </div>
+          <div>
+            <label>% de nacimientos del grupo</label>
+            <input type="number" min="0" max="100" step="0.1" name="porcNacimientos" />
+          </div>
+        </div>
+
+        <div class="acciones">
+          <button type="submit" class="btn-primario">Guardar grupo de empadre</button>
+          <button type="button" class="btn-secundario" onclick="limpiarFormulario('form-empadre')">Limpiar</button>
+        </div>
+      </form>
+
+      <div class="lista" id="lista-empadre"></div>
+    </div>
+
+    <div id="sub-repro-partos" class="submodulo">
 
     <form id="form-repro">
       <h3>Madre</h3>
@@ -980,7 +1109,7 @@
     </form>
 
     <details>
-      <summary>Actividades sugeridas (Reproducción y partos)</summary>
+      <summary>Actividades sugeridas (Reproducción)</summary>
       <ul>
         <li>Vigilancia de madres en gestación.</li>
         <li>Atención al parto y a la cría (calostro, primeras horas).</li>
@@ -1116,6 +1245,7 @@
     </details>
 
     <div class="lista" id="lista-repro"></div>
+    </div>
   </section>
 
   <!-- SANIDAD -->
@@ -1849,7 +1979,7 @@
               <option>Pesajes</option>
               <option>Potreros</option>
               <option>Corrales</option>
-              <option>Reproducción y partos</option>
+              <option>Reproducción</option>
               <option>Sanidad</option>
               <option>Contabilidad</option>
               <option>Registros del Velador</option>
@@ -1959,7 +2089,7 @@
         <tr data-rep="animales"><td style="padding:6px;">Ganado</td><td style="padding:6px;" id="rep-animales">0</td></tr>
         <tr data-rep="bajas"><td style="padding:6px;">Bajas (Ventas / Muertes)</td><td style="padding:6px;" id="rep-bajas">0</td></tr>
         <tr data-rep="pesajes"><td style="padding:6px;">Pesajes</td><td style="padding:6px;" id="rep-pesajes">0</td></tr>
-        <tr data-rep="repro"><td style="padding:6px;">Reproducción y partos</td><td style="padding:6px;" id="rep-repro">0</td></tr>
+        <tr data-rep="repro"><td style="padding:6px;">Reproducción</td><td style="padding:6px;" id="rep-repro">0</td></tr>
         <tr data-rep="crias"><td style="padding:6px;">Crías</td><td style="padding:6px;" id="rep-crias">0</td></tr>
         <tr data-rep="empadres"><td style="padding:6px;">Empadres (toro y vientres)</td><td style="padding:6px;" id="rep-empadres">0</td></tr>
         <tr data-rep="sanidad"><td style="padding:6px;">Sanidad</td><td style="padding:6px;" id="rep-sanidad">0</td></tr>

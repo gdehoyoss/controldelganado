@@ -394,6 +394,130 @@
     }
   );
 
+
+  const EMPADRE_KEY = 'pecuario_empadre';
+
+  function fmtEmpadreLinea(r){
+    return `Grupo ${r.idGrupoEmpadre || '-'} | Fecha: ${r.fechaCreacion || '-'} | Toro: ${r.toroAreteMostrado || r.toroArete || '-'} | Vientres: ${r.vientresGrupo || '-'} | % Preñez: ${r.porcPrenez || '-'} | % Nacimientos: ${r.porcNacimientos || '-'}`;
+  }
+
+  function initEmpadre(){
+    const form = document.getElementById('form-empadre');
+    if (!form) return;
+
+    const inpFecha = document.getElementById('empadreFechaCreacion');
+    const inpId = document.getElementById('empadreIdGrupo');
+    const btnNuevo = document.getElementById('btnEmpadreNuevoGrupo');
+    const inpToro = document.getElementById('empadreToroArete');
+    const txtVientres = document.getElementById('empadreVientresAretes');
+    const btnVientres = document.getElementById('btnEmpadreCargarVientres');
+    const boxVientres = document.getElementById('empadreVientresDetalle');
+
+    function getCabezaByAnyArete(v){
+      const arete = String(v||'').trim();
+      if (!arete) return null;
+      const res = (typeof findCabezaPorArete === 'function') ? findCabezaPorArete(arete) : null;
+      return res ? res.cabeza : getCabeza(arete);
+    }
+
+    function generarIdGrupo(){
+      if (!inpFecha || !inpId) return;
+      const fecha = String(inpFecha.value||'').trim();
+      if (!fecha) return;
+      const base = fecha.replaceAll('-', '');
+      const lista = getData(EMPADRE_KEY) || [];
+      let max = 0;
+      lista.forEach(item=>{
+        const id = String(item.idGrupoEmpadre||'');
+        if (!id.startsWith(base + '-')) return;
+        const c = Number(id.split('-')[1]);
+        if (Number.isFinite(c) && c > max) max = c;
+      });
+      inpId.value = `${base}-${String(max+1).padStart(2,'0')}`;
+    }
+
+    function fillToro(){
+      const cab = getCabezaByAnyArete(inpToro ? inpToro.value : '');
+      const set = (id, val)=>{ const el=document.getElementById(id); if (el) el.value = val || ''; };
+      if (!cab){
+        set('empadreToroAreteMostrado','');
+        set('empadreToroOrigen','');
+        set('empadreToroFechaNac','');
+        set('empadreToroRazaPre','');
+        set('empadreToroCruza1','');
+        set('empadreToroCruza2','');
+        return;
+      }
+      set('empadreToroAreteMostrado', cab.areteOficial || cab.areteRancho || '');
+      set('empadreToroOrigen', cab.origen || '');
+      set('empadreToroFechaNac', cab.fechaNac || '');
+      set('empadreToroRazaPre', cab.razaPre || '');
+      set('empadreToroCruza1', cab.cruza1 || '');
+      set('empadreToroCruza2', cab.cruza2 || '');
+    }
+
+    function parseVientres(){
+      const txt = String(txtVientres ? txtVientres.value : '');
+      return Array.from(new Set(txt.split(/[\n,;]+/).map(x=>x.trim()).filter(Boolean)));
+    }
+
+    function renderVientres(){
+      if (!boxVientres) return [];
+      const aretes = parseVientres();
+      if (!aretes.length){
+        boxVientres.innerHTML = '<div>Sin vientres cargados.</div>';
+        return [];
+      }
+      const det = aretes.map(a=>{
+        const cab = getCabezaByAnyArete(a);
+        return {
+          areteInput: a,
+          areteMostrado: cab ? (cab.areteOficial || cab.areteRancho || a) : a,
+          origen: cab ? (cab.origen || '') : '',
+          fechaNac: cab ? (cab.fechaNac || '') : '',
+          razaPre: cab ? (cab.razaPre || '') : '',
+          cruza1: cab ? (cab.cruza1 || '') : '',
+          cruza2: cab ? (cab.cruza2 || '') : ''
+        };
+      });
+      boxVientres.innerHTML = det.map(d=>`<div>Arete: ${d.areteMostrado || '-'} | Origen: ${d.origen || '-'} | Nac: ${d.fechaNac || '-'} | Raza: ${d.razaPre || '-'} | Cruza 1: ${d.cruza1 || '-'} | Cruza 2: ${d.cruza2 || '-'}</div>`).join('');
+      return det;
+    }
+
+    if (inpFecha && !inpFecha.value) inpFecha.value = new Date().toISOString().slice(0,10);
+    generarIdGrupo();
+    renderVientres();
+
+    if (inpFecha) inpFecha.addEventListener('change', generarIdGrupo);
+    if (btnNuevo) btnNuevo.addEventListener('click', generarIdGrupo);
+    if (inpToro) inpToro.addEventListener('change', fillToro);
+    if (btnVientres) btnVientres.addEventListener('click', renderVientres);
+
+    form.addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const obj = {};
+      const fd = new FormData(form);
+      fd.forEach((v,k)=> obj[k]=v);
+      if (!obj.fechaCreacion) return alert('Captura la fecha de creación del grupo.');
+      if (!obj.idGrupoEmpadre) generarIdGrupo();
+      obj.idGrupoEmpadre = inpId ? inpId.value : (obj.idGrupoEmpadre||'');
+      obj.vientresDetalle = renderVientres();
+      obj._fechaRegistro = new Date().toISOString();
+
+      const lista = getData(EMPADRE_KEY);
+      lista.push(obj);
+      setData(EMPADRE_KEY, lista);
+      pintarLista(EMPADRE_KEY, 'lista-empadre', fmtEmpadreLinea);
+      actualizarPanel();
+      actualizarReportes();
+      alert('Grupo de empadre guardado.');
+    });
+
+    pintarLista(EMPADRE_KEY, 'lista-empadre', fmtEmpadreLinea);
+  }
+
+  initEmpadre();
+
   // ======================
   // Reproducción: Altas/Bajas de crías
   // ======================
