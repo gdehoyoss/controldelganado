@@ -61,6 +61,164 @@
   initSubtabs(document.getElementById('mod-repro'));
 
   // ======================
+  // Guía rápida por módulo
+  // ======================
+  const GUIAS_MODULO = {
+    panel: {
+      titulo: 'Guía rápida: Panel general',
+      subtitulo: 'Aquí ves el resumen del día sin meterte a cada pantalla.',
+      pasos: [
+        'Primero revisa tarjetas clave: cabezas, nacimientos, sanidad y dinero.',
+        'Si te falta clima, toca "Permitir ubicación" y luego "Actualizar".',
+        'Úsalo como tablero rápido para decidir qué atender hoy.'
+      ]
+    },
+    animales: {
+      titulo: 'Guía rápida: Ganado',
+      subtitulo: 'Aquí das de alta, bajas y pesajes de tus animales.',
+      pasos: [
+        'En "Altas" captura arete, sexo, grupo y peso inicial.',
+        'En "Bajas" registra cuándo y por qué salió el animal.',
+        'En "Pesajes" guarda el peso para seguir el avance.'
+      ]
+    },
+    potreros: {
+      titulo: 'Guía rápida: Potreros y Corrales',
+      subtitulo: 'Te ayuda a ubicar ganado y movimientos por área.',
+      pasos: [
+        'Registra potrero o corral con nombre claro para el equipo.',
+        'Anota entradas y salidas para saber dónde está cada grupo.',
+        'Revisa ocupación para evitar sobrecargar una zona.'
+      ]
+    },
+    repro: {
+      titulo: 'Guía rápida: Reproducción',
+      subtitulo: 'Lleva control de celo, servicio, preñez y parto.',
+      pasos: [
+        'Empieza con el arete correcto para no confundir vacas.',
+        'Registra fecha de servicio o inseminación al momento.',
+        'Da seguimiento hasta confirmar preñez y luego parto.'
+      ]
+    },
+    sanidad: {
+      titulo: 'Guía rápida: Sanidad',
+      subtitulo: 'Anota vacunas, tratamientos y cualquier evento de salud.',
+      pasos: [
+        'Captura qué se aplicó, a quién y en qué fecha.',
+        'Escribe dosis y observaciones en palabras simples.',
+        'Revisa historial antes de volver a medicar.'
+      ]
+    },
+    conta: {
+      titulo: 'Guía rápida: Contabilidad',
+      subtitulo: 'Lleva dinero de forma simple: apertura, movimientos y cierre de año.',
+      pasos: [
+        'Primero define saldo inicial del año en "Apertura" para arrancar bien.',
+        'Luego registra cada ingreso o egreso con su cuenta y monto real.',
+        'Al final revisa el total y usa "Cerrar ejercicio" cuando todo esté cuadrado.'
+      ]
+    },
+    seguridad: {
+      titulo: 'Guía rápida: Registros del Velador',
+      subtitulo: 'Sirve para dejar evidencia de rondines y novedades.',
+      pasos: [
+        'Anota hora, evento y observación de cada ronda.',
+        'Si hubo visita o incidente, deja detalle corto y claro.',
+        'Consulta registros para entregar turno sin perder información.'
+      ]
+    },
+    maquinaria: {
+      titulo: 'Guía rápida: Maquinaria y equipo',
+      subtitulo: 'Lleva control básico de uso y mantenimiento.',
+      pasos: [
+        'Registra equipo con nombre que todos entiendan.',
+        'Anota uso, fallas y servicio realizado.',
+        'Programa mantenimientos para evitar paros inesperados.'
+      ]
+    },
+    actividades: {
+      titulo: 'Guía rápida: Responsabilidades y tareas',
+      subtitulo: 'Organiza pendientes del día por persona.',
+      pasos: [
+        'Crea tareas cortas y directas, con responsable.',
+        'Marca prioridad para saber qué se atiende primero.',
+        'Cierra tareas al terminar para mantener orden real.'
+      ]
+    },
+    reportes: {
+      titulo: 'Guía rápida: Reportes',
+      subtitulo: 'Aquí filtras datos y puedes exportar información.',
+      pasos: [
+        'Selecciona el reporte y usa filtros por módulo o fecha.',
+        'Apóyate en búsqueda rápida para encontrar registros puntuales.',
+        'Exporta CSV cuando necesites compartir o respaldar datos.'
+      ]
+    },
+    config: {
+      titulo: 'Guía rápida: Perfil del rancho',
+      subtitulo: 'Configura datos generales y accesos de usuarios.',
+      pasos: [
+        'Actualiza datos del rancho para tener información vigente.',
+        'Registra usuarios y define permisos por módulo.',
+        'Revisa cambios antes de guardar para evitar errores de acceso.'
+      ]
+    }
+  };
+
+  const modalGuia = document.getElementById('modalGuiaModulo');
+  const guiaTitulo = document.getElementById('guiaTitulo');
+  const guiaSubtitulo = document.getElementById('guiaSubtitulo');
+  const guiaLista = document.getElementById('guiaLista');
+  const btnCerrarGuia = document.getElementById('btnCerrarGuiaModulo');
+
+  function abrirGuiaModulo(modKey) {
+    if (!modalGuia || !guiaTitulo || !guiaSubtitulo || !guiaLista) return;
+    const data = GUIAS_MODULO[modKey];
+    if (!data) return;
+    guiaTitulo.textContent = data.titulo;
+    guiaSubtitulo.textContent = data.subtitulo;
+    guiaLista.innerHTML = '';
+    data.pasos.forEach(paso => {
+      const li = document.createElement('li');
+      li.textContent = paso;
+      guiaLista.appendChild(li);
+    });
+    modalGuia.classList.add('activo');
+    modalGuia.setAttribute('aria-hidden', 'false');
+  }
+
+  function cerrarGuiaModulo() {
+    if (!modalGuia) return;
+    modalGuia.classList.remove('activo');
+    modalGuia.setAttribute('aria-hidden', 'true');
+  }
+
+  document.querySelectorAll('section.modulo').forEach(sec => {
+    const modKey = (sec.id || '').replace('mod-', '');
+    if (!GUIAS_MODULO[modKey]) return;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn-guia-modulo';
+    btn.setAttribute('aria-label', 'Abrir guía rápida de este módulo');
+    btn.title = 'Guía rápida';
+    btn.textContent = '?';
+    btn.addEventListener('click', () => abrirGuiaModulo(modKey));
+    sec.appendChild(btn);
+  });
+
+  if (btnCerrarGuia) btnCerrarGuia.addEventListener('click', cerrarGuiaModulo);
+  if (modalGuia) {
+    modalGuia.addEventListener('click', (e) => {
+      if (e.target === modalGuia) cerrarGuiaModulo();
+    });
+  }
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modalGuia && modalGuia.classList.contains('activo')) {
+      cerrarGuiaModulo();
+    }
+  });
+
+  // ======================
   // Formularios base
   // ======================
   function limpiarFormulario(idForm) {
