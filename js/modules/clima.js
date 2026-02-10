@@ -25,6 +25,7 @@ async function fetchTempActual(p){
   const btnUpd  = document.getElementById('btnActualizarPronostico');
   const grid    = document.getElementById('wx7');
   const status  = document.getElementById('wxStatus');
+  const controls = document.querySelector('.wx-controls');
   let accumEl = document.getElementById("wxAccum");
   if (!btnPerm || !btnUpd || !grid) return;
 
@@ -178,7 +179,7 @@ async function fetchTempActual(p){
       }
 
       // Re-crear el acumulado anual (se borra al limpiar el grid)
-      accumEl = document.createElement('div');
+      accumEl = document.createElement('span');
       accumEl.className = 'wx-accum';
       accumEl.id = 'wxAccum';
       accumEl.textContent = 'Acumulado anual: —';
