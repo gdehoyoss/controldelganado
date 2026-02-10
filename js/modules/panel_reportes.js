@@ -77,6 +77,7 @@ function actualizarReportes() {
   setCount('rep-pesajes',     getData('pecuario_pesaje_ind').length + getData('pecuario_pesaje_grupo').length);
   setCount('rep-repro',       getData('pecuario_repro').length);
   setCount('rep-crias',       getData('pecuario_repro_crias').length);
+  setCount('rep-empadres',    getData('pecuario_repro').filter(r => String(r.fechaEmp || '').trim() || String(r.toro || '').trim() || String(r.vientre || '').trim()).length);
   setCount('rep-sanidad',     getData('pecuario_sanidad').length);
   setCount('rep-conta',       (getData('pecuario_conta_ledger')||[]).length);
   setCount('rep-seguridad',   getData('pecuario_visitas').length + getData('pecuario_bitacora').length);
