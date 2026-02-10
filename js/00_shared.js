@@ -386,6 +386,7 @@ actualizarPanel();
     {key:"bajas", label:"Bajas (Ventas / Muertes)"},
     {key:"pesajes", label:"Pesajes"},
     {key:"repro", label:"Reproducción y partos"},
+    {key:"crias", label:"Crías"},
     {key:"empadres", label:"Empadres (toro y vientres)"},
     {key:"sanidad", label:"Sanidad"},
     {key:"conta", label:"Contabilidad"},
@@ -729,6 +730,108 @@ const renderChecks = ()=>{
         {label:"Obs.", field:"obs"}
       ]
     },
+
+    crias: {
+      title: "Crías",
+      keys: ["pecuario_repro_crias","pecuario_repro","pecuario_pesaje_ind"],
+      normalize: (dataByKey) => {
+        const altas = (dataByKey["pecuario_repro_crias"] || []).map(x => ({...x}));
+        const repro = dataByKey["pecuario_repro"] || [];
+        const pesajes = dataByKey["pecuario_pesaje_ind"] || [];
+
+        function valorPeso(p){
+          const n = parseFloat(p);
+          return Number.isFinite(n) ? n : null;
+        }
+
+        return altas.map((x)=>{
+          const arete = String(x.areteOficial || '').trim();
+          const fechaNac = String(x.fechaNac || '').trim();
+
+          const relRepro = repro.find(r =>
+            String(r.fechaParto || '').trim() === fechaNac
+            && (!x.sexo || String(r.sexoCria || '').trim() === String(x.sexo || '').trim())
+          ) || null;
+
+          const pesajesCria = pesajes
+            .filter(p => String(p.areteOficial || '').trim() === arete && String(p.fecha || '').trim())
+            .map(p => ({
+              ...p,
+              _pesoNum: valorPeso(p.peso),
+              _fecha: String(p.fecha || '').trim().slice(0,10)
+            }))
+            .sort((a,b)=> String(a._fecha).localeCompare(String(b._fecha), 'es'));
+
+          const pesoNacer = valorPeso(relRepro?.pesoCria) ?? valorPeso(x.pesoNacer) ?? '';
+
+          const fechaDestete = String(relRepro?.fechaDestete || x.fechaDestete || '').trim();
+          let pesoDestete = valorPeso(x.pesoDestete);
+          if (pesoDestete == null && fechaDestete){
+            const enDestete = pesajesCria.find(p => p._fecha === fechaDestete && p._pesoNum != null);
+            if (enDestete) pesoDestete = enDestete._pesoNum;
+          }
+
+          const hitos = [30, 60, 90, 120, 150, 180, 210].map((dias)=>{
+            if (!fechaNac) return '';
+            const base = new Date(fechaNac + 'T00:00:00');
+            if (isNaN(base.getTime())) return '';
+            base.setDate(base.getDate() + dias);
+            const yyyy = base.getFullYear();
+            const mm = String(base.getMonth()+1).padStart(2,'0');
+            const dd = String(base.getDate()).padStart(2,'0');
+            const target = `${yyyy}-${mm}-${dd}`;
+            const found = pesajesCria.find(p => p._fecha === target && p._pesoNum != null);
+            return found ? found._pesoNum : '';
+          });
+
+          return {
+            ...x,
+            fechaNac,
+            sexo: x.sexo || relRepro?.sexoCria || '',
+            cruzaResultante: [x.razaPre, x.cruza1, x.cruza2].filter(Boolean).join(' / ') || (relRepro?.cruzaCria || ''),
+            pesoNacer,
+            peso30: hitos[0],
+            peso60: hitos[1],
+            peso90: hitos[2],
+            peso120: hitos[3],
+            peso150: hitos[4],
+            peso180: hitos[5],
+            peso210: hitos[6],
+            fechaDestete,
+            pesoDestete: (pesoDestete == null ? '' : pesoDestete)
+          };
+        });
+      },
+      filters: [
+        {label:"Fecha de nacimiento", field:"fechaNac"},
+        {label:"Arete", field:"areteOficial", type:"text"},
+        {label:"Sexo", field:"sexo", values: ()=> ["Hembra","Macho"]},
+        {label:"Cruza de razas resultante", field:"cruzaResultante", type:"text"},
+        {label:"Peso al nacer", field:"pesoNacer"},
+        {label:"Peso cada 30 días", field:"peso30"},
+        {label:"Fecha destete", field:"fechaDestete"},
+        {label:"Peso al destete", field:"pesoDestete"}
+      ],
+      columns: [
+        {label:"Arete", field:"areteOficial"},
+        {label:"Fecha nac.", field:"fechaNac"},
+        {label:"Sexo", field:"sexo"},
+        {label:"Cruza resultante", field:"cruzaResultante"},
+        {label:"Peso nacer (kg)", field:"pesoNacer"},
+        {label:"Peso 30d (kg)", field:"peso30"},
+        {label:"Peso 60d (kg)", field:"peso60"},
+        {label:"Peso 90d (kg)", field:"peso90"},
+        {label:"Peso 120d (kg)", field:"peso120"},
+        {label:"Peso 150d (kg)", field:"peso150"},
+        {label:"Peso 180d (kg)", field:"peso180"},
+        {label:"Peso 210d (kg)", field:"peso210"},
+        {label:"Fecha destete", field:"fechaDestete"},
+        {label:"Peso destete (kg)", field:"pesoDestete"},
+        {label:"Grupo", field:"grupo"},
+        {label:"Inventario", field:"inventarioTipo"}
+      ]
+    },
+
 
 
     empadres: {
