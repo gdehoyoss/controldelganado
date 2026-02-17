@@ -49,8 +49,35 @@ const FIRESTORE_KEYS_SYNC = [
   'pecuario_corrales'
 ];
 
+<<<<<<< codex/add-firebase-integration-to-website-dgcd50
+const syncState = {
+  lastPushOkAt: 0,
+  lastPushKey: '',
+  lastError: '',
+  lastErrorAt: 0
+};
+
+function reportSyncError(source, key, err){
+  const msg = String(err?.message || err || 'Error desconocido');
+  syncState.lastError = `[${source}] ${key || '-'}: ${msg}`;
+  syncState.lastErrorAt = Date.now();
+  console.error('Firebase sync error:', { source, key, err });
+  window.dispatchEvent(new CustomEvent('pecuario:sync-error', {
+    detail: { source, key, message: msg }
+  }));
+}
+
+function markSyncOk(key){
+  syncState.lastPushOkAt = Date.now();
+  syncState.lastPushKey = key || '';
+}
+
+function getRanchoId(){
+  return (localStorage.getItem('pecuario_rancho_id') || 'Rancho1').trim();
+=======
 function getRanchoId(){
   return (localStorage.getItem('pecuario_rancho_id') || 'rancho-demo').trim();
+>>>>>>> main
 }
 
 function getSnapshotRef(key){
@@ -60,6 +87,22 @@ function getSnapshotRef(key){
 async function pushSnapshot(key, payload){
   if (!key) return;
   const clientUpdatedAt = Date.now();
+<<<<<<< codex/add-firebase-integration-to-website-dgcd50
+  try {
+    await setDoc(getSnapshotRef(key), {
+      key,
+      ranchoId: getRanchoId(),
+      payload,
+      clientUpdatedAt,
+      updatedAt: serverTimestamp(),
+      updatedBy: localStorage.getItem('pecuario_usuario_actual') || 'sin-usuario'
+    }, { merge: true });
+    markSyncOk(key);
+  } catch (err) {
+    reportSyncError('push', key, err);
+    throw err;
+  }
+=======
   await setDoc(getSnapshotRef(key), {
     key,
     ranchoId: getRanchoId(),
@@ -68,15 +111,28 @@ async function pushSnapshot(key, payload){
     updatedAt: serverTimestamp(),
     updatedBy: localStorage.getItem('pecuario_usuario_actual') || 'sin-usuario'
   }, { merge: true });
+>>>>>>> main
 }
 
 function subscribeSnapshot(key, onRemoteData){
   if (!key || typeof onRemoteData !== 'function') return () => {};
+<<<<<<< codex/add-firebase-integration-to-website-dgcd50
+  return onSnapshot(
+    getSnapshotRef(key),
+    (snap) => {
+      if (!snap.exists()) return;
+      const data = snap.data() || {};
+      onRemoteData(data.payload, data);
+    },
+    (err) => reportSyncError('subscribe', key, err)
+  );
+=======
   return onSnapshot(getSnapshotRef(key), (snap) => {
     if (!snap.exists()) return;
     const data = snap.data() || {};
     onRemoteData(data.payload, data);
   });
+>>>>>>> main
 }
 
 function startLegacySync(){
@@ -95,10 +151,26 @@ function startLegacySync(){
   return () => unsubscribers.forEach((unsub) => unsub());
 }
 
+<<<<<<< codex/add-firebase-integration-to-website-dgcd50
+function getStatus(){
+  return {
+    projectId: firebaseConfig.projectId,
+    ranchoId: getRanchoId(),
+    keys: FIRESTORE_KEYS_SYNC.slice(),
+    ...syncState
+  };
+}
+
+=======
+>>>>>>> main
 window.firebaseSync = {
   pushSnapshot,
   subscribeSnapshot,
   startLegacySync,
+<<<<<<< codex/add-firebase-integration-to-website-dgcd50
+  getStatus,
+=======
+>>>>>>> main
   keys: FIRESTORE_KEYS_SYNC
 };
 

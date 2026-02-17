@@ -1,4 +1,18 @@
 
+window.firebaseSync = window.firebaseSync || {
+  keys: [],
+  getStatus(){
+    return {
+      available: false,
+      reason: 'firebase-init no cargó todavía (o falló al cargar). Revisa consola del navegador.'
+    };
+  },
+  startLegacySync(){ return () => {}; },
+  pushSnapshot: async () => {},
+  subscribeSnapshot(){ return () => {}; }
+};
+
+
 
   // Ajuste dinámico para que la barra de navegación quede justo debajo del header
   (function(){
