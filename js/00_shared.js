@@ -27,6 +27,10 @@
   }
   function setData(key, value) {
     localStorage.setItem(key, JSON.stringify(value));
+    localStorage.setItem(`_sync_ts_${key}`, String(Date.now()));
+    if (window.firebaseSync?.pushSnapshot) {
+      window.firebaseSync.pushSnapshot(key, value).catch(()=>{});
+    }
   }
 
   
@@ -48,6 +52,10 @@
   }
   function setCabezasMap(map){
     localStorage.setItem(CABEZAS_KEY, JSON.stringify(map || {}));
+    localStorage.setItem(`_sync_ts_${CABEZAS_KEY}`, String(Date.now()));
+    if (window.firebaseSync?.pushSnapshot) {
+      window.firebaseSync.pushSnapshot(CABEZAS_KEY, map || {}).catch(()=>{});
+    }
   }
   function cabezasArray({includeBajas=false} = {}){
     const map = getCabezasMap();

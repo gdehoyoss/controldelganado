@@ -29,3 +29,13 @@
   actualizarReportes();
   setupReportesModal();
   if (typeof initActividadesExtras === 'function') initActividadesExtras();
+
+
+  if (window.firebaseSync?.startLegacySync) {
+    window.firebaseSync.startLegacySync();
+    window.addEventListener('pecuario:sync-updated', ()=>{
+      if (typeof initCabezasModule === 'function') initCabezasModule();
+      actualizarPanel();
+      actualizarReportes();
+    });
+  }
