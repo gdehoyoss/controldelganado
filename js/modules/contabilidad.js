@@ -165,6 +165,52 @@ function fmtMXN(n){
   catch(e){ return '$' + v.toFixed(2); }
 }
 
+function contaMesesDelYear(year){
+  const meses = [];
+  for (let m=1; m<=12; m++) meses.push(`${year}-${String(m).padStart(2,'0')}`);
+  return meses;
+}
+
+function contaClasificarAnimalPorArete(arete){
+  const a = String(arete || '').trim();
+  if (!a) return 'Sin clasificar';
+  const directa = (typeof getCabeza === 'function') ? getCabeza(a) : null;
+  if (directa) return clasificarGrupoCodigo(directa.grupo || '');
+  const bajas = getData('pecuario_animales_bajas') || [];
+  const baja = bajas.find(b => String(b.areteOficial || '').trim() === a);
+  if (baja) return clasificarGrupoCodigo(baja.grupo || '');
+  return 'Sin clasificar';
+}
+
+function contaPromedioVientresMes(year){
+  const meses = contaMesesDelYear(year);
+  const map = getCabezasMap ? getCabezasMap() : {};
+  const bajas = getData('pecuario_animales_bajas') || [];
+  const bajaByArete = new Map();
+  bajas.forEach(b=>{
+    const a = String(b.areteOficial || '').trim();
+    if (a) bajaByArete.set(a, b);
+  });
+
+  const activos = Object.values(map || {}).filter(Boolean).filter(c=>clasificarGrupoCodigo(c.grupo)==='BGR-01');
+  if (!activos.length) return 0;
+
+  const activosPorMes = meses.map((ym)=>{
+    const mesInicio = `${ym}-01`;
+    return activos.filter(c=>{
+      const created = String((c._createdAt || '').slice(0,10) || mesInicio);
+      if (created > ym + '-31') return false;
+      const bajaData = c.baja || bajaByArete.get(String(c.areteOficial||'').trim()) || {};
+      const bajaFecha = String(bajaData.fecha || c._fechaBaja || '').slice(0,10);
+      if (!bajaFecha) return true;
+      return bajaFecha >= mesInicio;
+    }).length;
+  });
+
+  const total = activosPorMes.reduce((s,v)=>s+v,0);
+  return meses.length ? (total / meses.length) : 0;
+}
+
 function getContaLedger(){ return getData(CONTA_LEDGER_KEY) || []; }
 function setContaLedger(arr){ setData(CONTA_LEDGER_KEY, arr || []); }
 
@@ -724,8 +770,7 @@ function contaRender(){
   const flujoNet = document.getElementById('conta-flujo-net');
   const flujoNetV = document.getElementById('conta-flujo-net-v');
 
-  const activos = cabezasArray ? cabezasArray({includeBajas:false}) : [];
-  const totalVientres = (activos||[]).filter(a => clasificarGrupoCodigo(a.grupo) === 'BGR-01').length || 0;
+  const avgVientresMes = contaPromedioVientresMes(year);
 
   const sumByKey = new Map();
   t.ledger.forEach(m=>{
@@ -745,7 +790,8 @@ function contaRender(){
   const neto = totalIng - totalEgr;
 
   const pct = (v)=> totalIng ? ((v/totalIng)*100).toFixed(1)+'%' : '';
-  const perV = (v)=> totalVientres ? fmtMXN(v / totalVientres) : '';
+  const perV = (v)=> avgVientresMes ? fmtMXN(v / avgVientresMes) : '';
+  const pctSaldo = pct(neto);
 
   if (flujoIngBody){
     const rows = [];
@@ -763,7 +809,7 @@ function contaRender(){
       <td><b>Total Ingresos</b></td>
       <td style="text-align:right;"><b>${escapeHtml(fmtMXN(totalIng))}</b></td>
       <td></td>
-      <td style="text-align:right;"><b>${escapeHtml(totalVientres ? fmtMXN(totalIng/totalVientres) : '')}</b></td>
+      <td style="text-align:right;"><b>${escapeHtml(avgVientresMes ? fmtMXN(totalIng/avgVientresMes) : '')}</b></td>
     </tr>`);
     flujoIngBody.innerHTML = rows.join('');
   }
@@ -784,13 +830,42 @@ function contaRender(){
       <td><b>Total Egresos</b></td>
       <td style="text-align:right;"><b>${escapeHtml(fmtMXN(totalEgr))}</b></td>
       <td></td>
-      <td style="text-align:right;"><b>${escapeHtml(totalVientres ? fmtMXN(totalEgr/totalVientres) : '')}</b></td>
+      <td style="text-align:right;"><b>${escapeHtml(avgVientresMes ? fmtMXN(totalEgr/avgVientresMes) : '')}</b></td>
     </tr>`);
     flujoEgrBody.innerHTML = rows.join('');
   }
 
-  if (flujoNet) flujoNet.textContent = fmtMXN(neto);
-  if (flujoNetV) flujoNetV.textContent = totalVientres ? fmtMXN(neto/totalVientres) : '';
+  if (flujoNet) flujoNet.textContent = `${fmtMXN(neto)} ${pctSaldo ? `(${pctSaldo})` : ''}`.trim();
+  if (flujoNetV) flujoNetV.textContent = avgVientresMes ? fmtMXN(neto/avgVientresMes) : '';
+
+  const grpBody = document.getElementById('conta-grupo-tbody');
+  if (grpBody){
+    const groups = new Map();
+    const add = (g, field, amount)=>{
+      if (!groups.has(g)) groups.set(g, { ing:0, egr:0 });
+      groups.get(g)[field] += amount;
+    };
+    t.ledger.forEach(m=>{
+      const acc = contaGetAccountByKey(m.cuentaKey);
+      if (!acc || !contaAccountImpactsCash(acc)) return;
+      const amount = Number(m.monto||0);
+      const g = contaClasificarAnimalPorArete(m.areteOficial || '');
+      if (acc.tipo === 'Ingreso') add(g, 'ing', amount);
+      if (acc.tipo === 'Egreso') add(g, 'egr', amount);
+    });
+
+    const ordered = Array.from(groups.entries()).sort((a,b)=>a[0].localeCompare(b[0]));
+    grpBody.innerHTML = ordered.map(([g,v])=>{
+      const saldo = Number(v.ing||0) - Number(v.egr||0);
+      return `<tr>
+        <td>${escapeHtml(g)}</td>
+        <td style="text-align:right;">${escapeHtml(fmtMXN(v.ing||0))}</td>
+        <td style="text-align:right;">${escapeHtml(fmtMXN(v.egr||0))}</td>
+        <td style="text-align:right;">${escapeHtml(fmtMXN(saldo))}</td>
+        <td style="text-align:right;">${escapeHtml(pct(saldo))}</td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="5" class="muted">Sin movimientos con clasificación de ganado en el ejercicio.</td></tr>';
+  }
 
   // =====================
   // Balance General

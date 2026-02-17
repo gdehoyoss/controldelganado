@@ -32,6 +32,8 @@ function actualizarPanel() {
 
   const nac = repro.filter(r => (r.fechaParto || '').trim() !== '').length;
   document.getElementById('pnl-nacimientos').textContent = nac;
+  const elVientres = document.getElementById('pnl-vientres');
+  if (elVientres) elVientres.textContent = totalBGR;
 
   document.getElementById('pnl-sanidad').textContent  = sanidad.length;
   document.getElementById('pnl-seguridad').textContent = visitas.length + bitacora.length;
