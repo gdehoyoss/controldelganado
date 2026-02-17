@@ -29,7 +29,11 @@ Se agregó sincronización híbrida para trabajar offline con `localStorage` y r
 ### Configuración recomendada
 
 1. Crear/usar usuarios con claim `ranchoId` para aplicar reglas.
+<<<<<<< codex/add-firebase-integration-to-website-dgcd50
 2. Definir en el navegador `localStorage.pecuario_rancho_id` (por defecto `Rancho1`).
+=======
+2. Definir en el navegador `localStorage.pecuario_rancho_id` (por defecto `rancho-demo`).
+>>>>>>> main
 3. Desplegar reglas e índices:
 
 ```bash
@@ -41,6 +45,7 @@ firebase deploy --only firestore:rules,firestore:indexes
 - Reglas: `firestore.rules`
 - Índices: `firestore.indexes.json`
 - Esquema y plan de evolución: `docs/firestore-schema.md`
+<<<<<<< codex/add-firebase-integration-to-website-dgcd50
 
 
 ### Diagnóstico rápido si no aparece nada en Firestore
@@ -58,3 +63,5 @@ window.firebaseSync?.getStatus?.()
    - `lastError` con `permission-denied` indica problema de reglas/auth.
 5. Verifica en Firestore la ruta:
    - `ranchos/{ranchoId}/snapshots/{key}`
+=======
+>>>>>>> main

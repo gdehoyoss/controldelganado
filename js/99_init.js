@@ -38,8 +38,11 @@
       actualizarPanel();
       actualizarReportes();
     });
+<<<<<<< codex/add-firebase-integration-to-website-dgcd50
     window.addEventListener('pecuario:sync-error', (ev)=>{
       const d = ev?.detail || {};
       console.warn('Sincronización Firebase con error:', d.source || '-', d.key || '-', d.message || '-');
     });
+=======
+>>>>>>> main
   }

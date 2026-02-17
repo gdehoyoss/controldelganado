@@ -515,3 +515,49 @@ header small {
   font-size: 13px;
 }
 .guia-lista li { margin-bottom: 6px; }
+
+
+/* Panel: Información Oficial */
+.panel-info-oficial { margin-top: 10px; }
+.panel-info-oficial__head {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.panel-info-oficial__wrap { margin-top: 12px; }
+.panel-info-oficial__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+.panel-info-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 10px;
+  background: #fff;
+}
+.panel-info-checklist {
+  max-height: 180px;
+  overflow: auto;
+  border: 1px solid #f1f5f9;
+  border-radius: 8px;
+  padding: 6px 8px;
+  background: #fafafa;
+}
+.panel-info-checklist label {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+  margin-bottom: 6px;
+  font-size: 12px;
+}
+.panel-info-files {
+  margin-top: 8px;
+  font-size: 12px;
+}
+.panel-info-files .item {
+  border-bottom: 1px dashed #e5e7eb;
+  padding: 5px 0;
+}
