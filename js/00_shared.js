@@ -641,7 +641,7 @@ const renderChecks = ()=>{
         return (arr||[]).map(x=>{
           const code = (x._cuentaMov || x._cuentaVenta || x.cuentaCodigo || x.cuenta || '').trim();
           const name = (x._cuentaNombre || x._cuentaName || x.cuentaNombre || x.cuentaName || '').trim();
-          const found = code ? CONTA_ACCOUNTS.find(a=>a.code===code) : null;
+          const found = code ? repContaAccounts().find(a=>a.code===code) : null;
           const nm = name || (found ? (found.name||'') : '');
           const cuentaLabel = code ? (nm ? `${code} — ${nm}` : code) : '';
           const motivoRaw = x._motivoBaja || x.motivo || '';
@@ -667,7 +667,7 @@ const renderChecks = ()=>{
       filters: [
         {label:"Motivo", field:"motivo", values: ()=> ["Ventas","Muertes y desechos","Extraviados","Otros"]},
         {label:"Inventario", field:"inventarioTipo", values: ()=> ["Ganado Reproducción","Ganado Comercial"]},
-        {label:"Cuenta", field:"cuentaLabel", values: ()=> CONTA_ACCOUNTS.filter(a=>a.code && (['BGR-01','BGC-01','BRD-01'].includes(a.code))).map(a=>`${a.code} — ${a.name}`)},
+        {label:"Cuenta", field:"cuentaLabel", values: ()=> repContaAccounts().filter(a=>a.code && (['BGR-01','BGC-01','BRD-01'].includes(a.code))).map(a=>`${a.code} — ${a.name}`)},
         {label:"Grupo", field:"grupo", values: ()=> gruposBase},
         {label:"Sexo", field:"sexo", values: ()=> ["Hembra","Macho"]},
         {label:"Raza", field:"razaPre", values: ()=> getRazas()},
@@ -1061,7 +1061,7 @@ const renderChecks = ()=>{
       keys: ["pecuario_conta_ledger"],
       filters: [
         {label:"Tipo", field:"tipo", values: ()=> ["Ingreso","Egreso"]},
-        {label:"Cuenta", field:"cuentaLabel", values: ()=> CONTA_ACCOUNTS.map(a=>`${a.code} — ${a.name}`)},
+        {label:"Cuenta", field:"cuentaLabel", values: ()=> repContaAccounts().map(a=>`${a.code} — ${a.name}`)},
         {label:"Referencia pago", field:"refPago", values: ()=> ["Transferencia","Efectivo","Cheque","Tarjeta de Credito","Tarjeta de Debito"]},
         {label:"Proveedor/Cliente", field:"proveedor", type:"text"}
       ],
@@ -1069,7 +1069,7 @@ const renderChecks = ()=>{
         const arr = (dataByKey["pecuario_conta_ledger"]||[]).map(x=>({ ...x }));
         return arr.map(r=>{
           const cod = (r.cuentaCodigo || r.cuentaCode || r.cuenta || '').trim();
-          const acc = cod ? CONTA_ACCOUNTS.find(a=>a.code===cod) : null;
+          const acc = cod ? repContaAccounts().find(a=>a.code===cod) : null;
           const name = (r.cuentaNombre || r.cuentaName || (acc ? acc.name : '') || '').trim();
 
           return {
@@ -1408,6 +1408,14 @@ const renderChecks = ()=>{
     return String(v);
   }
 
+  function repContaAccounts(){
+    if (typeof contaAccounts === 'function'){
+      const list = contaAccounts();
+      if (Array.isArray(list)) return list;
+    }
+    return [];
+  }
+
   function repDownloadCSV(filename, rows, columns){
     const esc = (s) => {
       const t = repToText(s);
@@ -1472,7 +1480,7 @@ const renderChecks = ()=>{
         if (!r.proveedor) r.proveedor = String(r.tercero || r.provCliente || r.cliente || r.proveedorCliente || '').trim();
 
         const cod = (r.cuentaCodigo || '').trim();
-        const acc = cod ? CONTA_ACCOUNTS.find(a=>a.code===cod) : null;
+        const acc = cod ? repContaAccounts().find(a=>a.code===cod) : null;
 
         if (!r.tipo && acc) r.tipo = acc.tipo;
         if ((!r.cuentaNombre || !r.cuentaNombre.trim()) && acc) r.cuentaNombre = acc.name;
