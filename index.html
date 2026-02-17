@@ -2724,7 +2724,21 @@
 </div>
 
 
-<script type="module" src="js/firebase-init.js"></script>
+<script>
+window.firebaseSync = window.firebaseSync || {
+  keys: [],
+  getStatus(){
+    return {
+      available: false,
+      reason: 'firebase-init no cargó todavía (o falló al cargar). Revisa consola del navegador.'
+    };
+  },
+  startLegacySync(){ return () => {}; },
+  pushSnapshot: async () => {},
+  subscribeSnapshot(){ return () => {}; }
+};
+</script>
+<script type="module" src="js/firebase-init.js?v=40.18"></script>
 <script src="js/00_shared.js"></script>
 <script src="js/01_ui.js"></script>
 
@@ -2744,6 +2758,6 @@
 <script src="js/modules/panel_reportes.js"></script>
 
 <!-- Inicialización -->
-<script src="js/99_init.js"></script>
+<script src="js/99_init.js?v=40.18"></script>
 </body>
 </html>
