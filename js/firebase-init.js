@@ -1,5 +1,15 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
 import { getAnalytics, isSupported } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-analytics.js";
+import {
+  getFirestore,
+  initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+  doc,
+  onSnapshot,
+  serverTimestamp,
+  setDoc
+} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAjJ1tP-otajTNwmTqHSpzAAVlo6oBO-Ww",
@@ -13,6 +23,84 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 window.firebaseApp = app;
+
+initializeFirestore(app, {
+  localCache: persistentLocalCache({
+    tabManager: persistentMultipleTabManager()
+  })
+});
+
+const db = getFirestore(app);
+window.firebaseDb = db;
+
+const FIRESTORE_KEYS_SYNC = [
+  'pecuario_cabezas',
+  'pecuario_cabezas_cambios_grupo',
+  'pecuario_animales_bajas',
+  'pecuario_pesaje_ind',
+  'pecuario_pesaje_grupo',
+  'pecuario_sanidad',
+  'pecuario_reproduccion',
+  'pecuario_contabilidad',
+  'pecuario_actividades',
+  'pecuario_seguridad',
+  'pecuario_maquinaria',
+  'pecuario_potreros',
+  'pecuario_corrales'
+];
+
+function getRanchoId(){
+  return (localStorage.getItem('pecuario_rancho_id') || 'rancho-demo').trim();
+}
+
+function getSnapshotRef(key){
+  return doc(db, 'ranchos', getRanchoId(), 'snapshots', key);
+}
+
+async function pushSnapshot(key, payload){
+  if (!key) return;
+  const clientUpdatedAt = Date.now();
+  await setDoc(getSnapshotRef(key), {
+    key,
+    ranchoId: getRanchoId(),
+    payload,
+    clientUpdatedAt,
+    updatedAt: serverTimestamp(),
+    updatedBy: localStorage.getItem('pecuario_usuario_actual') || 'sin-usuario'
+  }, { merge: true });
+}
+
+function subscribeSnapshot(key, onRemoteData){
+  if (!key || typeof onRemoteData !== 'function') return () => {};
+  return onSnapshot(getSnapshotRef(key), (snap) => {
+    if (!snap.exists()) return;
+    const data = snap.data() || {};
+    onRemoteData(data.payload, data);
+  });
+}
+
+function startLegacySync(){
+  const unsubscribers = [];
+  FIRESTORE_KEYS_SYNC.forEach((key) => {
+    const unsub = subscribeSnapshot(key, (payload, meta) => {
+      const remoteTs = Number(meta.clientUpdatedAt || 0);
+      const localTs = Number(localStorage.getItem(`_sync_ts_${key}`) || 0);
+      if (remoteTs <= localTs) return;
+      localStorage.setItem(key, JSON.stringify(payload ?? []));
+      localStorage.setItem(`_sync_ts_${key}`, String(remoteTs));
+      window.dispatchEvent(new CustomEvent('pecuario:sync-updated', { detail: { key } }));
+    });
+    unsubscribers.push(unsub);
+  });
+  return () => unsubscribers.forEach((unsub) => unsub());
+}
+
+window.firebaseSync = {
+  pushSnapshot,
+  subscribeSnapshot,
+  startLegacySync,
+  keys: FIRESTORE_KEYS_SYNC
+};
 
 isSupported().then((supported) => {
   if (!supported) return;
