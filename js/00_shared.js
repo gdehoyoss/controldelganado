@@ -1459,6 +1459,7 @@ const renderChecks = ()=>{
     const search = document.getElementById('repSearch');
     const dateExact = document.getElementById('repDateExact');
     const dateRange = document.getElementById('repDateRange');
+    const compareYear = document.getElementById('repCompareYear');
     const btnCSV = document.getElementById('btnRepCSV');
 
     title.textContent = cfg.title || "Reporte";
@@ -1512,6 +1513,7 @@ const renderChecks = ()=>{
     if (search) search.value = '';
     if (dateExact) dateExact.value = '';
     if (dateRange) dateRange.value = '';
+    if (compareYear) compareYear.value = '';
 
     // Build select options (3 slots iguales: "Filtrar por" + opciones por campo)
     const filterFields = (cfg.filters || []).filter(Boolean);
@@ -1522,6 +1524,44 @@ const renderChecks = ()=>{
       const key = String(field).toLowerCase();
       return key.includes('fecha') || key.includes('date') || key.includes('_at');
     });
+
+    function getAvailableDateYears(){
+      const years = new Set();
+      rows.forEach((r)=>{
+        dateFields.forEach((field)=>{
+          const txt = repToText(r[field]).trim();
+          const y = txt.slice(0,4);
+          if (/^\d{4}$/.test(y)) years.add(y);
+        });
+      });
+      return Array.from(years).sort((a,b)=>Number(b)-Number(a));
+    }
+
+    function fillCompareYearOptions(){
+      if (!compareYear) return;
+      const previous = compareYear.value || '';
+      compareYear.innerHTML = '';
+
+      const base = document.createElement('option');
+      base.value = '';
+      base.textContent = 'Sin comparación';
+      compareYear.appendChild(base);
+
+      const prev = document.createElement('option');
+      prev.value = 'prev';
+      prev.textContent = 'Año anterior (mismo rango)';
+      compareYear.appendChild(prev);
+
+      getAvailableDateYears().forEach((y)=>{
+        const o = document.createElement('option');
+        o.value = y;
+        o.textContent = y;
+        compareYear.appendChild(o);
+      });
+      compareYear.value = Array.from(compareYear.options).some(o=>o.value===previous) ? previous : '';
+    }
+
+    fillCompareYearOptions();
 
     function fillFilterSelect(sel){
       if (!sel) return;
@@ -1594,6 +1634,12 @@ const renderChecks = ()=>{
         start.setMonth(start.getMonth() - monthsBack);
         return start;
       }
+
+      function shiftDateToYear(dt, targetYear){
+        const n = new Date(dt.getTime());
+        n.setFullYear(Number(targetYear));
+        return n;
+      }
       selMap.slice(0,3).forEach((s)=>{
         if (!s) return;
         const v = (s.value||'').trim();
@@ -1630,12 +1676,38 @@ const renderChecks = ()=>{
       const selectedRange = (dateRange && dateRange.value) ? dateRange.value : '';
       const rangeStart = buildRangeStart(selectedRange);
       if (rangeStart){
+        const rangeEnd = new Date();
+        rangeEnd.setHours(23,59,59,999);
+
+        const selectedComparison = (compareYear && compareYear.value) ? compareYear.value : '';
+        const baseYear = rangeEnd.getFullYear();
+        const targetCompareYear = (selectedComparison === 'prev')
+          ? String(baseYear - 1)
+          : (/^\d{4}$/.test(selectedComparison) ? selectedComparison : '');
+
+        const compareStart = targetCompareYear ? shiftDateToYear(rangeStart, targetCompareYear) : null;
+        const compareEnd = targetCompareYear ? shiftDateToYear(rangeEnd, targetCompareYear) : null;
+
         out = out.filter((r)=>{
           return dateFields.some((field)=>{
             const dt = parseISODate(r[field]);
-            return dt ? dt >= rangeStart : false;
+            if (!dt) return false;
+            const inCurrent = dt >= rangeStart && dt <= rangeEnd;
+            if (inCurrent) return true;
+            if (!compareStart || !compareEnd) return false;
+            return dt >= compareStart && dt <= compareEnd;
           });
         });
+
+        if (nota){
+          if (targetCompareYear){
+            const currentLabel = `${rangeStart.toISOString().slice(0,10)} a ${rangeEnd.toISOString().slice(0,10)}`;
+            const compareLabel = `${compareStart.toISOString().slice(0,10)} a ${compareEnd.toISOString().slice(0,10)}`;
+            nota.dataset.compareInfo = `Comparando ${currentLabel} vs ${compareLabel}.`;
+          } else {
+            nota.dataset.compareInfo = '';
+          }
+        }
       }
 
       const q = (search && search.value) ? search.value.trim().toLowerCase() : '';
@@ -1661,6 +1733,9 @@ const renderChecks = ()=>{
         body.appendChild(tr);
       });
       if (nota) nota.textContent = `Mostrando ${Math.min(out.length,2000)} de ${out.length} registros.`;
+      if (nota && nota.dataset.compareInfo){
+        nota.textContent += ` ${nota.dataset.compareInfo}`;
+      }
       // bind CSV
       if (btnCSV){
         btnCSV.onclick = () => repDownloadCSV(`reporte_${modKey}.csv`, out, cols);
@@ -1692,6 +1767,7 @@ const renderChecks = ()=>{
     if (search) search.oninput = () => { window.clearTimeout(search._t); search._t = window.setTimeout(render, 120); };
     if (dateExact) dateExact.onchange = render;
     if (dateRange) dateRange.onchange = render;
+    if (compareYear) compareYear.onchange = render;
 
     render();
     if (modal){
