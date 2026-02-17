@@ -38,8 +38,4 @@
       actualizarPanel();
       actualizarReportes();
     });
-    window.addEventListener('pecuario:sync-error', (ev)=>{
-      const d = ev?.detail || {};
-      console.warn('Sincronización Firebase con error:', d.source || '-', d.key || '-', d.message || '-');
-    });
   }

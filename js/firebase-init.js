@@ -49,28 +49,6 @@ const FIRESTORE_KEYS_SYNC = [
   'pecuario_corrales'
 ];
 
-const syncState = {
-  lastPushOkAt: 0,
-  lastPushKey: '',
-  lastError: '',
-  lastErrorAt: 0
-};
-
-function reportSyncError(source, key, err){
-  const msg = String(err?.message || err || 'Error desconocido');
-  syncState.lastError = `[${source}] ${key || '-'}: ${msg}`;
-  syncState.lastErrorAt = Date.now();
-  console.error('Firebase sync error:', { source, key, err });
-  window.dispatchEvent(new CustomEvent('pecuario:sync-error', {
-    detail: { source, key, message: msg }
-  }));
-}
-
-function markSyncOk(key){
-  syncState.lastPushOkAt = Date.now();
-  syncState.lastPushKey = key || '';
-}
-
 function getRanchoId(){
   return (localStorage.getItem('pecuario_rancho_id') || 'rancho-demo').trim();
 }
@@ -82,33 +60,23 @@ function getSnapshotRef(key){
 async function pushSnapshot(key, payload){
   if (!key) return;
   const clientUpdatedAt = Date.now();
-  try {
-    await setDoc(getSnapshotRef(key), {
-      key,
-      ranchoId: getRanchoId(),
-      payload,
-      clientUpdatedAt,
-      updatedAt: serverTimestamp(),
-      updatedBy: localStorage.getItem('pecuario_usuario_actual') || 'sin-usuario'
-    }, { merge: true });
-    markSyncOk(key);
-  } catch (err) {
-    reportSyncError('push', key, err);
-    throw err;
-  }
+  await setDoc(getSnapshotRef(key), {
+    key,
+    ranchoId: getRanchoId(),
+    payload,
+    clientUpdatedAt,
+    updatedAt: serverTimestamp(),
+    updatedBy: localStorage.getItem('pecuario_usuario_actual') || 'sin-usuario'
+  }, { merge: true });
 }
 
 function subscribeSnapshot(key, onRemoteData){
   if (!key || typeof onRemoteData !== 'function') return () => {};
-  return onSnapshot(
-    getSnapshotRef(key),
-    (snap) => {
-      if (!snap.exists()) return;
-      const data = snap.data() || {};
-      onRemoteData(data.payload, data);
-    },
-    (err) => reportSyncError('subscribe', key, err)
-  );
+  return onSnapshot(getSnapshotRef(key), (snap) => {
+    if (!snap.exists()) return;
+    const data = snap.data() || {};
+    onRemoteData(data.payload, data);
+  });
 }
 
 function startLegacySync(){
@@ -127,20 +95,10 @@ function startLegacySync(){
   return () => unsubscribers.forEach((unsub) => unsub());
 }
 
-function getStatus(){
-  return {
-    projectId: firebaseConfig.projectId,
-    ranchoId: getRanchoId(),
-    keys: FIRESTORE_KEYS_SYNC.slice(),
-    ...syncState
-  };
-}
-
 window.firebaseSync = {
   pushSnapshot,
   subscribeSnapshot,
   startLegacySync,
-  getStatus,
   keys: FIRESTORE_KEYS_SYNC
 };
 
