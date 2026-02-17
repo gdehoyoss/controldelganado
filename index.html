@@ -2671,10 +2671,19 @@
         <label>Fecha específica</label>
         <input id="repDateExact" type="date" />
       </div>
-      <div class="acciones" style="justify-content:flex-end;">
-        <button type="button" class="btn-secundario" id="btnRepCSV">Exportar CSV (filtrado)</button>
-        <button type="button" class="btn-terciario" id="btnRepCerrar">Cerrar</button>
+      <div>
+        <label>Rango por fecha</label>
+        <select id="repDateRange">
+          <option value="">(Todos)</option>
+          <option value="6m">Últimos 6 meses</option>
+          <option value="12m">Últimos 12 meses</option>
+        </select>
       </div>
+    </div>
+
+    <div class="acciones" style="justify-content:flex-end; margin-top:8px;">
+      <button type="button" class="btn-secundario" id="btnRepCSV">Exportar CSV (filtrado)</button>
+      <button type="button" class="btn-terciario" id="btnRepCerrar">Cerrar</button>
     </div>
 
     <div style="margin-top:12px; max-height: 55vh; overflow:auto; border:1px solid #e5e7eb; border-radius:12px;">

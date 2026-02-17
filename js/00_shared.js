@@ -1458,6 +1458,7 @@ const renderChecks = ()=>{
     const f3 = document.getElementById('repF3');
     const search = document.getElementById('repSearch');
     const dateExact = document.getElementById('repDateExact');
+    const dateRange = document.getElementById('repDateRange');
     const btnCSV = document.getElementById('btnRepCSV');
 
     title.textContent = cfg.title || "Reporte";
@@ -1510,6 +1511,7 @@ const renderChecks = ()=>{
     // reset search
     if (search) search.value = '';
     if (dateExact) dateExact.value = '';
+    if (dateRange) dateRange.value = '';
 
     // Build select options (3 slots iguales: "Filtrar por" + opciones por campo)
     const filterFields = (cfg.filters || []).filter(Boolean);
@@ -1572,8 +1574,26 @@ const renderChecks = ()=>{
       l.textContent = 'Filtrar por';
       fillFilterSelect(s);
     }
-function getFiltered(){
+    function getFiltered(){
       let out = rows.slice();
+
+      function parseISODate(raw){
+        const txt = repToText(raw).trim();
+        if (!txt) return null;
+        const iso = txt.slice(0,10);
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return null;
+        const d = new Date(`${iso}T00:00:00`);
+        return Number.isNaN(d.getTime()) ? null : d;
+      }
+
+      function buildRangeStart(rangeKey){
+        if (rangeKey !== '6m' && rangeKey !== '12m') return null;
+        const monthsBack = rangeKey === '6m' ? 6 : 12;
+        const start = new Date();
+        start.setHours(0,0,0,0);
+        start.setMonth(start.getMonth() - monthsBack);
+        return start;
+      }
       selMap.slice(0,3).forEach((s)=>{
         if (!s) return;
         const v = (s.value||'').trim();
@@ -1603,6 +1623,17 @@ function getFiltered(){
             if (!raw) return false;
             if (raw === selectedDate) return true;
             return raw.slice(0,10) === selectedDate;
+          });
+        });
+      }
+
+      const selectedRange = (dateRange && dateRange.value) ? dateRange.value : '';
+      const rangeStart = buildRangeStart(selectedRange);
+      if (rangeStart){
+        out = out.filter((r)=>{
+          return dateFields.some((field)=>{
+            const dt = parseISODate(r[field]);
+            return dt ? dt >= rangeStart : false;
           });
         });
       }
@@ -1660,6 +1691,7 @@ function getFiltered(){
     });
     if (search) search.oninput = () => { window.clearTimeout(search._t); search._t = window.setTimeout(render, 120); };
     if (dateExact) dateExact.onchange = render;
+    if (dateRange) dateRange.onchange = render;
 
     render();
     if (modal){
