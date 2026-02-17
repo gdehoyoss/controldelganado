@@ -88,3 +88,168 @@ function actualizarReportes() {
   setCount('rep-corrales',    getData('pecuario_corrales').length);
   setCount('rep-supl',        getData('pecuario_suplementos').length + getData('pecuario_supl_suministros').length);
 }
+
+
+const INFO_OFICIAL_KEY = 'pecuario_info_oficial_docs';
+const INFO_OFICIAL_CATEGORIAS = [
+  {
+    id: 'Agropecuaria',
+    titulos: [
+      'Registro de la UPP',
+      'Historial de Reemos',
+      'Inventario de ganado oficial ante Siniiga (altas y bajas)',
+      'Pruebas anuales de sangre',
+      'Autorización de “Fierro”',
+      'Afiliación a la Unión Ganadera Regional de la Zona',
+      'Credenciales de afiliación a la Unión',
+      'Apoyos de Gobierno',
+      'Ejido',
+      'Propiedad Privada',
+      'Afiliaciones a diversas Asociaciones o Clubes de Ganadería',
+      'Registro de Marca(s) del Rancho',
+      'Página Web',
+      'Otros'
+    ]
+  },
+  {
+    id: 'Propiedad',
+    titulos: [
+      'Certificados Parcelarios',
+      'Documentación Ejidal',
+      'Escritura(s) de propiedad de la tierra',
+      'Derechos de paso',
+      'Recibos del o los Prediales',
+      'Títulos de Concesión de agua',
+      'Declaraciones a Conagua; Altas de los pozos',
+      'Contratos con CFE y números de Servicios',
+      'Recibos de pago de Luz',
+      'Otros'
+    ]
+  },
+  {
+    id: 'Fiscal',
+    titulos: [
+      'Escritura constitutiva de la Sociedad',
+      'Poderes de los Representantes',
+      'INE del propietario(s) o de los Representantes legales',
+      'Curp del propietario(s) o de los Representantes legales',
+      'Acta(s) de nacimiento y matrimonio de los propietarios',
+      'Régimen Fiscal y Alta en el Sat',
+      'Declaraciones de Impuestos y notificaciones del Sat',
+      'Otros'
+    ]
+  },
+  {
+    id: 'Administración',
+    titulos: [
+      'Bancos - Préstamos',
+      'Bancos - Cuentas de Cheques',
+      'Bancos - Tarjetas de Crédito y Débito',
+      'Bancos - Estados de cuenta',
+      'Bancos - Seguros contra riesgos',
+      'Asesores - Contador',
+      'Asesores - Abogado',
+      'Asesores - Tecnología',
+      'Asesores - Sanidad',
+      'Otros'
+    ]
+  }
+];
+
+function getInfoOficialDocs(){
+  const data = getData(INFO_OFICIAL_KEY);
+  return Array.isArray(data) ? data : [];
+}
+
+function setInfoOficialDocs(rows){
+  setData(INFO_OFICIAL_KEY, Array.isArray(rows) ? rows : []);
+}
+
+function infoOficialResumen(item){
+  const cuando = item.fecha ? new Date(item.fecha).toLocaleString('es-MX') : 'Sin fecha';
+  const titulos = (item.titulos || []).join(', ') || 'Sin títulos seleccionados';
+  return `${item.archivo || 'Archivo'} | ${titulos} | ${cuando}`;
+}
+
+function renderInfoOficialList(categoriaId){
+  const lista = getInfoOficialDocs().filter(r => r.categoria === categoriaId);
+  const cont = document.getElementById(`panelInfoFiles_${categoriaId}`);
+  if (!cont) return;
+  if (!lista.length){
+    cont.innerHTML = '<div class="nota">Sin documentos cargados.</div>';
+    return;
+  }
+  cont.innerHTML = '';
+  lista.slice().reverse().forEach(it => {
+    const div = document.createElement('div');
+    div.className = 'item';
+    div.textContent = infoOficialResumen(it);
+    cont.appendChild(div);
+  });
+}
+
+function initPanelInformacionOficial(){
+  const btn = document.getElementById('btnInfoOficialToggle');
+  const wrap = document.getElementById('panelInfoOficialWrap');
+  const grid = document.getElementById('panelInfoOficialGrid');
+  if (!btn || !wrap || !grid) return;
+
+  btn.addEventListener('click', ()=>{
+    const abierto = !wrap.hasAttribute('hidden');
+    if (abierto) {
+      wrap.setAttribute('hidden', 'hidden');
+      btn.textContent = 'Abrir Información Oficial';
+    } else {
+      wrap.removeAttribute('hidden');
+      btn.textContent = 'Ocultar Información Oficial';
+    }
+  });
+
+  grid.innerHTML = '';
+  INFO_OFICIAL_CATEGORIAS.forEach(cat => {
+    const card = document.createElement('div');
+    card.className = 'panel-info-card';
+    const checks = cat.titulos.map((tit, idx)=>
+      `<label><input type="checkbox" name="io_${cat.id}" value="${tit.replaceAll('"','&quot;')}"> <span>${tit}</span></label>`
+    ).join('');
+    card.innerHTML = `
+      <h4 style="margin:0 0 8px 0;">${cat.id}</h4>
+      <div class="panel-info-checklist">${checks}</div>
+      <div style="margin-top:8px;">
+        <input type="file" id="panelInfoInput_${cat.id}" multiple />
+        <button type="button" class="btn-secundario" id="panelInfoBtn_${cat.id}" style="margin-top:8px;">Subir copia(s)</button>
+      </div>
+      <div class="panel-info-files" id="panelInfoFiles_${cat.id}"></div>
+    `;
+    grid.appendChild(card);
+
+    const fileInput = card.querySelector(`#panelInfoInput_${cat.id}`);
+    const saveBtn = card.querySelector(`#panelInfoBtn_${cat.id}`);
+    if (saveBtn && fileInput){
+      saveBtn.addEventListener('click', ()=>{
+        const files = Array.from(fileInput.files || []);
+        if (!files.length) return alert('Selecciona al menos un archivo.');
+        const selectedTitulos = Array.from(card.querySelectorAll(`input[name="io_${cat.id}"]:checked`)).map(x=>x.value);
+        const rows = getInfoOficialDocs();
+        files.forEach(f => {
+          rows.push({
+            categoria: cat.id,
+            titulos: selectedTitulos,
+            archivo: f.name,
+            tipo: f.type || '',
+            tamanio: Number(f.size || 0),
+            usuario: localStorage.getItem('pecuario_usuario_actual') || '',
+            fecha: new Date().toISOString()
+          });
+        });
+        setInfoOficialDocs(rows);
+        fileInput.value = '';
+        renderInfoOficialList(cat.id);
+        alert('Documento(s) registrado(s).');
+      });
+    }
+    renderInfoOficialList(cat.id);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', initPanelInformacionOficial);
