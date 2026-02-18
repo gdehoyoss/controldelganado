@@ -37,12 +37,38 @@
     <span><b>Usuario:</b></span>
     <select id="selUsuario"></select>
     <span class="chip" id="lblRol" style="background:#111827;color:#fff;">—</span>
+    <span class="chip" id="authStatusChip" style="background:#334155;color:#fff;">Auth: verificando…</span>
+    <button type="button" class="btn-terciario" id="btnToggleAuthPanel">Iniciar sesión Firebase</button>
+    <button type="button" class="btn-secundario" id="btnFirebaseSignOut" hidden>Cerrar sesión Firebase</button>
   </div>
   </div>
   <small>Control operativo integral de ganado bovino</small>
   <div class="subleyenda">Información para la permanencia y crecimiento de tu rancho</div>
 
 </header>
+
+<section id="firebaseAuthPanel" class="tarjeta" style="display:none; margin:12px 18px 0 18px;">
+  <h3 style="margin-top:0;">Autenticación Firebase</h3>
+  <p class="nota" id="firebaseAuthMsg">Para guardar datos en Firestore con permisos, inicia sesión con tu cuenta.</p>
+  <div class="fila-tres" style="align-items:end;">
+    <div>
+      <label>Correo</label>
+      <input type="email" id="firebaseAuthEmail" placeholder="usuario@correo.com" autocomplete="email" />
+    </div>
+    <div>
+      <label>Contraseña</label>
+      <input type="password" id="firebaseAuthPassword" placeholder="••••••••" autocomplete="current-password" />
+    </div>
+    <div class="acciones" style="margin:0; justify-content:flex-start;">
+      <button type="button" class="btn-primario" id="btnFirebaseSignIn">Entrar</button>
+      <button type="button" class="btn-terciario" id="btnFirebaseRegister">Crear cuenta</button>
+    </div>
+  </div>
+  <div class="acciones" style="justify-content:flex-start; margin-top:10px;">
+    <button type="button" class="btn-secundario" id="btnFirebaseGoogle">Entrar con Google</button>
+    <button type="button" class="btn-terciario" id="btnFirebaseAnon">Usar modo invitado</button>
+  </div>
+</section>
 
 <nav>
   <button data-modulo="panel" class="activo">Panel</button>
