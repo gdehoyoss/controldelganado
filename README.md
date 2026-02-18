@@ -117,20 +117,16 @@ Ese error confirma que la app sí intentó escribir, pero Firestore la bloqueó 
 2. Asigna custom claim `ranchoId: "Rancho1"` (o el rancho que corresponda) usando Admin SDK.
 3. Pídele al usuario cerrar/abrir sesión para refrescar el token con claims.
 
-#### Opción rápida para pruebas locales (insegura): regla temporal abierta por rancho
+#### Importante: no agregues una regla fija para `Rancho1`
 
-Si quieres validar flujo de escritura sin auth primero, puedes abrir temporalmente el rancho demo en `firestore.rules` y luego volver a reglas seguras:
+Correcto: si todos deben pasar por `sameRancho(ranchoId)`, **no conviene** abrir una regla especial para `Rancho1`.
+
+Mantén esta regla segura en `firestore.rules`:
 
 ```rules
 match /ranchos/{ranchoId}/{document=**} {
-  allow read, write: if ranchoId == "Rancho1"; // SOLO pruebas
+  allow read, write: if sameRancho(ranchoId);
 }
 ```
 
-Después despliega reglas:
-
-```bash
-firebase deploy --only firestore:rules
-```
-
-> Importante: no dejes esta regla abierta en producción.
+Si aparece `Missing or insufficient permissions`, la corrección debe ser de **autenticación/claims** (no de abrir reglas).
