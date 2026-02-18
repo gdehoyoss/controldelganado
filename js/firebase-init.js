@@ -125,7 +125,7 @@ function isAuthConfigurationMissing(err){
 }
 
 function getAuthSetupInstructions(){
-  return 'Firebase Auth no está configurado. En Firebase Console activa Authentication y al menos un proveedor (Email/Password, Google o Anonymous).';
+  return 'Firebase Auth no está configurado para este proyecto. Debes activarlo en Firebase Console > Authentication > Comenzar y habilitar al menos un proveedor (Email/Password, Google o Anonymous).';
 }
 
 function humanizeAuthError(err){
@@ -146,6 +146,15 @@ function disableAuthSync(reason){
   window.dispatchEvent(new CustomEvent('pecuario:auth-disabled', {
     detail: { reason: syncState.authDisabledReason }
   }));
+}
+
+function canSyncWithoutAuth(){
+  return false;
+}
+
+function resetAuthAfterConfigurationFix(){
+  resetAuthDisabledState();
+  updateAuthState(null);
 }
 
 function resetAuthDisabledState(){
@@ -263,8 +272,9 @@ function initFirebaseAuthUi(){
   const btnRegister = document.getElementById('btnFirebaseRegister');
   const btnGoogle = document.getElementById('btnFirebaseGoogle');
   const btnAnon = document.getElementById('btnFirebaseAnon');
+  const btnRetry = document.getElementById('btnFirebaseRetry');
 
-  if (!chip || !panel || !msg || !btnToggle || !btnSignOut || !btnSignIn || !btnRegister || !btnGoogle || !btnAnon) return;
+  if (!chip || !panel || !msg || !btnToggle || !btnSignOut || !btnSignIn || !btnRegister || !btnGoogle || !btnAnon || !btnRetry) return;
 
   const setMessage = (text, isError = false) => {
     msg.textContent = text;
@@ -272,8 +282,14 @@ function initFirebaseAuthUi(){
   };
 
   const setBusy = (busy) => {
-    [btnSignIn, btnRegister, btnGoogle, btnAnon, btnSignOut].forEach((btn) => {
+    [btnSignIn, btnRegister, btnGoogle, btnAnon, btnSignOut, btnRetry].forEach((btn) => {
       if (btn) btn.disabled = busy;
+    });
+  };
+
+  const setAuthControlsDisabled = (disabled) => {
+    [btnSignIn, btnRegister, btnGoogle, btnAnon].forEach((btn) => {
+      if (btn) btn.disabled = disabled;
     });
   };
 
@@ -283,6 +299,21 @@ function initFirebaseAuthUi(){
     btnToggle.textContent = panel.style.display === 'none' ? 'Iniciar sesión Firebase' : 'Ocultar acceso Firebase';
     btnSignOut.hidden = !user;
     btnAnon.textContent = isAutoAnonymousEnabled() ? 'Modo invitado activo' : 'Usar modo invitado';
+
+    if (syncState.authDisabled) {
+      chip.textContent = 'Auth: no configurado';
+      chip.style.background = '#7f1d1d';
+      setAuthControlsDisabled(true);
+      btnSignOut.hidden = true;
+      btnRetry.hidden = false;
+      if (!msg.textContent || msg.textContent.includes('Firestore')) {
+        setMessage(`${getAuthSetupInstructions()} Luego presiona "Reintentar conexión Auth".`, true);
+      }
+      return;
+    }
+
+    setAuthControlsDisabled(false);
+    btnRetry.hidden = true;
   };
 
   btnToggle.addEventListener('click', () => {
@@ -309,7 +340,7 @@ function initFirebaseAuthUi(){
       await loginWithEmailPassword(emailInput?.value, passInput?.value);
       setMessage('Sesión iniciada correctamente.');
     } catch (err) {
-      setMessage(`No se pudo iniciar sesión: ${String(err?.message || err)}`, true);
+      setMessage(`No se pudo iniciar sesión: ${humanizeAuthError(err)}`, true);
     } finally {
       setBusy(false);
       refreshUi(auth.currentUser);
@@ -322,7 +353,7 @@ function initFirebaseAuthUi(){
       await registerWithEmailPassword(emailInput?.value, passInput?.value);
       setMessage('Cuenta creada y sesión iniciada.');
     } catch (err) {
-      setMessage(`No se pudo crear la cuenta: ${String(err?.message || err)}`, true);
+      setMessage(`No se pudo crear la cuenta: ${humanizeAuthError(err)}`, true);
     } finally {
       setBusy(false);
       refreshUi(auth.currentUser);
@@ -335,7 +366,7 @@ function initFirebaseAuthUi(){
       await loginWithGoogle();
       setMessage('Sesión iniciada con Google.');
     } catch (err) {
-      setMessage(`No se pudo iniciar con Google: ${String(err?.message || err)}`, true);
+      setMessage(`No se pudo iniciar con Google: ${humanizeAuthError(err)}`, true);
     } finally {
       setBusy(false);
       refreshUi(auth.currentUser);
@@ -353,6 +384,24 @@ function initFirebaseAuthUi(){
       setMessage('Sesión invitado activa.');
     } catch (err) {
       setMessage(`No se pudo activar modo invitado: ${String(err?.message || err)}`, true);
+    } finally {
+      setBusy(false);
+      refreshUi(auth.currentUser);
+    }
+  });
+
+  btnRetry.addEventListener('click', async () => {
+    try {
+      setBusy(true);
+      resetAuthAfterConfigurationFix();
+      await ensureAuthSession();
+      if (syncState.authDisabled) {
+        setMessage(`${getAuthSetupInstructions()} Si ya lo activaste, recarga la página en unos segundos.`, true);
+      } else {
+        setMessage('Conexión con Firebase Auth restablecida.');
+      }
+    } catch (err) {
+      setMessage(`No se pudo restablecer Firebase Auth: ${humanizeAuthError(err)}`, true);
     } finally {
       setBusy(false);
       refreshUi(auth.currentUser);
