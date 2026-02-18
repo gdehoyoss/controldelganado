@@ -57,6 +57,7 @@ const FIRESTORE_KEYS_SYNC = [
   'pecuario_corrales'
 ];
 
+
 const syncState = {
   lastPushOkAt: 0,
   lastPushKey: '',
@@ -230,6 +231,7 @@ window.firebaseSync = {
   ensureAuthSession,
   keys: FIRESTORE_KEYS_SYNC
 };
+
 
 ensureAuthSession().catch(() => {});
 

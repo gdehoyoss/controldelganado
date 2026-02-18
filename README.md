@@ -21,6 +21,16 @@ firebase deploy --only hosting
 
 Si prefieres no instalar nada globalmente, puedes usar `npx firebase-tools` en lugar de `firebase`.
 
+### Habilitar Firebase Authentication (para probar sincronización cloud)
+
+Si en consola ves `auth/configuration-not-found`, falta habilitar Authentication en el proyecto:
+
+1. Abre Firebase Console > **Authentication** > **Get started**.
+2. En **Sign-in method**, habilita **Anonymous**.
+3. Guarda cambios y recarga la app.
+
+Después de eso, la app podrá abrir sesión anónima y escribir en Firestore (según reglas).
+
 
 ## Sincronización Fase 1 (híbrida)
 
@@ -29,7 +39,7 @@ Se agregó sincronización híbrida para trabajar offline con `localStorage` y r
 ### Configuración recomendada
 
 1. Si usarás usuarios autenticados, crear/usar usuarios con claim `ranchoId` para aplicar reglas.
-2. Si **no** tienes auth de usuario en UI, la app ahora abre sesión anónima automáticamente para permitir sync en `Rancho1`.
+2. Si **no** tienes auth de usuario en UI, la app abre sesión anónima automáticamente para permitir sync en `Rancho1`.
 3. Definir en el navegador `localStorage.pecuario_rancho_id` (por defecto `Rancho1`).
 4. Desplegar reglas e índices:
 
