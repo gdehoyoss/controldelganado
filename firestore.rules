@@ -12,8 +12,14 @@ service cloud.firestore {
       );
     }
 
+    function anonymousRanchoAccess(ranchoId) {
+      return signedIn() &&
+        request.auth.token.firebase.sign_in_provider == 'anonymous' &&
+        ranchoId == 'Rancho1';
+    }
+
     match /ranchos/{ranchoId}/{document=**} {
-      allow read, write: if sameRancho(ranchoId);
+      allow read, write: if sameRancho(ranchoId) || anonymousRanchoAccess(ranchoId);
     }
   }
 }

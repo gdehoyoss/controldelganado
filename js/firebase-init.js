@@ -1,6 +1,11 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
 import { getAnalytics, isSupported } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-analytics.js";
 import {
+  getAuth,
+  onAuthStateChanged,
+  signInAnonymously
+} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+import {
   getFirestore,
   initializeFirestore,
   persistentLocalCache,
@@ -23,6 +28,9 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 window.firebaseApp = app;
+
+const auth = getAuth(app);
+window.firebaseAuth = auth;
 
 initializeFirestore(app, {
   localCache: persistentLocalCache({
@@ -53,8 +61,31 @@ const syncState = {
   lastPushOkAt: 0,
   lastPushKey: '',
   lastError: '',
-  lastErrorAt: 0
+  lastErrorAt: 0,
+  authReady: false,
+  authUid: '',
+  authProvider: '',
+  authError: ''
 };
+
+let resolveAuthReady;
+const authReadyPromise = new Promise((resolve) => {
+  resolveAuthReady = resolve;
+});
+
+function resolveAuthReadyOnce(){
+  if (!syncState.authReady) {
+    syncState.authReady = true;
+    resolveAuthReady();
+  }
+}
+
+function updateAuthState(user){
+  syncState.authUid = user?.uid || '';
+  syncState.authProvider = user?.isAnonymous
+    ? 'anonymous'
+    : (user?.providerData?.[0]?.providerId || 'unknown');
+}
 
 function reportSyncError(source, key, err){
   const msg = String(err?.message || err || 'Error desconocido');
@@ -79,8 +110,37 @@ function getSnapshotRef(key){
   return doc(db, 'ranchos', getRanchoId(), 'snapshots', key);
 }
 
+async function ensureAuthSession(){
+  if (auth.currentUser) {
+    updateAuthState(auth.currentUser);
+    resolveAuthReadyOnce();
+    return auth.currentUser;
+  }
+  try {
+    const result = await signInAnonymously(auth);
+    syncState.authError = '';
+    updateAuthState(result.user);
+    resolveAuthReadyOnce();
+    return result.user;
+  } catch (err) {
+    syncState.authError = String(err?.message || err || 'Error auth desconocido');
+    reportSyncError('auth', '-', err);
+    throw err;
+  }
+}
+
+onAuthStateChanged(auth, (user) => {
+  if (!user) return;
+  syncState.authError = '';
+  updateAuthState(user);
+  resolveAuthReadyOnce();
+});
+
 async function pushSnapshot(key, payload){
   if (!key) return;
+  await ensureAuthSession();
+  await authReadyPromise;
+
   const clientUpdatedAt = Date.now();
   try {
     await setDoc(getSnapshotRef(key), {
@@ -141,8 +201,11 @@ window.firebaseSync = {
   subscribeSnapshot,
   startLegacySync,
   getStatus,
+  ensureAuthSession,
   keys: FIRESTORE_KEYS_SYNC
 };
+
+ensureAuthSession().catch(() => {});
 
 isSupported().then((supported) => {
   if (!supported) return;
