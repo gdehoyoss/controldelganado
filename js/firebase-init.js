@@ -66,6 +66,7 @@ const FIRESTORE_KEYS_SYNC = [
   'pecuario_corrales'
 ];
 
+
 const syncState = {
   lastPushOkAt: 0,
   lastPushKey: '',
@@ -202,74 +203,40 @@ async function ensureAuthSession({ allowAnonymousFallback = true } = {}){
   }
 }
 
-async function retryAuthAvailability(){
-  resetAuthDisabledState();
-  window.dispatchEvent(new CustomEvent('pecuario:auth-enabled'));
-  return ensureAuthSession({ allowAnonymousFallback: true });
-}
-
 async function loginWithEmailPassword(email, password){
-  try {
-    const result = await signInWithEmailAndPassword(auth, String(email || '').trim(), String(password || ''));
-    syncState.authError = '';
-    setAutoAnonymousEnabled(false);
-    updateAuthState(result.user);
-    resolveAuthReadyOnce();
-    return result.user;
-  } catch (err) {
-    if (isAuthConfigurationMissing(err)) {
-      disableAuthSync(getAuthSetupInstructions());
-    }
-    throw err;
-  }
+  const result = await signInWithEmailAndPassword(auth, String(email || '').trim(), String(password || ''));
+  syncState.authError = '';
+  setAutoAnonymousEnabled(false);
+  updateAuthState(result.user);
+  resolveAuthReadyOnce();
+  return result.user;
 }
 
 async function registerWithEmailPassword(email, password){
-  try {
-    const result = await createUserWithEmailAndPassword(auth, String(email || '').trim(), String(password || ''));
-    syncState.authError = '';
-    setAutoAnonymousEnabled(false);
-    updateAuthState(result.user);
-    resolveAuthReadyOnce();
-    return result.user;
-  } catch (err) {
-    if (isAuthConfigurationMissing(err)) {
-      disableAuthSync(getAuthSetupInstructions());
-    }
-    throw err;
-  }
+  const result = await createUserWithEmailAndPassword(auth, String(email || '').trim(), String(password || ''));
+  syncState.authError = '';
+  setAutoAnonymousEnabled(false);
+  updateAuthState(result.user);
+  resolveAuthReadyOnce();
+  return result.user;
 }
 
 async function loginWithGoogle(){
-  try {
-    const result = await signInWithPopup(auth, googleProvider);
-    syncState.authError = '';
-    setAutoAnonymousEnabled(false);
-    updateAuthState(result.user);
-    resolveAuthReadyOnce();
-    return result.user;
-  } catch (err) {
-    if (isAuthConfigurationMissing(err)) {
-      disableAuthSync(getAuthSetupInstructions());
-    }
-    throw err;
-  }
+  const result = await signInWithPopup(auth, googleProvider);
+  syncState.authError = '';
+  setAutoAnonymousEnabled(false);
+  updateAuthState(result.user);
+  resolveAuthReadyOnce();
+  return result.user;
 }
 
 async function useAnonymousMode(){
   setAutoAnonymousEnabled(true);
-  try {
-    if (!auth.currentUser || auth.currentUser.isAnonymous) {
-      return ensureAuthSession({ allowAnonymousFallback: true });
-    }
-    await signOut(auth);
+  if (!auth.currentUser || auth.currentUser.isAnonymous) {
     return ensureAuthSession({ allowAnonymousFallback: true });
-  } catch (err) {
-    if (isAuthConfigurationMissing(err)) {
-      disableAuthSync(getAuthSetupInstructions());
-    }
-    throw err;
   }
+  await signOut(auth);
+  return ensureAuthSession({ allowAnonymousFallback: true });
 }
 
 async function logoutFirebase(){
@@ -296,9 +263,8 @@ function initFirebaseAuthUi(){
   const btnRegister = document.getElementById('btnFirebaseRegister');
   const btnGoogle = document.getElementById('btnFirebaseGoogle');
   const btnAnon = document.getElementById('btnFirebaseAnon');
-  const btnRetryAuth = document.getElementById('btnFirebaseRetryAuth');
 
-  if (!chip || !panel || !msg || !btnToggle || !btnSignOut || !btnSignIn || !btnRegister || !btnGoogle || !btnAnon || !btnRetryAuth) return;
+  if (!chip || !panel || !msg || !btnToggle || !btnSignOut || !btnSignIn || !btnRegister || !btnGoogle || !btnAnon) return;
 
   const setMessage = (text, isError = false) => {
     msg.textContent = text;
@@ -312,26 +278,11 @@ function initFirebaseAuthUi(){
   };
 
   const refreshUi = (user) => {
-    chip.textContent = syncState.authDisabled
-      ? 'Auth: no configurado'
-      : `Auth: ${describeFirebaseUser(user)}`;
-    chip.style.background = syncState.authDisabled
-      ? '#991b1b'
-      : (user?.isAnonymous ? '#92400e' : (user ? '#166534' : '#334155'));
+    chip.textContent = `Auth: ${describeFirebaseUser(user)}`;
+    chip.style.background = user?.isAnonymous ? '#92400e' : (user ? '#166534' : '#334155');
     btnToggle.textContent = panel.style.display === 'none' ? 'Iniciar sesión Firebase' : 'Ocultar acceso Firebase';
     btnSignOut.hidden = !user;
-    btnRetryAuth.hidden = !syncState.authDisabled;
     btnAnon.textContent = isAutoAnonymousEnabled() ? 'Modo invitado activo' : 'Usar modo invitado';
-
-    const disableAuthActions = syncState.authDisabled;
-    [btnSignIn, btnRegister, btnGoogle, btnAnon, btnSignOut].forEach((btn) => {
-      if (btn) btn.disabled = disableAuthActions;
-    });
-    btnRetryAuth.disabled = false;
-
-    if (syncState.authDisabled) {
-      setMessage(syncState.authDisabledReason || getAuthSetupInstructions(), true);
-    }
   };
 
   btnToggle.addEventListener('click', () => {
@@ -352,26 +303,13 @@ function initFirebaseAuthUi(){
     }
   });
 
-  btnRetryAuth.addEventListener('click', async () => {
-    try {
-      setBusy(true);
-      await retryAuthAvailability();
-      setMessage('Auth reintentado. Si ya activaste Authentication en Firebase Console, vuelve a probar login.');
-    } catch (err) {
-      setMessage(`Auth sigue no disponible: ${humanizeAuthError(err)}`, true);
-    } finally {
-      setBusy(false);
-      refreshUi(auth.currentUser);
-    }
-  });
-
   btnSignIn.addEventListener('click', async () => {
     try {
       setBusy(true);
       await loginWithEmailPassword(emailInput?.value, passInput?.value);
       setMessage('Sesión iniciada correctamente.');
     } catch (err) {
-      setMessage(`No se pudo iniciar sesión: ${humanizeAuthError(err)}`, true);
+      setMessage(`No se pudo iniciar sesión: ${String(err?.message || err)}`, true);
     } finally {
       setBusy(false);
       refreshUi(auth.currentUser);
@@ -384,7 +322,7 @@ function initFirebaseAuthUi(){
       await registerWithEmailPassword(emailInput?.value, passInput?.value);
       setMessage('Cuenta creada y sesión iniciada.');
     } catch (err) {
-      setMessage(`No se pudo crear la cuenta: ${humanizeAuthError(err)}`, true);
+      setMessage(`No se pudo crear la cuenta: ${String(err?.message || err)}`, true);
     } finally {
       setBusy(false);
       refreshUi(auth.currentUser);
@@ -397,7 +335,7 @@ function initFirebaseAuthUi(){
       await loginWithGoogle();
       setMessage('Sesión iniciada con Google.');
     } catch (err) {
-      setMessage(`No se pudo iniciar con Google: ${humanizeAuthError(err)}`, true);
+      setMessage(`No se pudo iniciar con Google: ${String(err?.message || err)}`, true);
     } finally {
       setBusy(false);
       refreshUi(auth.currentUser);
@@ -414,19 +352,11 @@ function initFirebaseAuthUi(){
       await useAnonymousMode();
       setMessage('Sesión invitado activa.');
     } catch (err) {
-      setMessage(`No se pudo activar modo invitado: ${humanizeAuthError(err)}`, true);
+      setMessage(`No se pudo activar modo invitado: ${String(err?.message || err)}`, true);
     } finally {
       setBusy(false);
       refreshUi(auth.currentUser);
     }
-  });
-
-  window.addEventListener('pecuario:auth-disabled', () => {
-    refreshUi(auth.currentUser || null);
-  });
-
-  window.addEventListener('pecuario:auth-enabled', () => {
-    refreshUi(auth.currentUser || null);
   });
 
   refreshUi(auth.currentUser);
@@ -515,9 +445,9 @@ window.firebaseSync = {
   loginWithGoogle,
   logoutFirebase,
   useAnonymousMode,
-  retryAuthAvailability,
   keys: FIRESTORE_KEYS_SYNC
 };
+
 
 ensureAuthSession().catch(() => {});
 
