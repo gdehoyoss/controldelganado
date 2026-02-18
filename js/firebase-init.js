@@ -127,10 +127,7 @@ function getSnapshotRef(key){
 }
 
 async function ensureAuthSession(){
-  if (syncState.authDisabled) {
-    resolveAuthReadyOnce();
-    return null;
-  }
+  if (syncState.authDisabled) return null;
 
   if (auth.currentUser) {
     updateAuthState(auth.currentUser);
@@ -147,6 +144,7 @@ async function ensureAuthSession(){
     const msg = String(err?.message || err || 'Error auth desconocido');
     if (isAuthConfigurationMissing(err)) {
       disableAuthSync('Firebase Auth no está configurado en este proyecto (auth/configuration-not-found). La app seguirá en modo local sin sincronizar.');
+      console.warn(syncState.authDisabledReason);
       return null;
     }
     syncState.authError = msg;
