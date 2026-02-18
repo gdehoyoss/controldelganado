@@ -31,6 +31,24 @@ Si en consola ves `auth/configuration-not-found`, falta habilitar Authentication
 
 Después de eso, la app podrá abrir sesión anónima y escribir en Firestore (según reglas).
 
+### Checklist rápido para corregir `CONFIGURATION_NOT_FOUND`
+
+Debes hacerlo tú en Firebase Console (no se puede crear esa configuración desde este frontend):
+
+1. Abre [Firebase Console](https://console.firebase.google.com/) y entra al proyecto **control-del-ganado**.
+2. Ve a **Build > Authentication** y da clic en **Get started / Comenzar**.
+3. En **Sign-in method** habilita:
+   - **Email/Password** (si usarás correo y contraseña).
+   - **Google** (si usarás botón Google).
+   - **Anonymous** (si quieres modo invitado para pruebas).
+4. En el proveedor **Google**, agrega dominios autorizados:
+   - `localhost` (desarrollo local)
+   - `control-del-ganado.web.app` y/o tu dominio de hosting.
+5. Guarda cambios, espera 20–60 segundos y recarga la app.
+6. Si la app ya estaba abierta, presiona **Reintentar conexión Auth** en el panel de autenticación.
+
+Si después de esto sigue fallando, revisa en consola del navegador `window.firebaseSync?.getStatus?.()` para ver `authDisabled` y `authError`.
+
 
 
 ## Autenticación Firebase en la app
