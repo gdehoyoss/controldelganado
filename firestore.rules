@@ -18,6 +18,16 @@ service cloud.firestore {
         ranchoId == 'Rancho1';
     }
 
+    // Fallback temporal para pruebas cuando Auth no está habilitado en el proyecto.
+    // Limítalo a Rancho1 y únicamente a documentos de snapshots.
+    function testingRanchoAccess(ranchoId) {
+      return ranchoId == 'Rancho1';
+    }
+
+    match /ranchos/{ranchoId}/snapshots/{snapshotId} {
+      allow read, write: if sameRancho(ranchoId) || anonymousRanchoAccess(ranchoId) || testingRanchoAccess(ranchoId);
+    }
+
     match /ranchos/{ranchoId}/{document=**} {
       allow read, write: if sameRancho(ranchoId) || anonymousRanchoAccess(ranchoId);
     }

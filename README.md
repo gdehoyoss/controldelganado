@@ -80,6 +80,32 @@ Ahora la interfaz incluye un panel de autenticación Firebase en la parte superi
 - En desarrollo puedes usar **modo invitado** para validar captura/sync.
 - En producción usa usuarios autenticados y claims para restringir por rancho.
 
+
+## Autenticación Firebase en la app
+
+Ahora la interfaz incluye un panel de autenticación Firebase en la parte superior:
+
+- **Entrar** con correo y contraseña.
+- **Crear cuenta** (email/password).
+- **Entrar con Google** (popup).
+- **Modo invitado** (sesión anónima).
+- **Cerrar sesión**: ahora sí mantiene estado "sin sesión" hasta que elijas iniciar sesión o activar invitado.
+
+### Requisitos en Firebase Console
+
+1. Ir a **Authentication > Sign-in method**.
+2. Activar los proveedores que usarás (Email/Password, Google y/o Anonymous).
+3. En Google, agrega tu dominio de Hosting autorizado (por ejemplo `control-del-ganado.web.app`).
+4. Si usarás reglas por rancho, asigna custom claims (`ranchoId` o `admin`) desde Admin SDK.
+
+> Si en consola ves `auth/configuration-not-found`, Firebase Auth no está habilitado en ese proyecto. La app mostrará **Auth: no configurado**, deshabilitará botones de login y te dejará usar **Reintentar conexión Auth** después de habilitar Authentication en Firebase Console.
+> Si necesitas probar **subida de snapshots ya** aunque Auth no esté habilitado, este repo incluye un fallback temporal en reglas para `ranchos/Rancho1/snapshots/*` sin auth. Debes desplegar reglas: `firebase deploy --only firestore:rules` y usar `localStorage.pecuario_rancho_id = "Rancho1"`.
+
+### Flujo recomendado
+
+- En desarrollo puedes usar **modo invitado** para validar captura/sync.
+- En producción usa usuarios autenticados y claims para restringir por rancho.
+
 ## Sincronización Fase 1 (híbrida)
 
 Se agregó sincronización híbrida para trabajar offline con `localStorage` y replicar cambios a Firestore cuando hay internet.

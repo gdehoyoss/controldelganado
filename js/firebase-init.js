@@ -396,7 +396,7 @@ async function pushSnapshot(key, payload){
 
 function subscribeSnapshot(key, onRemoteData){
   if (!key || typeof onRemoteData !== 'function') return () => {};
-  if (syncState.authDisabled) return () => {};
+  if (syncState.authDisabled && !canSyncWithoutAuth()) return () => {};
   return onSnapshot(
     getSnapshotRef(key),
     (snap) => {
