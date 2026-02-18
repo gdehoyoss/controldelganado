@@ -124,11 +124,34 @@ function isAuthConfigurationMissing(err){
   return code.includes('configuration-not-found') || msg.includes('configuration-not-found');
 }
 
+function getAuthSetupInstructions(){
+  return 'Firebase Auth no está configurado. En Firebase Console activa Authentication y al menos un proveedor (Email/Password, Google o Anonymous).';
+}
+
+function humanizeAuthError(err){
+  const code = String(err?.code || '');
+  if (isAuthConfigurationMissing(err)) return getAuthSetupInstructions();
+  if (code.includes('auth/invalid-credential') || code.includes('auth/wrong-password')) return 'Correo o contraseña incorrectos.';
+  if (code.includes('auth/user-not-found')) return 'No existe una cuenta con ese correo.';
+  if (code.includes('auth/popup-closed-by-user')) return 'Se cerró la ventana de Google antes de completar el acceso.';
+  if (code.includes('auth/network-request-failed')) return 'Error de red al contactar Firebase Auth. Revisa tu conexión.';
+  return String(err?.message || err || 'Error de autenticación.');
+}
+
 function disableAuthSync(reason){
   syncState.authDisabled = true;
   syncState.authDisabledReason = reason || 'Autenticación Firebase no disponible.';
   syncState.authError = syncState.authDisabledReason;
   resolveAuthReadyOnce();
+  window.dispatchEvent(new CustomEvent('pecuario:auth-disabled', {
+    detail: { reason: syncState.authDisabledReason }
+  }));
+}
+
+function resetAuthDisabledState(){
+  syncState.authDisabled = false;
+  syncState.authDisabledReason = '';
+  syncState.authError = '';
 }
 
 function markSyncOk(key){
