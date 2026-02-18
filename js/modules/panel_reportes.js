@@ -26,6 +26,10 @@ function actualizarPanel() {
   }
 
   const totalBGR = animales.filter(a=>clasificarGrupoCodigo(a.grupo)==='BGR-01').length;
+  const totalVientres = animales.filter(a => {
+    if (clasificarGrupoCodigo(a.grupo) !== 'BGR-01') return false;
+    return String(a.sexo || '').trim().toLowerCase() === 'hembra';
+  }).length;
   const totalBGC = animales.filter(a=>clasificarGrupoCodigo(a.grupo)==='BGC-01').length;
   document.getElementById('pnl-animales').textContent = (totalBGR + totalBGC);
   document.getElementById('pnl-pesajes').textContent  = pesInd.length + pesGrp.length;
@@ -33,7 +37,7 @@ function actualizarPanel() {
   const nac = repro.filter(r => (r.fechaParto || '').trim() !== '').length;
   document.getElementById('pnl-nacimientos').textContent = nac;
   const elVientres = document.getElementById('pnl-vientres');
-  if (elVientres) elVientres.textContent = totalBGR;
+  if (elVientres) elVientres.textContent = totalVientres;
 
   document.getElementById('pnl-sanidad').textContent  = sanidad.length;
   document.getElementById('pnl-seguridad').textContent = visitas.length + bitacora.length;
