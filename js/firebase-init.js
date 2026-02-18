@@ -2,8 +2,13 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/fireba
 import { getAnalytics, isSupported } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-analytics.js";
 import {
   getAuth,
+  createUserWithEmailAndPassword,
+  GoogleAuthProvider,
   onAuthStateChanged,
-  signInAnonymously
+  signInAnonymously,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  signOut
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
 import {
   getFirestore,
@@ -26,11 +31,15 @@ const firebaseConfig = {
   measurementId: "G-S77NHDHZKY"
 };
 
+const AUTO_ANON_KEY = 'pecuario_firebase_auto_anon';
+
 const app = initializeApp(firebaseConfig);
 window.firebaseApp = app;
 
 const auth = getAuth(app);
+auth.languageCode = 'es';
 window.firebaseAuth = auth;
+const googleProvider = new GoogleAuthProvider();
 
 initializeFirestore(app, {
   localCache: persistentLocalCache({
@@ -82,11 +91,20 @@ function resolveAuthReadyOnce(){
   }
 }
 
+function isAutoAnonymousEnabled(){
+  const flag = localStorage.getItem(AUTO_ANON_KEY);
+  return flag !== '0';
+}
+
+function setAutoAnonymousEnabled(enabled){
+  localStorage.setItem(AUTO_ANON_KEY, enabled ? '1' : '0');
+}
+
 function updateAuthState(user){
   syncState.authUid = user?.uid || '';
   syncState.authProvider = user?.isAnonymous
     ? 'anonymous'
-    : (user?.providerData?.[0]?.providerId || 'unknown');
+    : (user?.providerData?.[0]?.providerId || (user ? 'unknown' : ''));
 }
 
 function reportSyncError(source, key, err){
@@ -105,11 +123,34 @@ function isAuthConfigurationMissing(err){
   return code.includes('configuration-not-found') || msg.includes('configuration-not-found');
 }
 
+function getAuthSetupInstructions(){
+  return 'Firebase Auth no está configurado. En Firebase Console activa Authentication y al menos un proveedor (Email/Password, Google o Anonymous).';
+}
+
+function humanizeAuthError(err){
+  const code = String(err?.code || '');
+  if (isAuthConfigurationMissing(err)) return getAuthSetupInstructions();
+  if (code.includes('auth/invalid-credential') || code.includes('auth/wrong-password')) return 'Correo o contraseña incorrectos.';
+  if (code.includes('auth/user-not-found')) return 'No existe una cuenta con ese correo.';
+  if (code.includes('auth/popup-closed-by-user')) return 'Se cerró la ventana de Google antes de completar el acceso.';
+  if (code.includes('auth/network-request-failed')) return 'Error de red al contactar Firebase Auth. Revisa tu conexión.';
+  return String(err?.message || err || 'Error de autenticación.');
+}
+
 function disableAuthSync(reason){
   syncState.authDisabled = true;
   syncState.authDisabledReason = reason || 'Autenticación Firebase no disponible.';
   syncState.authError = syncState.authDisabledReason;
   resolveAuthReadyOnce();
+  window.dispatchEvent(new CustomEvent('pecuario:auth-disabled', {
+    detail: { reason: syncState.authDisabledReason }
+  }));
+}
+
+function resetAuthDisabledState(){
+  syncState.authDisabled = false;
+  syncState.authDisabledReason = '';
+  syncState.authError = '';
 }
 
 function markSyncOk(key){
@@ -125,14 +166,23 @@ function getSnapshotRef(key){
   return doc(db, 'ranchos', getRanchoId(), 'snapshots', key);
 }
 
-async function ensureAuthSession(){
+async function ensureAuthSession({ allowAnonymousFallback = true } = {}){
   if (syncState.authDisabled) return null;
 
   if (auth.currentUser) {
     updateAuthState(auth.currentUser);
+    syncState.authError = '';
     resolveAuthReadyOnce();
     return auth.currentUser;
   }
+
+  const canUseAnon = allowAnonymousFallback && isAutoAnonymousEnabled();
+  if (!canUseAnon) {
+    updateAuthState(null);
+    resolveAuthReadyOnce();
+    return null;
+  }
+
   try {
     const result = await signInAnonymously(auth);
     syncState.authError = '';
@@ -152,11 +202,241 @@ async function ensureAuthSession(){
   }
 }
 
+async function retryAuthAvailability(){
+  resetAuthDisabledState();
+  window.dispatchEvent(new CustomEvent('pecuario:auth-enabled'));
+  return ensureAuthSession({ allowAnonymousFallback: true });
+}
+
+async function loginWithEmailPassword(email, password){
+  try {
+    const result = await signInWithEmailAndPassword(auth, String(email || '').trim(), String(password || ''));
+    syncState.authError = '';
+    setAutoAnonymousEnabled(false);
+    updateAuthState(result.user);
+    resolveAuthReadyOnce();
+    return result.user;
+  } catch (err) {
+    if (isAuthConfigurationMissing(err)) {
+      disableAuthSync(getAuthSetupInstructions());
+    }
+    throw err;
+  }
+}
+
+async function registerWithEmailPassword(email, password){
+  try {
+    const result = await createUserWithEmailAndPassword(auth, String(email || '').trim(), String(password || ''));
+    syncState.authError = '';
+    setAutoAnonymousEnabled(false);
+    updateAuthState(result.user);
+    resolveAuthReadyOnce();
+    return result.user;
+  } catch (err) {
+    if (isAuthConfigurationMissing(err)) {
+      disableAuthSync(getAuthSetupInstructions());
+    }
+    throw err;
+  }
+}
+
+async function loginWithGoogle(){
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    syncState.authError = '';
+    setAutoAnonymousEnabled(false);
+    updateAuthState(result.user);
+    resolveAuthReadyOnce();
+    return result.user;
+  } catch (err) {
+    if (isAuthConfigurationMissing(err)) {
+      disableAuthSync(getAuthSetupInstructions());
+    }
+    throw err;
+  }
+}
+
+async function useAnonymousMode(){
+  setAutoAnonymousEnabled(true);
+  try {
+    if (!auth.currentUser || auth.currentUser.isAnonymous) {
+      return ensureAuthSession({ allowAnonymousFallback: true });
+    }
+    await signOut(auth);
+    return ensureAuthSession({ allowAnonymousFallback: true });
+  } catch (err) {
+    if (isAuthConfigurationMissing(err)) {
+      disableAuthSync(getAuthSetupInstructions());
+    }
+    throw err;
+  }
+}
+
+async function logoutFirebase(){
+  setAutoAnonymousEnabled(false);
+  await signOut(auth);
+  updateAuthState(null);
+}
+
+function describeFirebaseUser(user){
+  if (!user) return 'Sin sesión';
+  if (user.isAnonymous) return 'Invitado';
+  return user.email || user.displayName || user.uid;
+}
+
+function initFirebaseAuthUi(){
+  const chip = document.getElementById('authStatusChip');
+  const panel = document.getElementById('firebaseAuthPanel');
+  const msg = document.getElementById('firebaseAuthMsg');
+  const emailInput = document.getElementById('firebaseAuthEmail');
+  const passInput = document.getElementById('firebaseAuthPassword');
+  const btnToggle = document.getElementById('btnToggleAuthPanel');
+  const btnSignOut = document.getElementById('btnFirebaseSignOut');
+  const btnSignIn = document.getElementById('btnFirebaseSignIn');
+  const btnRegister = document.getElementById('btnFirebaseRegister');
+  const btnGoogle = document.getElementById('btnFirebaseGoogle');
+  const btnAnon = document.getElementById('btnFirebaseAnon');
+  const btnRetryAuth = document.getElementById('btnFirebaseRetryAuth');
+
+  if (!chip || !panel || !msg || !btnToggle || !btnSignOut || !btnSignIn || !btnRegister || !btnGoogle || !btnAnon || !btnRetryAuth) return;
+
+  const setMessage = (text, isError = false) => {
+    msg.textContent = text;
+    msg.style.color = isError ? '#b91c1c' : '';
+  };
+
+  const setBusy = (busy) => {
+    [btnSignIn, btnRegister, btnGoogle, btnAnon, btnSignOut].forEach((btn) => {
+      if (btn) btn.disabled = busy;
+    });
+  };
+
+  const refreshUi = (user) => {
+    chip.textContent = syncState.authDisabled
+      ? 'Auth: no configurado'
+      : `Auth: ${describeFirebaseUser(user)}`;
+    chip.style.background = syncState.authDisabled
+      ? '#991b1b'
+      : (user?.isAnonymous ? '#92400e' : (user ? '#166534' : '#334155'));
+    btnToggle.textContent = panel.style.display === 'none' ? 'Iniciar sesión Firebase' : 'Ocultar acceso Firebase';
+    btnSignOut.hidden = !user;
+    btnRetryAuth.hidden = !syncState.authDisabled;
+    btnAnon.textContent = isAutoAnonymousEnabled() ? 'Modo invitado activo' : 'Usar modo invitado';
+
+    const disableAuthActions = syncState.authDisabled;
+    [btnSignIn, btnRegister, btnGoogle, btnAnon, btnSignOut].forEach((btn) => {
+      if (btn) btn.disabled = disableAuthActions;
+    });
+    btnRetryAuth.disabled = false;
+
+    if (syncState.authDisabled) {
+      setMessage(syncState.authDisabledReason || getAuthSetupInstructions(), true);
+    }
+  };
+
+  btnToggle.addEventListener('click', () => {
+    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+    refreshUi(auth.currentUser);
+  });
+
+  btnSignOut.addEventListener('click', async () => {
+    try {
+      setBusy(true);
+      await logoutFirebase();
+      setMessage('Sesión cerrada. Permaneces sin sesión hasta elegir un método de acceso.');
+    } catch (err) {
+      setMessage(`No se pudo cerrar sesión: ${String(err?.message || err)}`, true);
+    } finally {
+      setBusy(false);
+      refreshUi(auth.currentUser);
+    }
+  });
+
+  btnRetryAuth.addEventListener('click', async () => {
+    try {
+      setBusy(true);
+      await retryAuthAvailability();
+      setMessage('Auth reintentado. Si ya activaste Authentication en Firebase Console, vuelve a probar login.');
+    } catch (err) {
+      setMessage(`Auth sigue no disponible: ${humanizeAuthError(err)}`, true);
+    } finally {
+      setBusy(false);
+      refreshUi(auth.currentUser);
+    }
+  });
+
+  btnSignIn.addEventListener('click', async () => {
+    try {
+      setBusy(true);
+      await loginWithEmailPassword(emailInput?.value, passInput?.value);
+      setMessage('Sesión iniciada correctamente.');
+    } catch (err) {
+      setMessage(`No se pudo iniciar sesión: ${humanizeAuthError(err)}`, true);
+    } finally {
+      setBusy(false);
+      refreshUi(auth.currentUser);
+    }
+  });
+
+  btnRegister.addEventListener('click', async () => {
+    try {
+      setBusy(true);
+      await registerWithEmailPassword(emailInput?.value, passInput?.value);
+      setMessage('Cuenta creada y sesión iniciada.');
+    } catch (err) {
+      setMessage(`No se pudo crear la cuenta: ${humanizeAuthError(err)}`, true);
+    } finally {
+      setBusy(false);
+      refreshUi(auth.currentUser);
+    }
+  });
+
+  btnGoogle.addEventListener('click', async () => {
+    try {
+      setBusy(true);
+      await loginWithGoogle();
+      setMessage('Sesión iniciada con Google.');
+    } catch (err) {
+      setMessage(`No se pudo iniciar con Google: ${humanizeAuthError(err)}`, true);
+    } finally {
+      setBusy(false);
+      refreshUi(auth.currentUser);
+    }
+  });
+
+  window.addEventListener('pecuario:auth-state', (ev) => {
+    refreshUi(ev?.detail?.user || auth.currentUser || null);
+  });
+
+  btnAnon.addEventListener('click', async () => {
+    try {
+      setBusy(true);
+      await useAnonymousMode();
+      setMessage('Sesión invitado activa.');
+    } catch (err) {
+      setMessage(`No se pudo activar modo invitado: ${humanizeAuthError(err)}`, true);
+    } finally {
+      setBusy(false);
+      refreshUi(auth.currentUser);
+    }
+  });
+
+  window.addEventListener('pecuario:auth-disabled', () => {
+    refreshUi(auth.currentUser || null);
+  });
+
+  window.addEventListener('pecuario:auth-enabled', () => {
+    refreshUi(auth.currentUser || null);
+  });
+
+  refreshUi(auth.currentUser);
+}
+
 onAuthStateChanged(auth, (user) => {
-  if (!user) return;
   syncState.authError = '';
-  updateAuthState(user);
+  updateAuthState(user || null);
   resolveAuthReadyOnce();
+  window.dispatchEvent(new CustomEvent('pecuario:auth-state', { detail: { user } }));
 });
 
 async function pushSnapshot(key, payload){
@@ -165,6 +445,7 @@ async function pushSnapshot(key, payload){
   await authReadyPromise;
 
   if (syncState.authDisabled) return;
+  if (!auth.currentUser) return;
 
   const clientUpdatedAt = Date.now();
   try {
@@ -218,6 +499,7 @@ function getStatus(){
     projectId: firebaseConfig.projectId,
     ranchoId: getRanchoId(),
     keys: FIRESTORE_KEYS_SYNC.slice(),
+    autoAnonymous: isAutoAnonymousEnabled(),
     ...syncState
   };
 }
@@ -228,10 +510,22 @@ window.firebaseSync = {
   startLegacySync,
   getStatus,
   ensureAuthSession,
+  loginWithEmailPassword,
+  registerWithEmailPassword,
+  loginWithGoogle,
+  logoutFirebase,
+  useAnonymousMode,
+  retryAuthAvailability,
   keys: FIRESTORE_KEYS_SYNC
 };
 
 ensureAuthSession().catch(() => {});
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initFirebaseAuthUi, { once: true });
+} else {
+  initFirebaseAuthUi();
+}
 
 isSupported().then((supported) => {
   if (!supported) return;
