@@ -28,9 +28,10 @@ Se agregó sincronización híbrida para trabajar offline con `localStorage` y r
 
 ### Configuración recomendada
 
-1. Crear/usar usuarios con claim `ranchoId` para aplicar reglas.
-2. Definir en el navegador `localStorage.pecuario_rancho_id` (por defecto `Rancho1`).
-3. Desplegar reglas e índices:
+1. Si usarás usuarios autenticados, crear/usar usuarios con claim `ranchoId` para aplicar reglas.
+2. Si **no** tienes auth de usuario en UI, la app ahora abre sesión anónima automáticamente para permitir sync en `Rancho1`.
+3. Definir en el navegador `localStorage.pecuario_rancho_id` (por defecto `Rancho1`).
+4. Desplegar reglas e índices:
 
 ```bash
 firebase deploy --only firestore:rules,firestore:indexes
@@ -117,16 +118,14 @@ Ese error confirma que la app sí intentó escribir, pero Firestore la bloqueó 
 2. Asigna custom claim `ranchoId: "Rancho1"` (o el rancho que corresponda) usando Admin SDK.
 3. Pídele al usuario cerrar/abrir sesión para refrescar el token con claims.
 
-#### Importante: no agregues una regla fija para `Rancho1`
+#### Modo sin usuarios en UI (sesión anónima automática)
 
-Correcto: si todos deben pasar por `sameRancho(ranchoId)`, **no conviene** abrir una regla especial para `Rancho1`.
-
-Mantén esta regla segura en `firestore.rules`:
+Como este proyecto no tiene login de usuario en la interfaz, `firebase-init.js` inicia sesión **anónima** automáticamente y las reglas permiten ese caso **solo para `Rancho1`**.
 
 ```rules
 match /ranchos/{ranchoId}/{document=**} {
-  allow read, write: if sameRancho(ranchoId);
+  allow read, write: if sameRancho(ranchoId) || anonymousRanchoAccess(ranchoId);
 }
 ```
 
-Si aparece `Missing or insufficient permissions`, la corrección debe ser de **autenticación/claims** (no de abrir reglas).
+Si vas a trabajar con más ranchos o multiusuario real, usa el camino recomendado de auth + custom claims y elimina el acceso anónimo.
