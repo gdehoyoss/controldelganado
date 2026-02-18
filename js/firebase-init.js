@@ -57,6 +57,7 @@ const FIRESTORE_KEYS_SYNC = [
   'pecuario_corrales'
 ];
 
+
 const syncState = {
   lastPushOkAt: 0,
   lastPushKey: '',
@@ -65,7 +66,9 @@ const syncState = {
   authReady: false,
   authUid: '',
   authProvider: '',
-  authError: ''
+  authError: '',
+  authDisabled: false,
+  authDisabledReason: ''
 };
 
 let resolveAuthReady;
@@ -97,6 +100,19 @@ function reportSyncError(source, key, err){
   }));
 }
 
+function isAuthConfigurationMissing(err){
+  const code = String(err?.code || '');
+  const msg = String(err?.message || '');
+  return code.includes('configuration-not-found') || msg.includes('configuration-not-found');
+}
+
+function disableAuthSync(reason){
+  syncState.authDisabled = true;
+  syncState.authDisabledReason = reason || 'Autenticación Firebase no disponible.';
+  syncState.authError = syncState.authDisabledReason;
+  resolveAuthReadyOnce();
+}
+
 function markSyncOk(key){
   syncState.lastPushOkAt = Date.now();
   syncState.lastPushKey = key || '';
@@ -111,6 +127,11 @@ function getSnapshotRef(key){
 }
 
 async function ensureAuthSession(){
+  if (syncState.authDisabled) {
+    resolveAuthReadyOnce();
+    return null;
+  }
+
   if (auth.currentUser) {
     updateAuthState(auth.currentUser);
     resolveAuthReadyOnce();
@@ -123,7 +144,12 @@ async function ensureAuthSession(){
     resolveAuthReadyOnce();
     return result.user;
   } catch (err) {
-    syncState.authError = String(err?.message || err || 'Error auth desconocido');
+    const msg = String(err?.message || err || 'Error auth desconocido');
+    if (isAuthConfigurationMissing(err)) {
+      disableAuthSync('Firebase Auth no está configurado en este proyecto (auth/configuration-not-found). La app seguirá en modo local sin sincronizar.');
+      return null;
+    }
+    syncState.authError = msg;
     reportSyncError('auth', '-', err);
     throw err;
   }
@@ -140,6 +166,8 @@ async function pushSnapshot(key, payload){
   if (!key) return;
   await ensureAuthSession();
   await authReadyPromise;
+
+  if (syncState.authDisabled) return;
 
   const clientUpdatedAt = Date.now();
   try {
@@ -160,6 +188,7 @@ async function pushSnapshot(key, payload){
 
 function subscribeSnapshot(key, onRemoteData){
   if (!key || typeof onRemoteData !== 'function') return () => {};
+  if (syncState.authDisabled) return () => {};
   return onSnapshot(
     getSnapshotRef(key),
     (snap) => {
@@ -204,6 +233,7 @@ window.firebaseSync = {
   ensureAuthSession,
   keys: FIRESTORE_KEYS_SYNC
 };
+
 
 ensureAuthSession().catch(() => {});
 
