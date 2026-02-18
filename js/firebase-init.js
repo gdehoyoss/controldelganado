@@ -49,7 +49,6 @@ const FIRESTORE_KEYS_SYNC = [
   'pecuario_corrales'
 ];
 
-<<<<<<< codex/add-firebase-integration-to-website-dgcd50
 const syncState = {
   lastPushOkAt: 0,
   lastPushKey: '',
@@ -74,10 +73,6 @@ function markSyncOk(key){
 
 function getRanchoId(){
   return (localStorage.getItem('pecuario_rancho_id') || 'Rancho1').trim();
-=======
-function getRanchoId(){
-  return (localStorage.getItem('pecuario_rancho_id') || 'rancho-demo').trim();
->>>>>>> main
 }
 
 function getSnapshotRef(key){
@@ -87,7 +82,6 @@ function getSnapshotRef(key){
 async function pushSnapshot(key, payload){
   if (!key) return;
   const clientUpdatedAt = Date.now();
-<<<<<<< codex/add-firebase-integration-to-website-dgcd50
   try {
     await setDoc(getSnapshotRef(key), {
       key,
@@ -102,21 +96,10 @@ async function pushSnapshot(key, payload){
     reportSyncError('push', key, err);
     throw err;
   }
-=======
-  await setDoc(getSnapshotRef(key), {
-    key,
-    ranchoId: getRanchoId(),
-    payload,
-    clientUpdatedAt,
-    updatedAt: serverTimestamp(),
-    updatedBy: localStorage.getItem('pecuario_usuario_actual') || 'sin-usuario'
-  }, { merge: true });
->>>>>>> main
 }
 
 function subscribeSnapshot(key, onRemoteData){
   if (!key || typeof onRemoteData !== 'function') return () => {};
-<<<<<<< codex/add-firebase-integration-to-website-dgcd50
   return onSnapshot(
     getSnapshotRef(key),
     (snap) => {
@@ -126,13 +109,6 @@ function subscribeSnapshot(key, onRemoteData){
     },
     (err) => reportSyncError('subscribe', key, err)
   );
-=======
-  return onSnapshot(getSnapshotRef(key), (snap) => {
-    if (!snap.exists()) return;
-    const data = snap.data() || {};
-    onRemoteData(data.payload, data);
-  });
->>>>>>> main
 }
 
 function startLegacySync(){
@@ -151,7 +127,6 @@ function startLegacySync(){
   return () => unsubscribers.forEach((unsub) => unsub());
 }
 
-<<<<<<< codex/add-firebase-integration-to-website-dgcd50
 function getStatus(){
   return {
     projectId: firebaseConfig.projectId,
@@ -161,16 +136,11 @@ function getStatus(){
   };
 }
 
-=======
->>>>>>> main
 window.firebaseSync = {
   pushSnapshot,
   subscribeSnapshot,
   startLegacySync,
-<<<<<<< codex/add-firebase-integration-to-website-dgcd50
   getStatus,
-=======
->>>>>>> main
   keys: FIRESTORE_KEYS_SYNC
 };
 
