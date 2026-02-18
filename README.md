@@ -32,6 +32,29 @@ Si en consola ves `auth/configuration-not-found`, falta habilitar Authentication
 Después de eso, la app podrá abrir sesión anónima y escribir en Firestore (según reglas).
 
 
+
+## Autenticación Firebase en la app
+
+Ahora la interfaz incluye un panel de autenticación Firebase en la parte superior:
+
+- **Entrar** con correo y contraseña.
+- **Crear cuenta** (email/password).
+- **Entrar con Google** (popup).
+- **Modo invitado** (sesión anónima).
+- **Cerrar sesión**: ahora sí mantiene estado "sin sesión" hasta que elijas iniciar sesión o activar invitado.
+
+### Requisitos en Firebase Console
+
+1. Ir a **Authentication > Sign-in method**.
+2. Activar los proveedores que usarás (Email/Password, Google y/o Anonymous).
+3. En Google, agrega tu dominio de Hosting autorizado (por ejemplo `control-del-ganado.web.app`).
+4. Si usarás reglas por rancho, asigna custom claims (`ranchoId` o `admin`) desde Admin SDK.
+
+### Flujo recomendado
+
+- En desarrollo puedes usar **modo invitado** para validar captura/sync.
+- En producción usa usuarios autenticados y claims para restringir por rancho.
+
 ## Sincronización Fase 1 (híbrida)
 
 Se agregó sincronización híbrida para trabajar offline con `localStorage` y replicar cambios a Firestore cuando hay internet.
